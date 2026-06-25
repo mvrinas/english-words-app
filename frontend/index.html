@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>English Words</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f13;--surface:#1a1a24;--surface2:#22222f;--border:#2e2e3e;
+  --accent:#6366f1;--accent2:#818cf8;--green:#10b981;--yellow:#f59e0b;
+  --red:#ef4444;--text:#e2e2f0;--text2:#8888aa;--r:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex}
+
+.sidebar{width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;min-height:100vh}
+.main{flex:1;padding:28px 32px;overflow-y:auto}
+
+.logo{padding:22px 20px 18px;font-size:18px;font-weight:700;color:var(--accent2);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.nav-section{padding:14px 20px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text2)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--text2);font-size:14px;transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(99,102,241,.15);color:var(--accent2);border-right:3px solid var(--accent)}
+.nav-divider{height:1px;background:var(--border);margin:10px 20px}
+.topic-pill{display:flex;align-items:center;gap:8px;padding:8px 20px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.topic-pill:hover,.topic-pill.active{color:var(--text);background:var(--surface2)}
+.topic-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.topic-count{margin-left:auto;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:10px}
+.sidebar-bottom{margin-top:auto;padding:16px 20px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--border)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{padding:6px;width:32px;height:32px;justify-content:center}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+.page-title{font-size:22px;font-weight:700}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px}
+.stat-num{font-size:28px;font-weight:700}
+.stat-label{font-size:12px;color:var(--text2);margin-top:2px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.form-input{width:100%;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;transition:border .15s}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text2)}
+select.form-input{appearance:none;cursor:pointer}
+.translate-hint{font-size:12px;margin-top:4px;min-height:18px;color:var(--accent2)}
+.translate-hint.loading{color:var(--text2)}
+
+.search-row{display:flex;gap:10px;margin-bottom:18px}
+.search-row .form-input{flex:1}
+.words-list{display:flex;flex-direction:column;gap:10px}
+.word-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:14px;transition:border-color .15s}
+.word-card:hover{border-color:var(--accent)}
+.word-card.learned{opacity:.55}
+.word-main{flex:1;min-width:0}
+.word-text{font-size:16px;font-weight:600}
+.word-tr{font-size:13px;color:var(--text2);margin-top:2px}
+.word-ex{font-size:12px;color:var(--text2);margin-top:5px;font-style:italic;border-left:2px solid var(--border);padding-left:8px}
+.word-badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;flex-shrink:0;white-space:nowrap}
+.word-actions{display:flex;gap:5px;flex-shrink:0}
+.check-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:13px;transition:all .15s;flex-shrink:0}
+.check-btn.done{background:var(--green);border-color:var(--green);color:#fff}
+.check-btn:hover:not(.done){border-color:var(--green);color:var(--green)}
+
+.progress-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s}
+
+.topics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.topic-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px}
+.topic-name-row{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.topic-wc{font-size:12px;color:var(--text2)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-text{font-size:15px;color:var(--text);margin-bottom:4px}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:460px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-size:17px;font-weight:600}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions .btn{flex:1}
+
+.quiz-wrap{max-width:480px;margin:0 auto;text-align:center}
+.quiz-word{font-size:42px;font-weight:700;margin:28px 0 10px}
+.quiz-hint{color:var(--text2);font-size:14px;margin-bottom:28px}
+.quiz-answer{font-size:22px;color:var(--accent2);font-weight:600;padding:12px}
+.quiz-ex{font-style:italic;color:var(--text2);font-size:13px;margin-top:6px}
+.quiz-btns{display:flex;gap:12px;justify-content:center;margin-top:20px}
+.quiz-result{text-align:center;padding:40px 20px}
+.quiz-score{font-size:52px;font-weight:700;color:var(--accent2);margin:12px 0}
+
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s}
+.color-swatch.selected{border-color:white;transform:scale(1.2)}
+
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 17px;font-size:14px;z-index:200;animation:toastIn .2s ease;pointer-events:none}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+@keyframes toastIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.page{display:none}.page.active{display:block}
+.hidden{display:none!important}
+.stat-detail-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">🇬🇧 WordsApp</div>
+  <div class="nav-section">Навигация</div>
+  <button class="nav-item active" data-page="words">📚 Все слова</button>
+  <button class="nav-item" data-page="quiz">🧠 Тест</button>
+  <button class="nav-item" data-page="topics">🗂 Темы</button>
+  <button class="nav-item" data-page="stats">📊 Статистика</button>
+  <div class="nav-divider"></div>
+  <div class="nav-section">Темы</div>
+  <button class="topic-pill active" id="pill-all">
+    <span class="topic-dot" style="background:var(--text2)"></span>
+    Все слова
+    <span class="topic-count" id="count-all">0</span>
+  </button>
+  <div id="topic-pills"></div>
+  <div class="sidebar-bottom">
+    <button class="btn btn-ghost" style="width:100%;font-size:13px" id="btn-new-topic">＋ Новая тема</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- WORDS -->
+  <div class="page active" id="page-words">
+    <div class="page-header">
+      <div>
+        <div class="page-title" id="words-title">📚 Все слова</div>
+        <div class="page-sub" id="words-sub"></div>
+      </div>
+      <button class="btn btn-primary" id="btn-add-word">➕ Добавить слово</button>
+    </div>
+    <div class="search-row">
+      <input class="form-input" id="search-input" placeholder="🔍 Поиск…"/>
+      <select class="form-input" style="width:160px" id="filter-learned">
+        <option value="all">Все</option>
+        <option value="new">Не изученные</option>
+        <option value="learned">Изученные</option>
+      </select>
+    </div>
+    <div class="words-list" id="words-list"></div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="page" id="page-quiz">
+    <div class="page-header">
+      <div>
+        <div class="page-title">🧠 Тест</div>
+        <div class="page-sub" id="quiz-sub">Угадай перевод слова</div>
+      </div>
+      <button class="btn btn-ghost btn-sm hidden" id="btn-quit-quiz">Выйти</button>
+    </div>
+    <div id="quiz-content"></div>
+  </div>
+
+  <!-- TOPICS -->
+  <div class="page" id="page-topics">
+    <div class="page-header">
+      <div>
+        <div class="page-title">🗂 Темы</div>
+        <div class="page-sub" id="topics-sub"></div>
+      </div>
+      <button class="btn btn-primary" id="btn-add-topic-main">➕ Новая тема</button>
+    </div>
+    <div class="topics-grid" id="topics-grid"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="page" id="page-stats">
+    <div class="page-header"><div class="page-title">📊 Статистика</div></div>
+    <div id="stats-content"></div>
+  </div>
+</div>
+
+<!-- WORD MODAL -->
+<div class="modal-overlay hidden" id="modal-word">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-word-title">➕ Добавить слово</div>
+      <button class="btn btn-ghost btn-sm" id="btn-close-word-modal">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Английское слово *</label>
+      <input class="form-input" id="inp-word" placeholder="Например: serendipity"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Перевод</label>
+      <input class="form-input" id="inp-translation" placeholder="Переведётся автоматически…"/>
+      <div class="translate-hint" id="translate-hint"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Пример предложения</label>
+      <input class="form-input" id="inp-example" placeholder="It was pure serendipity that we met."/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Тема</label>
+      <select class="form-input" id="inp-topic-sel"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btn-save-word">Сохранить</button>
+      <button class="btn btn-ghost" id="btn-cancel-word">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPIC MODAL -->
+<div class="modal-overlay hidden" id="modal-topic">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🗂 Новая тема</div>
+      <button class="btn btn-ghost btn-sm" id="btn-close-topic-modal">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Название темы</label>
+      <input class="form-input" id="inp-topic-name" placeholder="Например: Медицина"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Цвет</label>
+      <div class="color-row" id="color-row"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btn-save-topic">Создать тему</button>
+      <button class="btn btn-ghost" id="btn-cancel-topic">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+// ── Storage ────────────────────────────────────────────────────────────────────
+const STORE_KEY = 'englishapp_v1';
+
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  // Default data
+  return {
+    words: [],
+    topics: [
+      {id: 1, name: 'Общие слова', color: '#6366f1'},
+      {id: 2, name: 'Путешествия',  color: '#f59e0b'},
+      {id: 3, name: 'Бизнес',       color: '#10b981'},
+      {id: 4, name: 'Технологии',   color: '#3b82f6'},
+    ],
+    nextWordId: 1,
+    nextTopicId: 5,
+  };
+}
+
+function saveStore() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(db));
+}
+
+let db = loadStore();
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let selectedTopic = null;
+let editingWordId = null;
+let selectedColor = '#6366f1';
+let translateDebounce = null;
+let quizQueue = [], quizIdx = 0, quizCorrect = 0, quizRevealed = false;
+
+const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add('hidden'), 2500);
+}
+
+function getTopic(id) { return db.topics.find(t => t.id === id); }
+
+// ── Auto-translate via MyMemory (free, no key, works from browser) ─────────────
+async function translate(text) {
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ru`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (data.responseStatus === 200) return data.responseData.translatedText;
+  } catch(e) {}
+  return null;
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b =>
+    b.classList.toggle('active', b.dataset.page === id)
+  );
+  if (id === 'words')  renderWords();
+  if (id === 'quiz')   renderQuizStart();
+  if (id === 'topics') renderTopics();
+  if (id === 'stats')  renderStats();
+}
+
+document.querySelectorAll('.nav-item').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.page !== 'words') selectedTopic = null;
+    showPage(b.dataset.page);
+    renderSidebar();
+  });
+});
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  document.getElementById('count-all').textContent = db.words.length;
+
+  const pillAll = document.getElementById('pill-all');
+  pillAll.classList.toggle('active', selectedTopic === null);
+
+  const container = document.getElementById('topic-pills');
+  container.innerHTML = db.topics.map(t => {
+    const wc = db.words.filter(w => w.topicId === t.id).length;
+    return `<button class="topic-pill ${selectedTopic===t.id?'active':''}" data-topic="${t.id}">
+      <span class="topic-dot" style="background:${t.color}"></span>
+      ${esc(t.name)}
+      <span class="topic-count">${wc}</span>
+    </button>`;
+  }).join('');
+
+  container.querySelectorAll('.topic-pill').forEach(b => {
+    b.addEventListener('click', () => {
+      selectedTopic = parseInt(b.dataset.topic);
+      showPage('words');
+      renderSidebar();
+    });
+  });
+
+  pillAll.onclick = () => {
+    selectedTopic = null;
+    showPage('words');
+    renderSidebar();
+  };
+}
+
+// ── Words ──────────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const lf = document.getElementById('filter-learned').value;
+  return db.words.filter(w => {
+    const matchT = selectedTopic === null || w.topicId === selectedTopic;
+    const matchQ = !q || w.word.toLowerCase().includes(q) || (w.translation||'').toLowerCase().includes(q);
+    const matchL = lf==='all' || (lf==='learned'&&w.learned) || (lf==='new'&&!w.learned);
+    return matchT && matchQ && matchL;
+  }).sort((a,b) => b.id - a.id);
+}
+
+function renderWords() {
+  const words = getFiltered();
+  const topic = selectedTopic ? getTopic(selectedTopic) : null;
+  document.getElementById('words-title').textContent = '📚 ' + (topic ? topic.name : 'Все слова');
+  document.getElementById('words-sub').textContent = `${words.length} слов`;
+
+  const list = document.getElementById('words-list');
+  if (!words.length) {
+    const q = document.getElementById('search-input').value;
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Слов не найдено</div><div>${q?'Попробуй другой запрос':'Нажми «Добавить слово»'}</div></div>`;
+    return;
+  }
+  list.innerHTML = words.map(w => {
+    const t = w.topicId ? getTopic(w.topicId) : null;
+    return `<div class="word-card ${w.learned?'learned':''}">
+      <button class="check-btn ${w.learned?'done':''}" data-action="toggle" data-id="${w.id}">${w.learned?'✓':''}</button>
+      <div class="word-main">
+        <div class="word-text">${esc(w.word)}</div>
+        ${w.translation?`<div class="word-tr">${esc(w.translation)}</div>`:''}
+        ${w.example?`<div class="word-ex">"${esc(w.example)}"</div>`:''}
+      </div>
+      ${t?`<span class="word-badge" style="background:${t.color}22;color:${t.color};border:1px solid ${t.color}44">${esc(t.name)}</span>`:''}
+      <div class="word-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" data-action="edit" data-id="${w.id}">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" data-action="del" data-id="${w.id}">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-action]').forEach(b => {
+    const id = parseInt(b.dataset.id);
+    if (b.dataset.action === 'toggle') b.onclick = () => toggleLearned(id);
+    if (b.dataset.action === 'edit')   b.onclick = () => openWordModal(id);
+    if (b.dataset.action === 'del')    b.onclick = () => deleteWord(id);
+  });
+}
+
+function toggleLearned(id) {
+  const w = db.words.find(x=>x.id===id);
+  w.learned = !w.learned;
+  saveStore();
+  toast(w.learned ? 'Изучено! ✓' : 'Снято ✓');
+  renderWords();
+  renderSidebar();
+}
+
+function deleteWord(id) {
+  const w = db.words.find(x=>x.id===id);
+  if (!confirm(`Удалить «${w.word}»?`)) return;
+  db.words = db.words.filter(x=>x.id!==id);
+  saveStore();
+  toast('Удалено', 'err');
+  renderWords();
+  renderSidebar();
+}
+
+document.getElementById('search-input').addEventListener('input', renderWords);
+document.getElementById('filter-learned').addEventListener('change', renderWords);
+
+// ── Word Modal ─────────────────────────────────────────────────────────────────
+function openWordModal(editId = null) {
+  editingWordId = editId;
+  const w = editId ? db.words.find(x=>x.id===editId) : null;
+  document.getElementById('modal-word-title').textContent = editId ? '✏️ Редактировать слово' : '➕ Добавить слово';
+  document.getElementById('inp-word').value = w?.word || '';
+  document.getElementById('inp-translation').value = w?.translation || '';
+  document.getElementById('inp-example').value = w?.example || '';
+  document.getElementById('translate-hint').textContent = '';
+  document.getElementById('translate-hint').className = 'translate-hint';
+
+  const sel = document.getElementById('inp-topic-sel');
+  sel.innerHTML = '<option value="">— Без темы —</option>' +
+    db.topics.map(t=>`<option value="${t.id}"${w?.topicId===t.id?' selected':''}>${esc(t.name)}</option>`).join('');
+
+  document.getElementById('modal-word').classList.remove('hidden');
+  setTimeout(() => document.getElementById('inp-word').focus(), 50);
+}
+
+function closeWordModal() {
+  document.getElementById('modal-word').classList.add('hidden');
+  editingWordId = null;
+  clearTimeout(translateDebounce);
+}
+
+document.getElementById('btn-add-word').onclick = () => openWordModal();
+document.getElementById('btn-close-word-modal').onclick = closeWordModal;
+document.getElementById('btn-cancel-word').onclick = closeWordModal;
+document.getElementById('modal-word').onclick = e => { if(e.target===e.currentTarget) closeWordModal(); };
+
+// Auto-translate
+document.getElementById('inp-word').addEventListener('input', e => {
+  const val = e.target.value.trim();
+  clearTimeout(translateDebounce);
+  const hint = document.getElementById('translate-hint');
+  if (!val) { hint.textContent = ''; return; }
+  hint.className = 'translate-hint loading';
+  hint.textContent = '⏳ Переводим…';
+  translateDebounce = setTimeout(async () => {
+    const result = await translate(val);
+    if (result) {
+      document.getElementById('inp-translation').value = result;
+      hint.className = 'translate-hint';
+      hint.textContent = '✨ Переведено автоматически';
+    } else {
+      hint.textContent = '';
+    }
+  }, 700);
+});
+
+document.getElementById('btn-save-word').onclick = async () => {
+  const word = document.getElementById('inp-word').value.trim();
+  if (!word) return;
+  const topicVal = document.getElementById('inp-topic-sel').value;
+  const entry = {
+    word,
+    translation: document.getElementById('inp-translation').value.trim() || null,
+    example: document.getElementById('inp-example').value.trim() || null,
+    topicId: topicVal ? parseInt(topicVal) : null,
+    learned: false,
+  };
+  if (editingWordId) {
+    const w = db.words.find(x=>x.id===editingWordId);
+    Object.assign(w, entry);
+    toast('Слово обновлено');
+  } else {
+    entry.id = db.nextWordId++;
+    entry.learned = false;
+    db.words.push(entry);
+    toast('Слово добавлено! 🎉');
+  }
+  saveStore();
+  closeWordModal();
+  renderWords();
+  renderSidebar();
+};
+
+// ── Topic Modal ────────────────────────────────────────────────────────────────
+function openTopicModal() {
+  document.getElementById('inp-topic-name').value = '';
+  selectedColor = COLORS[0];
+  const cr = document.getElementById('color-row');
+  cr.innerHTML = COLORS.map(c=>`
+    <div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" data-color="${c}"></div>
+  `).join('');
+  cr.querySelectorAll('.color-swatch').forEach(s => {
+    s.onclick = () => {
+      selectedColor = s.dataset.color;
+      cr.querySelectorAll('.color-swatch').forEach(x=>x.classList.toggle('selected',x===s));
+    };
+  });
+  document.getElementById('modal-topic').classList.remove('hidden');
+  setTimeout(() => document.getElementById('inp-topic-name').focus(), 50);
+}
+
+function closeTopicModal() { document.getElementById('modal-topic').classList.add('hidden'); }
+
+document.getElementById('btn-new-topic').onclick = openTopicModal;
+document.getElementById('btn-add-topic-main').onclick = openTopicModal;
+document.getElementById('btn-close-topic-modal').onclick = closeTopicModal;
+document.getElementById('btn-cancel-topic').onclick = closeTopicModal;
+document.getElementById('modal-topic').onclick = e => { if(e.target===e.currentTarget) closeTopicModal(); };
+
+document.getElementById('btn-save-topic').onclick = () => {
+  const name = document.getElementById('inp-topic-name').value.trim();
+  if (!name) return;
+  db.topics.push({id: db.nextTopicId++, name, color: selectedColor});
+  saveStore();
+  toast('Тема создана!');
+  closeTopicModal();
+  renderSidebar();
+  renderTopics();
+};
+
+// ── Topics page ────────────────────────────────────────────────────────────────
+function renderTopics() {
+  document.getElementById('topics-sub').textContent = `${db.topics.length} тем`;
+  const grid = document.getElementById('topics-grid');
+  if (!db.topics.length) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">📂</div><div class="empty-text">Тем пока нет</div></div>`;
+    return;
+  }
+  grid.innerHTML = db.topics.map(t => {
+    const wc = db.words.filter(w=>w.topicId===t.id).length;
+    const lc = db.words.filter(w=>w.topicId===t.id&&w.learned).length;
+    const pct = wc>0?Math.round((lc/wc)*100):0;
+    return `<div class="topic-card" style="border-top:3px solid ${t.color}">
+      <div class="topic-name-row"><span style="color:${t.color}">●</span> ${esc(t.name)}</div>
+      <div class="topic-wc">${wc} слов · ${lc} изучено</div>
+      <div class="progress-bar"><div class="progress-fill" style="background:${t.color};width:${pct}%"></div></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" data-open="${t.id}">Открыть</button>
+        <button class="btn btn-danger btn-sm btn-icon" data-del="${t.id}">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('[data-open]').forEach(b => {
+    b.onclick = () => { selectedTopic = parseInt(b.dataset.open); showPage('words'); renderSidebar(); };
+  });
+  grid.querySelectorAll('[data-del]').forEach(b => {
+    b.onclick = () => {
+      const t = getTopic(parseInt(b.dataset.del));
+      if (!confirm(`Удалить тему «${t.name}»? Слова останутся без темы.`)) return;
+      db.topics = db.topics.filter(x=>x.id!==t.id);
+      db.words.forEach(w => { if(w.topicId===t.id) w.topicId=null; });
+      saveStore();
+      if (selectedTopic === t.id) selectedTopic = null;
+      toast('Тема удалена','err');
+      renderTopics();
+      renderSidebar();
+    };
+  });
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const total = db.words.length;
+  const learned = db.words.filter(w=>w.learned).length;
+  const pct = total>0?Math.round((learned/total)*100):0;
+  const byTopic = db.topics.map(t=>({
+    ...t,
+    total: db.words.filter(w=>w.topicId===t.id).length,
+    learned: db.words.filter(w=>w.topicId===t.id&&w.learned).length,
+  })).filter(t=>t.total>0).sort((a,b)=>b.total-a.total);
+  const noTopic = db.words.filter(w=>!w.topicId).length;
+
+  document.getElementById('stats-content').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" style="color:var(--accent2)">${total}</div><div class="stat-label">Всего слов</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--green)">${learned}</div><div class="stat-label">Изучено</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--yellow)">${total-learned}</div><div class="stat-label">Не изучено</div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span>Общий прогресс</span><span style="color:var(--accent2)">${pct}%</span></div>
+      <div class="progress-bar" style="height:8px"><div class="progress-fill" style="background:var(--accent);width:${pct}%"></div></div>
+    </div>
+    ${byTopic.length?`<div class="card">
+      <div style="font-weight:600;margin-bottom:14px">По темам</div>
+      ${byTopic.map(t=>{const p=t.total>0?Math.round((t.learned/t.total)*100):0;return`
+        <div style="margin-bottom:14px">
+          <div class="stat-detail-row"><span><span style="color:${t.color}">●</span> ${esc(t.name)}</span><span>${t.learned}/${t.total} · ${p}%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="background:${t.color};width:${p}%"></div></div>
+        </div>`;}).join('')}
+      ${noTopic?`<div style="color:var(--text2);font-size:13px;margin-top:6px">Без темы: ${noTopic} слов</div>`:''}
+    </div>`:''}
+  `;
+}
+
+// ── Quiz ───────────────────────────────────────────────────────────────────────
+function renderQuizStart() {
+  const avail = db.words.filter(w=>!w.learned);
+  document.getElementById('quiz-sub').textContent = 'Угадай перевод слова';
+  document.getElementById('btn-quit-quiz').classList.add('hidden');
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-wrap"><div class="card" style="text-align:center;padding:32px">
+      <div style="font-size:52px;margin-bottom:14px">🎯</div>
+      <p style="color:var(--text2);margin-bottom:20px">
+        ${avail.length===0
+          ?'Нет слов для теста. Добавь слова и не отмечай их как изученные.'
+          :`${avail.length} слов доступно. До 20 случайных.`}
+      </p>
+      <button class="btn btn-primary" style="width:100%" id="btn-start-quiz" ${avail.length===0?'disabled':''}>Начать тест</button>
+    </div></div>`;
+  document.getElementById('btn-start-quiz')?.addEventListener('click', startQuiz);
+}
+
+function startQuiz() {
+  const avail = db.words.filter(w=>!w.learned);
+  quizQueue = avail.sort(()=>Math.random()-.5).slice(0,20);
+  quizIdx=0; quizCorrect=0; quizRevealed=false;
+  document.getElementById('btn-quit-quiz').classList.remove('hidden');
+  renderQuizCard();
+}
+
+function renderQuizCard() {
+  if (quizIdx>=quizQueue.length){renderQuizResult();return;}
+  const w = quizQueue[quizIdx];
+  document.getElementById('quiz-sub').textContent=`Карточка ${quizIdx+1} из ${quizQueue.length}`;
+  document.getElementById('quiz-content').innerHTML=`
+    <div style="margin-bottom:18px">
+      <div class="progress-bar" style="height:6px">
+        <div class="progress-fill" style="background:var(--accent);width:${(quizIdx/quizQueue.length)*100}%"></div>
+      </div>
+    </div>
+    <div class="quiz-wrap"><div class="card">
+      <div class="quiz-word">${esc(w.word)}</div>
+      ${quizRevealed?`
+        <div class="quiz-answer">${esc(w.translation||'—')}</div>
+        ${w.example?`<div class="quiz-ex">"${esc(w.example)}"</div>`:''}
+        <div class="quiz-btns">
+          <button class="btn btn-danger" id="btn-wrong">✗ Не знал</button>
+          <button class="btn btn-primary" style="background:var(--green)" id="btn-right">✓ Знал</button>
+        </div>
+      `:`
+        <p class="quiz-hint">Знаешь перевод?</p>
+        <div class="quiz-btns"><button class="btn btn-primary" id="btn-show">Показать ответ</button></div>
+      `}
+    </div></div>`;
+  document.getElementById('btn-show')?.addEventListener('click',()=>{quizRevealed=true;renderQuizCard();});
+  document.getElementById('btn-wrong')?.addEventListener('click',()=>{quizIdx++;quizRevealed=false;renderQuizCard();});
+  document.getElementById('btn-right')?.addEventListener('click',()=>{quizCorrect++;quizIdx++;quizRevealed=false;renderQuizCard();});
+}
+
+function renderQuizResult() {
+  const pct=Math.round((quizCorrect/quizQueue.length)*100);
+  document.getElementById('quiz-sub').textContent='Результат';
+  document.getElementById('btn-quit-quiz').classList.add('hidden');
+  document.getElementById('quiz-content').innerHTML=`
+    <div class="quiz-result">
+      <div style="font-size:60px">${pct>=80?'🎉':pct>=50?'👍':'💪'}</div>
+      <h2 style="margin-top:12px">Тест завершён!</h2>
+      <div class="quiz-score">${quizCorrect}/${quizQueue.length}</div>
+      <p style="color:var(--text2)">Правильных ответов: ${pct}%</p>
+      <button class="btn btn-primary" style="margin-top:20px" id="btn-retry">Ещё раз</button>
+    </div>`;
+  document.getElementById('btn-retry').addEventListener('click',renderQuizStart);
+}
+
+document.getElementById('btn-quit-quiz').addEventListener('click',renderQuizStart);
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+renderSidebar();
+renderWords();
+</script>
+</body>
+</html>
