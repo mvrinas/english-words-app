@@ -115,6 +115,7 @@ select.form-input{appearance:none;cursor:pointer}
 .page{display:none}.page.active{display:block}
 .hidden{display:none!important}
 .stat-detail-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px}
+.loading-screen{display:flex;align-items:center;justify-content:center;min-height:200px;color:var(--text2);font-size:15px;gap:10px}
 </style>
 </head>
 <body>
@@ -247,35 +248,21 @@ select.form-input{appearance:none;cursor:pointer}
 <div class="toast hidden" id="toast"></div>
 
 <script>
-// ── Storage ────────────────────────────────────────────────────────────────────
-const STORE_KEY = 'englishapp_v1';
-
-function loadStore() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  // Default data
-  return {
-    words: [],
-    topics: [
-      {id: 1, name: 'Общие слова', color: '#6366f1'},
-      {id: 2, name: 'Путешествия',  color: '#f59e0b'},
-      {id: 3, name: 'Бизнес',       color: '#10b981'},
-      {id: 4, name: 'Технологии',   color: '#3b82f6'},
-    ],
-    nextWordId: 1,
-    nextTopicId: 5,
-  };
+// ── API helper ─────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: {} };
+  if (body !== undefined) {
+    opts.body = JSON.stringify(body);
+    opts.headers['Content-Type'] = 'application/json';
+  }
+  const r = await fetch(path, opts);
+  if (r.status === 204) return null;
+  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+  return r.json();
 }
-
-function saveStore() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(db));
-}
-
-let db = loadStore();
 
 // ── State ──────────────────────────────────────────────────────────────────────
+let db = { words: [], topics: [] };
 let selectedTopic = null;
 let editingWordId = null;
 let selectedColor = '#6366f1';
@@ -289,6 +276,8 @@ function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function bool(v) { return v === true || v === 1; }
+
 let toastTimer;
 function toast(msg, type='ok') {
   const el = document.getElementById('toast');
@@ -300,7 +289,25 @@ function toast(msg, type='ok') {
 
 function getTopic(id) { return db.topics.find(t => t.id === id); }
 
-// ── Auto-translate via MyMemory (free, no key, works from browser) ─────────────
+// ── Load data from backend ─────────────────────────────────────────────────────
+async function loadData() {
+  document.getElementById('words-list').innerHTML = '<div class="loading-screen">⏳ Загрузка…</div>';
+  try {
+    const [topics, words] = await Promise.all([
+      api('GET', '/topics'),
+      api('GET', '/words')
+    ]);
+    db.topics = topics;
+    db.words = words;
+  } catch(e) {
+    document.getElementById('words-list').innerHTML = `<div class="loading-screen" style="color:var(--red)">❌ Ошибка загрузки: ${e.message}</div>`;
+    return;
+  }
+  renderSidebar();
+  renderWords();
+}
+
+// ── Auto-translate via MyMemory ────────────────────────────────────────────────
 async function translate(text) {
   try {
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ru`;
@@ -341,7 +348,7 @@ function renderSidebar() {
 
   const container = document.getElementById('topic-pills');
   container.innerHTML = db.topics.map(t => {
-    const wc = db.words.filter(w => w.topicId === t.id).length;
+    const wc = db.words.filter(w => w.topic_id === t.id).length;
     return `<button class="topic-pill ${selectedTopic===t.id?'active':''}" data-topic="${t.id}">
       <span class="topic-dot" style="background:${t.color}"></span>
       ${esc(t.name)}
@@ -369,11 +376,12 @@ function getFiltered() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const lf = document.getElementById('filter-learned').value;
   return db.words.filter(w => {
-    const matchT = selectedTopic === null || w.topicId === selectedTopic;
+    const matchT = selectedTopic === null || w.topic_id === selectedTopic;
     const matchQ = !q || w.word.toLowerCase().includes(q) || (w.translation||'').toLowerCase().includes(q);
-    const matchL = lf==='all' || (lf==='learned'&&w.learned) || (lf==='new'&&!w.learned);
+    const isLearned = bool(w.learned);
+    const matchL = lf==='all' || (lf==='learned'&&isLearned) || (lf==='new'&&!isLearned);
     return matchT && matchQ && matchL;
-  }).sort((a,b) => b.id - a.id);
+  });
 }
 
 function renderWords() {
@@ -389,15 +397,18 @@ function renderWords() {
     return;
   }
   list.innerHTML = words.map(w => {
-    const t = w.topicId ? getTopic(w.topicId) : null;
-    return `<div class="word-card ${w.learned?'learned':''}">
-      <button class="check-btn ${w.learned?'done':''}" data-action="toggle" data-id="${w.id}">${w.learned?'✓':''}</button>
+    const isLearned = bool(w.learned);
+    const t = w.topic_id ? getTopic(w.topic_id) : null;
+    const tc = t ? t.color : (w.topic_color || null);
+    const tn = t ? t.name : (w.topic_name || null);
+    return `<div class="word-card ${isLearned?'learned':''}">
+      <button class="check-btn ${isLearned?'done':''}" data-action="toggle" data-id="${w.id}">${isLearned?'✓':''}</button>
       <div class="word-main">
         <div class="word-text">${esc(w.word)}</div>
         ${w.translation?`<div class="word-tr">${esc(w.translation)}</div>`:''}
         ${w.example?`<div class="word-ex">"${esc(w.example)}"</div>`:''}
       </div>
-      ${t?`<span class="word-badge" style="background:${t.color}22;color:${t.color};border:1px solid ${t.color}44">${esc(t.name)}</span>`:''}
+      ${tc?`<span class="word-badge" style="background:${tc}22;color:${tc};border:1px solid ${tc}44">${esc(tn)}</span>`:''}
       <div class="word-actions">
         <button class="btn btn-ghost btn-sm btn-icon" data-action="edit" data-id="${w.id}">✏️</button>
         <button class="btn btn-danger btn-sm btn-icon" data-action="del" data-id="${w.id}">🗑</button>
@@ -413,23 +424,28 @@ function renderWords() {
   });
 }
 
-function toggleLearned(id) {
-  const w = db.words.find(x=>x.id===id);
-  w.learned = !w.learned;
-  saveStore();
-  toast(w.learned ? 'Изучено! ✓' : 'Снято ✓');
-  renderWords();
-  renderSidebar();
+async function toggleLearned(id) {
+  const w = db.words.find(x => x.id === id);
+  const newVal = !bool(w.learned);
+  try {
+    const updated = await api('PATCH', `/words/${id}`, { learned: newVal });
+    Object.assign(w, updated);
+    toast(bool(w.learned) ? 'Изучено! ✓' : 'Снято ✓');
+    renderWords();
+    renderSidebar();
+  } catch(e) { toast('Ошибка: ' + e.message, 'err'); }
 }
 
-function deleteWord(id) {
-  const w = db.words.find(x=>x.id===id);
+async function deleteWord(id) {
+  const w = db.words.find(x => x.id === id);
   if (!confirm(`Удалить «${w.word}»?`)) return;
-  db.words = db.words.filter(x=>x.id!==id);
-  saveStore();
-  toast('Удалено', 'err');
-  renderWords();
-  renderSidebar();
+  try {
+    await api('DELETE', `/words/${id}`);
+    db.words = db.words.filter(x => x.id !== id);
+    toast('Удалено', 'err');
+    renderWords();
+    renderSidebar();
+  } catch(e) { toast('Ошибка: ' + e.message, 'err'); }
 }
 
 document.getElementById('search-input').addEventListener('input', renderWords);
@@ -438,7 +454,7 @@ document.getElementById('filter-learned').addEventListener('change', renderWords
 // ── Word Modal ─────────────────────────────────────────────────────────────────
 function openWordModal(editId = null) {
   editingWordId = editId;
-  const w = editId ? db.words.find(x=>x.id===editId) : null;
+  const w = editId ? db.words.find(x => x.id === editId) : null;
   document.getElementById('modal-word-title').textContent = editId ? '✏️ Редактировать слово' : '➕ Добавить слово';
   document.getElementById('inp-word').value = w?.word || '';
   document.getElementById('inp-translation').value = w?.translation || '';
@@ -448,7 +464,7 @@ function openWordModal(editId = null) {
 
   const sel = document.getElementById('inp-topic-sel');
   sel.innerHTML = '<option value="">— Без темы —</option>' +
-    db.topics.map(t=>`<option value="${t.id}"${w?.topicId===t.id?' selected':''}>${esc(t.name)}</option>`).join('');
+    db.topics.map(t => `<option value="${t.id}"${w?.topic_id===t.id?' selected':''}>${esc(t.name)}</option>`).join('');
 
   document.getElementById('modal-word').classList.remove('hidden');
   setTimeout(() => document.getElementById('inp-word').focus(), 50);
@@ -488,28 +504,35 @@ document.getElementById('inp-word').addEventListener('input', e => {
 document.getElementById('btn-save-word').onclick = async () => {
   const word = document.getElementById('inp-word').value.trim();
   if (!word) return;
+  const btn = document.getElementById('btn-save-word');
+  btn.disabled = true;
   const topicVal = document.getElementById('inp-topic-sel').value;
-  const entry = {
+  const body = {
     word,
     translation: document.getElementById('inp-translation').value.trim() || null,
     example: document.getElementById('inp-example').value.trim() || null,
-    topicId: topicVal ? parseInt(topicVal) : null,
-    learned: false,
+    topic_id: topicVal ? parseInt(topicVal) : null,
   };
-  if (editingWordId) {
-    const w = db.words.find(x=>x.id===editingWordId);
-    Object.assign(w, entry);
-    toast('Слово обновлено');
-  } else {
-    entry.id = db.nextWordId++;
-    entry.learned = false;
-    db.words.push(entry);
-    toast('Слово добавлено! 🎉');
+  try {
+    if (editingWordId) {
+      const updated = await api('PATCH', `/words/${editingWordId}`, body);
+      const idx = db.words.findIndex(x => x.id === editingWordId);
+      db.words[idx] = updated;
+      toast('Слово обновлено');
+    } else {
+      body.learned = false;
+      const created = await api('POST', '/words', body);
+      db.words.unshift(created);
+      toast('Слово добавлено! 🎉');
+    }
+    closeWordModal();
+    renderWords();
+    renderSidebar();
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
   }
-  saveStore();
-  closeWordModal();
-  renderWords();
-  renderSidebar();
 };
 
 // ── Topic Modal ────────────────────────────────────────────────────────────────
@@ -523,7 +546,7 @@ function openTopicModal() {
   cr.querySelectorAll('.color-swatch').forEach(s => {
     s.onclick = () => {
       selectedColor = s.dataset.color;
-      cr.querySelectorAll('.color-swatch').forEach(x=>x.classList.toggle('selected',x===s));
+      cr.querySelectorAll('.color-swatch').forEach(x => x.classList.toggle('selected', x===s));
     };
   });
   document.getElementById('modal-topic').classList.remove('hidden');
@@ -538,15 +561,23 @@ document.getElementById('btn-close-topic-modal').onclick = closeTopicModal;
 document.getElementById('btn-cancel-topic').onclick = closeTopicModal;
 document.getElementById('modal-topic').onclick = e => { if(e.target===e.currentTarget) closeTopicModal(); };
 
-document.getElementById('btn-save-topic').onclick = () => {
+document.getElementById('btn-save-topic').onclick = async () => {
   const name = document.getElementById('inp-topic-name').value.trim();
   if (!name) return;
-  db.topics.push({id: db.nextTopicId++, name, color: selectedColor});
-  saveStore();
-  toast('Тема создана!');
-  closeTopicModal();
-  renderSidebar();
-  renderTopics();
+  const btn = document.getElementById('btn-save-topic');
+  btn.disabled = true;
+  try {
+    const created = await api('POST', '/topics', { name, color: selectedColor });
+    db.topics.push(created);
+    toast('Тема создана!');
+    closeTopicModal();
+    renderSidebar();
+    renderTopics();
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+  }
 };
 
 // ── Topics page ────────────────────────────────────────────────────────────────
@@ -558,9 +589,9 @@ function renderTopics() {
     return;
   }
   grid.innerHTML = db.topics.map(t => {
-    const wc = db.words.filter(w=>w.topicId===t.id).length;
-    const lc = db.words.filter(w=>w.topicId===t.id&&w.learned).length;
-    const pct = wc>0?Math.round((lc/wc)*100):0;
+    const wc = db.words.filter(w => w.topic_id === t.id).length;
+    const lc = db.words.filter(w => w.topic_id === t.id && bool(w.learned)).length;
+    const pct = wc>0 ? Math.round((lc/wc)*100) : 0;
     return `<div class="topic-card" style="border-top:3px solid ${t.color}">
       <div class="topic-name-row"><span style="color:${t.color}">●</span> ${esc(t.name)}</div>
       <div class="topic-wc">${wc} слов · ${lc} изучено</div>
@@ -576,16 +607,18 @@ function renderTopics() {
     b.onclick = () => { selectedTopic = parseInt(b.dataset.open); showPage('words'); renderSidebar(); };
   });
   grid.querySelectorAll('[data-del]').forEach(b => {
-    b.onclick = () => {
+    b.onclick = async () => {
       const t = getTopic(parseInt(b.dataset.del));
       if (!confirm(`Удалить тему «${t.name}»? Слова останутся без темы.`)) return;
-      db.topics = db.topics.filter(x=>x.id!==t.id);
-      db.words.forEach(w => { if(w.topicId===t.id) w.topicId=null; });
-      saveStore();
-      if (selectedTopic === t.id) selectedTopic = null;
-      toast('Тема удалена','err');
-      renderTopics();
-      renderSidebar();
+      try {
+        await api('DELETE', `/topics/${t.id}`);
+        db.topics = db.topics.filter(x => x.id !== t.id);
+        db.words.forEach(w => { if(w.topic_id === t.id) { w.topic_id = null; w.topic_name = null; w.topic_color = null; } });
+        if (selectedTopic === t.id) selectedTopic = null;
+        toast('Тема удалена', 'err');
+        renderTopics();
+        renderSidebar();
+      } catch(e) { toast('Ошибка: ' + e.message, 'err'); }
     };
   });
 }
@@ -593,14 +626,14 @@ function renderTopics() {
 // ── Stats ──────────────────────────────────────────────────────────────────────
 function renderStats() {
   const total = db.words.length;
-  const learned = db.words.filter(w=>w.learned).length;
-  const pct = total>0?Math.round((learned/total)*100):0;
+  const learned = db.words.filter(w => bool(w.learned)).length;
+  const pct = total>0 ? Math.round((learned/total)*100) : 0;
   const byTopic = db.topics.map(t=>({
     ...t,
-    total: db.words.filter(w=>w.topicId===t.id).length,
-    learned: db.words.filter(w=>w.topicId===t.id&&w.learned).length,
-  })).filter(t=>t.total>0).sort((a,b)=>b.total-a.total);
-  const noTopic = db.words.filter(w=>!w.topicId).length;
+    total: db.words.filter(w => w.topic_id === t.id).length,
+    learned: db.words.filter(w => w.topic_id === t.id && bool(w.learned)).length,
+  })).filter(t => t.total>0).sort((a,b) => b.total-a.total);
+  const noTopic = db.words.filter(w => !w.topic_id).length;
 
   document.getElementById('stats-content').innerHTML = `
     <div class="stats-row">
@@ -626,7 +659,7 @@ function renderStats() {
 
 // ── Quiz ───────────────────────────────────────────────────────────────────────
 function renderQuizStart() {
-  const avail = db.words.filter(w=>!w.learned);
+  const avail = db.words.filter(w => !bool(w.learned));
   document.getElementById('quiz-sub').textContent = 'Угадай перевод слова';
   document.getElementById('btn-quit-quiz').classList.add('hidden');
   document.getElementById('quiz-content').innerHTML = `
@@ -643,7 +676,7 @@ function renderQuizStart() {
 }
 
 function startQuiz() {
-  const avail = db.words.filter(w=>!w.learned);
+  const avail = db.words.filter(w => !bool(w.learned));
   quizQueue = avail.sort(()=>Math.random()-.5).slice(0,20);
   quizIdx=0; quizCorrect=0; quizRevealed=false;
   document.getElementById('btn-quit-quiz').classList.remove('hidden');
@@ -697,8 +730,7 @@ function renderQuizResult() {
 document.getElementById('btn-quit-quiz').addEventListener('click',renderQuizStart);
 
 // ── Init ───────────────────────────────────────────────────────────────────────
-renderSidebar();
-renderWords();
+loadData();
 </script>
 </body>
 </html>
