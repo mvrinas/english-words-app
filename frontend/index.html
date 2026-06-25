@@ -116,9 +116,47 @@ select.form-input{appearance:none;cursor:pointer}
 .hidden{display:none!important}
 .stat-detail-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px}
 .loading-screen{display:flex;align-items:center;justify-content:center;min-height:200px;color:var(--text2);font-size:15px;gap:10px}
+
+.mobile-header{display:none;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-shrink:0}
+.mobile-logo{font-size:16px;font-weight:700;color:var(--accent2)}
+.hamburger{background:none;border:none;cursor:pointer;color:var(--text);font-size:24px;padding:4px;line-height:1;display:flex;align-items:center}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:190}
+
+@media(max-width:640px){
+  body{flex-direction:column}
+  .mobile-header{display:flex}
+  .sidebar{position:fixed;left:-270px;top:0;height:100vh;z-index:200;transition:left .25s ease;width:260px;overflow-y:auto;min-height:unset}
+  .sidebar.open{left:0}
+  .sidebar-overlay.show{display:block}
+  .main{padding:14px 12px;min-height:0;overflow-y:auto}
+  .page-header{flex-direction:column;gap:10px;align-items:stretch}
+  .page-header .btn-primary{width:100%;justify-content:center}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .search-row{flex-direction:column}
+  .search-row select.form-input{width:100%!important}
+  .word-badge{display:none}
+  .word-card{padding:12px 14px;gap:10px}
+  .topics-grid{grid-template-columns:1fr 1fr}
+  .quiz-word{font-size:30px;margin:16px 0 8px}
+  .toast{bottom:14px;right:10px;left:10px;text-align:center}
+  .modal{padding:20px}
+  .page-title{font-size:18px}
+}
+
+@media(max-width:400px){
+  .topics-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
+
+<div class="mobile-header">
+  <span class="mobile-logo">🇬🇧 WordsApp</span>
+  <button class="hamburger" id="btn-hamburger">☰</button>
+</div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <div class="sidebar">
   <div class="logo">🇬🇧 WordsApp</div>
@@ -336,6 +374,7 @@ document.querySelectorAll('.nav-item').forEach(b => {
     if (b.dataset.page !== 'words') selectedTopic = null;
     showPage(b.dataset.page);
     renderSidebar();
+    closeSidebar();
   });
 });
 
@@ -728,6 +767,17 @@ function renderQuizResult() {
 }
 
 document.getElementById('btn-quit-quiz').addEventListener('click',renderQuizStart);
+
+// ── Mobile hamburger ──────────────────────────────────────────────────────────
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+document.getElementById('btn-hamburger')?.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+});
+document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
 
 // ── Init ───────────────────────────────────────────────────────────────────────
 loadData();
