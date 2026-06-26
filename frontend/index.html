@@ -1377,7 +1377,14 @@ function renderSRSCard() {
   const iHard  = reps === 0 ? 1 : (reps === 1 ? 6 : Math.max(1, Math.round(interval * Math.max(1.3, ease - 0.15))));
   const iGood  = reps === 0 ? 1 : (reps === 1 ? 6 : Math.max(1, Math.round(interval * ease)));
   const iEasy  = reps === 0 ? 4 : Math.max(1, Math.round(interval * ease * 1.3));
-  function fmt(d) { return d === 1 ? '<1д' : d < 7 ? d+'д' : d < 30 ? Math.round(d/7)+'нед' : Math.round(d/30)+'мес'; }
+  function fmt(d) {
+    if (d <= 1) return 'Сегодня';
+    if (d === 2) return 'Послезавтра';
+    if (d < 7)  return 'Через ' + d + ' дня';
+    if (d < 14) return 'Через неделю';
+    if (d < 30) return 'Через ' + Math.round(d/7) + ' нед.';
+    return 'Через ' + Math.round(d/30) + ' мес.';
+  }
 
   el.innerHTML = `<div class="srs-wrap">
     <div class="srs-progress">
