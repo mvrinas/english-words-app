@@ -408,7 +408,7 @@ select.form-input{appearance:none;cursor:pointer}
 
 /* Папка */
 .wg-folder{position:relative;border-radius:20px;background:#ebebea;
-  aspect-ratio:1/1;overflow:visible;
+  width:100%;height:130px;overflow:visible;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 8px rgba(0,0,0,.07);
   transition:transform .2s,box-shadow .2s}
@@ -432,14 +432,16 @@ select.form-input{appearance:none;cursor:pointer}
 
 /* Слово внутри папки */
 .wg-word{font-family:'Fraunces',serif;font-style:italic;font-weight:300;
-  font-size:20px;color:#1c1b18;text-align:center;line-height:1.25;
-  letter-spacing:-.3px;word-break:break-word;padding:0 12px;z-index:1}
+  font-size:18px;color:#1c1b18;text-align:center;line-height:1.2;
+  letter-spacing:-.3px;padding:0 10px;z-index:1;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Подпись под карточкой */
-.wg-label{padding:0 4px}
+.wg-label{padding:0 4px;height:36px;overflow:hidden}
 .wg-translation{font-size:13px;font-weight:500;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wg-count{font-size:11px;color:var(--text2);margin-top:1px}
+.wg-count{font-size:11px;color:var(--text2);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Filter pills */
 .filter-pills{display:flex;gap:6px;margin-bottom:14px;flex-wrap:nowrap;
@@ -453,8 +455,9 @@ select.form-input{appearance:none;cursor:pointer}
 /* View toggle — hide on mobile */
 @media(max-width:640px){
   .view-toggle{display:none}
-  .words-grid{gap:12px}
-  .wg-word{font-size:18px}
+  .words-grid{gap:10px}
+  .wg-folder{height:110px}
+  .wg-word{font-size:15px}
 }
 
 </style>
