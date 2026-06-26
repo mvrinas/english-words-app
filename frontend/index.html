@@ -357,9 +357,8 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="sidebar-bottom">
     <div class="user-chip" id="user-chip">
       <div class="user-avatar" id="user-avatar">?</div>
-      <div style="flex:1;min-width:0">
-        <div class="user-name" id="user-name-el">…</div>
-        <div class="user-role" id="user-role-el"></div>
+      <div style="flex:1;min-width:0;overflow:hidden">
+        <div class="user-name" id="user-name-el">…<span id="user-role-el" style="margin-left:6px"></span></div>
       </div>
       <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:4px 8px;font-size:12px">↪</button>
     </div>
