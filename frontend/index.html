@@ -122,6 +122,51 @@ select.form-input{appearance:none;cursor:pointer}
 .hamburger{background:none;border:none;cursor:pointer;color:var(--text);font-size:24px;padding:4px;line-height:1;display:flex;align-items:center}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:190}
 
+
+/* ── SRS ─────────────────────────────────────────────────────────────────── */
+.srs-wrap{max-width:480px;margin:0 auto;text-align:center}
+.srs-progress{display:flex;align-items:center;gap:12px;margin-bottom:24px;justify-content:center}
+.srs-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;max-width:200px}
+.srs-bar{height:6px;background:var(--accent);border-radius:3px;transition:width .3s}
+.srs-count{font-size:13px;color:var(--text2)}
+.streak-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,.15);
+  color:var(--yellow);border:1px solid rgba(245,158,11,.3);border-radius:20px;
+  padding:4px 12px;font-size:13px;font-weight:600}
+.srs-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:40px 32px;margin:16px 0}
+.srs-word{font-size:46px;font-weight:700;margin-bottom:8px;line-height:1.1}
+.srs-topic{font-size:12px;color:var(--text2);margin-bottom:24px}
+.srs-translation{font-size:26px;font-weight:600;color:var(--accent2);margin:16px 0 6px}
+.srs-example{font-style:italic;color:var(--text2);font-size:13px;margin-bottom:24px}
+.srs-rating-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+.srs-btn{border:none;border-radius:10px;padding:10px 6px;cursor:pointer;font-size:13px;
+  font-weight:600;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.srs-btn .srs-interval{font-size:10px;font-weight:400;opacity:.7}
+.srs-btn-again{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.srs-btn-again:hover{background:rgba(239,68,68,.3)}
+.srs-btn-hard{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+.srs-btn-hard:hover{background:rgba(245,158,11,.3)}
+.srs-btn-good{background:rgba(99,102,241,.15);color:var(--accent2);border:1px solid rgba(99,102,241,.3)}
+.srs-btn-good:hover{background:rgba(99,102,241,.3)}
+.srs-btn-easy{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.srs-btn-easy:hover{background:rgba(16,185,129,.3)}
+.srs-done{text-align:center;padding:48px 20px}
+.srs-done-icon{font-size:64px;margin-bottom:16px}
+.srs-done-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.srs-done-sub{color:var(--text2);font-size:14px;margin-bottom:24px}
+.srs-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.due-badge{background:var(--red);color:#fff;border-radius:10px;font-size:10px;
+  font-weight:700;padding:1px 6px;margin-left:auto}
+.sidebar-streak{display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 0 4px;color:var(--yellow)}
+.sidebar-goal{font-size:11px;color:var(--text2);margin-bottom:10px}
+.goal-bar-wrap{height:4px;background:var(--surface2);border-radius:2px;margin-bottom:12px}
+.goal-bar{height:4px;background:var(--green);border-radius:2px;transition:width .3s}
+@media(max-width:640px){
+  .srs-word{font-size:32px}
+  .srs-rating-btns{grid-template-columns:repeat(2,1fr)}
+  .srs-card{padding:28px 20px}
+}
+
 @media(max-width:640px){
   body{flex-direction:column}
   .mobile-header{display:flex}
@@ -164,6 +209,7 @@ select.form-input{appearance:none;cursor:pointer}
   <button class="nav-item active" data-page="words">📚 Все слова</button>
   <button class="nav-item" data-page="quiz">🧠 Тест</button>
   <button class="nav-item" data-page="topics">🗂 Темы</button>
+  <button class="nav-item" data-page="srs" id="nav-srs">🔄 Повторение <span class="due-badge hidden" id="due-badge">0</span></button>
   <button class="nav-item" data-page="stats">📊 Статистика</button>
   <div class="nav-divider"></div>
   <div class="nav-section">Темы</div>
@@ -174,6 +220,9 @@ select.form-input{appearance:none;cursor:pointer}
   </button>
   <div id="topic-pills"></div>
   <div class="sidebar-bottom">
+    <div class="sidebar-streak" id="sidebar-streak" style="display:none">🔥 <span id="streak-val">0</span> дн. подряд</div>
+    <div class="goal-bar-wrap"><div class="goal-bar" id="goal-bar" style="width:0%"></div></div>
+    <div class="sidebar-goal" id="sidebar-goal"></div>
     <button class="btn btn-ghost" style="width:100%;font-size:13px" id="btn-new-topic">＋ Новая тема</button>
   </div>
 </div>
@@ -221,6 +270,17 @@ select.form-input{appearance:none;cursor:pointer}
       <button class="btn btn-primary" id="btn-add-topic-main">➕ Новая тема</button>
     </div>
     <div class="topics-grid" id="topics-grid"></div>
+  </div>
+
+  <!-- SRS -->
+  <div class="page" id="page-srs">
+    <div class="page-header">
+      <div>
+        <div class="page-title">🔄 Повторение</div>
+        <div class="page-sub" id="srs-sub">Интервальное повторение слов</div>
+      </div>
+    </div>
+    <div id="srs-content"></div>
   </div>
 
   <!-- STATS -->
@@ -306,6 +366,7 @@ let editingWordId = null;
 let selectedColor = '#6366f1';
 let translateDebounce = null;
 let quizQueue = [], quizIdx = 0, quizCorrect = 0, quizRevealed = false;
+let srsQueue = [], srsIdx = 0, srsRevealed = false, srsStreak = 0, srsTodayCount = 0, srsDailyGoal = 10;
 
 const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
 
@@ -385,6 +446,7 @@ function showPage(id) {
   if (id === 'quiz')   renderQuizStart();
   if (id === 'topics') renderTopics();
   if (id === 'stats')  renderStats();
+  if (id === 'srs')    renderSRS();
 }
 
 document.querySelectorAll('.nav-item').forEach(b => {
@@ -803,8 +865,144 @@ document.getElementById('btn-hamburger')?.addEventListener('click', () => {
 });
 document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
 
+
+// ── SRS ───────────────────────────────────────────────────────────────────────
+async function loadStreak() {
+  try {
+    const s = await api('GET', '/streak');
+    srsStreak      = s.streak;
+    srsTodayCount  = s.today_reviewed;
+    srsDailyGoal   = s.daily_goal;
+    // Sidebar streak widget
+    const streakEl = document.getElementById('sidebar-streak');
+    const goalEl   = document.getElementById('sidebar-goal');
+    const barEl    = document.getElementById('goal-bar');
+    const badgeEl  = document.getElementById('due-badge');
+    streakEl.style.display = s.streak > 0 ? 'flex' : 'none';
+    document.getElementById('streak-val').textContent = s.streak;
+    const pct = Math.min(100, Math.round((s.today_reviewed / s.daily_goal) * 100));
+    barEl.style.width = pct + '%';
+    goalEl.textContent = `Сегодня: ${s.today_reviewed} / ${s.daily_goal} слов`;
+    if (s.due_count > 0) {
+      badgeEl.textContent = s.due_count > 99 ? '99+' : s.due_count;
+      badgeEl.classList.remove('hidden');
+    } else {
+      badgeEl.classList.add('hidden');
+    }
+  } catch(e) {}
+}
+
+async function renderSRS() {
+  document.getElementById('srs-content').innerHTML = '<div class="loading-screen">⏳ Загрузка…</div>';
+  try {
+    srsQueue = await api('GET', '/words/due');
+    srsIdx = 0; srsRevealed = false;
+  } catch(e) {
+    document.getElementById('srs-content').innerHTML = `<div class="loading-screen" style="color:var(--red)">❌ ${e.message}</div>`;
+    return;
+  }
+  renderSRSCard();
+}
+
+function renderSRSCard() {
+  const el = document.getElementById('srs-content');
+  const sub = document.getElementById('srs-sub');
+
+  if (srsQueue.length === 0) {
+    sub.textContent = 'Нет слов для повторения';
+    el.innerHTML = `<div class="srs-done">
+      <div class="srs-done-icon">✅</div>
+      <div class="srs-done-title">Всё повторено!</div>
+      <div class="srs-done-sub">Новые слова появятся завтра</div>
+      <div class="srs-stats-row">
+        <div class="stat-card"><div class="stat-num">${srsStreak}🔥</div><div class="stat-label">Дней подряд</div></div>
+        <div class="stat-card"><div class="stat-num">${srsTodayCount}</div><div class="stat-label">Повторено сегодня</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="showPage('words')">К словам</button>
+    </div>`;
+    return;
+  }
+
+  if (srsIdx >= srsQueue.length) {
+    sub.textContent = 'Сессия завершена!';
+    el.innerHTML = `<div class="srs-done">
+      <div class="srs-done-icon">🎉</div>
+      <div class="srs-done-title">Сессия завершена!</div>
+      <div class="srs-done-sub">Повторено ${srsIdx} слов</div>
+      <div class="srs-stats-row">
+        <div class="stat-card"><div class="stat-num">${srsStreak}🔥</div><div class="stat-label">Дней подряд</div></div>
+        <div class="stat-card"><div class="stat-num">${srsTodayCount}</div><div class="stat-label">Сегодня</div></div>
+      </div>
+      <button class="btn btn-primary" style="margin-right:8px" onclick="renderSRS()">Ещё раз</button>
+      <button class="btn btn-ghost" onclick="showPage('words')">К словам</button>
+    </div>`;
+    loadStreak();
+    return;
+  }
+
+  const w = srsQueue[srsIdx];
+  const pct = Math.round((srsIdx / srsQueue.length) * 100);
+  sub.textContent = `${srsIdx} / ${srsQueue.length} слов`;
+
+  // Calculate preview intervals for buttons
+  const ease = w.ease_factor || 2.5;
+  const interval = w.srs_interval || 1;
+  const reps = w.srs_reps || 0;
+  const iAgain = 1;
+  const iHard  = reps === 0 ? 1 : (reps === 1 ? 6 : Math.max(1, Math.round(interval * Math.max(1.3, ease - 0.15))));
+  const iGood  = reps === 0 ? 1 : (reps === 1 ? 6 : Math.max(1, Math.round(interval * ease)));
+  const iEasy  = reps === 0 ? 4 : Math.max(1, Math.round(interval * ease * 1.3));
+  function fmt(d) { return d === 1 ? '<1д' : d < 7 ? d+'д' : d < 30 ? Math.round(d/7)+'нед' : Math.round(d/30)+'мес'; }
+
+  el.innerHTML = `<div class="srs-wrap">
+    <div class="srs-progress">
+      <div class="srs-bar-wrap"><div class="srs-bar" style="width:${pct}%"></div></div>
+      <span class="srs-count">${srsIdx}/${srsQueue.length}</span>
+      ${srsStreak > 0 ? `<span class="streak-badge">🔥 ${srsStreak}</span>` : ''}
+    </div>
+    <div class="srs-card">
+      <div class="srs-word">${esc(w.word)}</div>
+      <div class="srs-topic">${w.topic_name ? esc(w.topic_name) : 'Без темы'}</div>
+      ${srsRevealed ? `
+        <div class="srs-translation">${esc(w.translation || '—')}</div>
+        ${w.example ? `<div class="srs-example">"${esc(w.example)}"</div>` : ''}
+        <div class="srs-rating-btns">
+          <button class="srs-btn srs-btn-again" data-r="0">Снова<span class="srs-interval">${fmt(iAgain)}</span></button>
+          <button class="srs-btn srs-btn-hard"  data-r="1">Сложно<span class="srs-interval">${fmt(iHard)}</span></button>
+          <button class="srs-btn srs-btn-good"  data-r="2">Хорошо<span class="srs-interval">${fmt(iGood)}</span></button>
+          <button class="srs-btn srs-btn-easy"  data-r="3">Легко<span class="srs-interval">${fmt(iEasy)}</span></button>
+        </div>
+      ` : `
+        <button class="btn btn-primary" style="margin-top:8px" id="btn-srs-show">Показать перевод</button>
+      `}
+    </div>
+  </div>`;
+
+  document.getElementById('btn-srs-show')?.addEventListener('click', () => {
+    srsRevealed = true; renderSRSCard();
+  });
+
+  document.querySelectorAll('.srs-btn[data-r]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const rating = parseInt(btn.dataset.r);
+      try {
+        const res = await api('POST', `/words/${w.id}/review`, { rating });
+        srsStreak     = res.streak;
+        srsTodayCount = res.today_reviewed;
+        srsDailyGoal  = res.daily_goal;
+        // If "Again", push word back to end of queue
+        if (rating === 0) srsQueue.push(srsQueue[srsIdx]);
+        srsIdx++; srsRevealed = false;
+        renderSRSCard();
+        loadStreak();
+      } catch(e) { toast('Ошибка: ' + e.message, 'error'); }
+    });
+  });
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 loadData();
+loadStreak();
 </script>
 </body>
 </html>
