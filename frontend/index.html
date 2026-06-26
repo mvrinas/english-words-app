@@ -433,6 +433,7 @@ select.form-input{appearance:none;cursor:pointer}
       <div class="user-avatar" id="user-avatar">?</div>
       <div style="flex:1;min-width:0;overflow:hidden">
         <div class="user-name" id="user-name-el">…<span id="user-role-el" style="margin-left:6px"></span></div>
+        <div id="user-level-el" style="font-size:10px;color:var(--text2);margin-top:1px;letter-spacing:.3px"></div>
       </div>
       <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:4px 8px;font-size:12px">↪</button>
     </div>
@@ -609,23 +610,7 @@ function hideLevelPicker() {
 // Level picker logic
 document.querySelectorAll('.level-card').forEach(card => {
   card.addEventListener('click', () => {
-    document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    document.getElementById('btn-confirm-level').disabled = false;
-    document.getElementById('btn-confirm-level').dataset.level = card.dataset.level;
-  });
-});
-
-document.querySelectorAll('.level-card').forEach(card => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    document.getElementById('btn-confirm-level').disabled = false;
-    document.getElementById('btn-confirm-level').dataset.level = card.dataset.level;
-  });
-});
-
-document.getElementById('btn-confirm-level').addEventListener('click', async () => {
+    document.getElementById('btn-confirm-level').addEventListener('click', async () => {
   const lvl = document.getElementById('btn-confirm-level').dataset.level;
   if (!lvl) return;
   await api('PATCH', '/auth/level', {level: lvl});
