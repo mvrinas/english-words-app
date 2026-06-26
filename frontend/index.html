@@ -496,11 +496,9 @@ select.form-input{appearance:none;cursor:pointer}
   display:flex;flex-direction:column;gap:4px;text-align:left}
 .dash-action:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
 .dash-action:active{transform:scale(.97)}
-.dash-action-icon{font-size:22px;margin-bottom:2px}
 .dash-action-title{font-size:14px;font-weight:600;color:var(--text)}
 .dash-action-sub{font-size:11px;color:var(--text2)}
 /* Streak fire */
-.streak-fire{font-size:28px;line-height:1}
 @media(max-width:640px){
   .dash-grid{gap:10px}
   .dash-value{font-size:26px}
@@ -672,7 +670,6 @@ select.form-input{appearance:none;cursor:pointer}
       <div class="dash-card accent">
         <div class="dash-label">Стрик</div>
         <div style="display:flex;align-items:flex-end;gap:8px">
-          <div class="streak-fire">🔥</div>
           <div class="dash-value" id="dash-streak">0</div>
         </div>
         <div class="dash-sub">дней подряд</div>
@@ -717,22 +714,18 @@ select.form-input{appearance:none;cursor:pointer}
       color:var(--text2);margin-bottom:10px">Быстрый старт</div>
     <div class="dash-actions">
       <div class="dash-action" onclick="showPage('srs')">
-        <div class="dash-action-icon">🔁</div>
         <div class="dash-action-title">Повторить</div>
         <div class="dash-action-sub" id="dash-due-count">Загрузка…</div>
       </div>
       <div class="dash-action" onclick="showPage('words');document.getElementById('btn-add-word').click()">
-        <div class="dash-action-icon">➕</div>
         <div class="dash-action-title">Добавить слово</div>
         <div class="dash-action-sub">+5 XP за слово</div>
       </div>
       <div class="dash-action" onclick="showPage('grammar')">
-        <div class="dash-action-icon">📖</div>
         <div class="dash-action-title">Грамматика</div>
         <div class="dash-action-sub">5 разделов</div>
       </div>
       <div class="dash-action" onclick="showPage('quiz')">
-        <div class="dash-action-icon">🎯</div>
         <div class="dash-action-title">Тест</div>
         <div class="dash-action-sub">Проверь себя</div>
       </div>
@@ -831,7 +824,7 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="modal-word-title">Добавить слово</div>
-      <button class="btn btn-ghost btn-sm" id="btn-close-word-modal">✕</button>
+      <button class="btn btn-ghost btn-sm" id="btn-close-word-modal"></button>
     </div>
     <div class="form-group">
       <label class="form-label">Английское слово *</label>
@@ -874,7 +867,7 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title"> Новая тема</div>
-      <button class="btn btn-ghost btn-sm" id="btn-close-topic-modal">✕</button>
+      <button class="btn btn-ghost btn-sm" id="btn-close-topic-modal"></button>
     </div>
     <div class="form-group">
       <label class="form-label">Название темы</label>
@@ -1238,7 +1231,7 @@ function renderWords() {
     const tc = t ? t.color : (w.topic_color || null);
     const tn = t ? t.name : (w.topic_name || null);
     return `<div class="word-card ${isLearned?'learned':''}">
-      <button class="check-btn ${isLearned?'done':''}" data-action="toggle" data-id="${w.id}">${isLearned?'✓':''}</button>
+      <button class="check-btn ${isLearned?'done':''}" data-action="toggle" data-id="${w.id}"></button>
       <div class="word-main">
         <div class="word-text">${esc(w.word)}</div>
         ${w.translation?`<div class="word-tr">${esc(w.translation)}</div>`:''}
@@ -1246,8 +1239,8 @@ function renderWords() {
       </div>
       ${tc?`<span class="word-badge" style="background:${tc}22;color:${tc};border:1px solid ${tc}44">${esc(tn)}</span>`:''}
       <div class="word-actions">
-        <button class="btn btn-ghost btn-sm btn-icon" data-action="edit" data-id="${w.id}">✎</button>
-        <button class="btn btn-danger btn-sm btn-icon" data-action="del" data-id="${w.id}">✕</button>
+        <button class="btn btn-ghost btn-sm btn-icon" data-action="edit" data-id="${w.id}"></button>
+        <button class="btn btn-danger btn-sm btn-icon" data-action="del" data-id="${w.id}"></button>
       </div>
     </div>`;
   }).join('');
@@ -1271,7 +1264,7 @@ function renderGridView(words, list) {
     const folderBg = c1 + '22';
     return `<div class="wg-card" data-id="${w.id}">
       <div class="wg-folder" style="background:${folderBg};--folder-bg:${folderBg}">
-        <div class="wg-status ${isLearned?'learned':'new-word'}">${isLearned?'✓':''}</div>
+        <div class="wg-status ${isLearned?'learned':'new-word'}">'></div>
         <div class="wg-accent" style="background:${c1}"></div>
         <div class="wg-word">${esc(w.word)}</div>
       </div>
@@ -1316,8 +1309,8 @@ function renderCardsView(words, list) {
             <button class="wcd-btn" data-action="toggle" data-id="${w.id}">
               ${isLearned ? 'Снять' : 'Изучил'}
             </button>
-            <button class="wcd-btn" data-action="edit" data-id="${w.id}">✎ Изменить</button>
-            <button class="wcd-btn wcd-btn-del" data-action="del" data-id="${w.id}">✕ Удалить</button>
+            <button class="wcd-btn" data-action="edit" data-id="${w.id}"> Изменить</button>
+            <button class="wcd-btn wcd-btn-del" data-action="del" data-id="${w.id}"> Удалить</button>
           </div>
         </div>
       </div>`;
@@ -1340,7 +1333,7 @@ async function toggleLearned(id) {
   try {
     const updated = await api('PATCH', `/words/${id}`, { learned: newVal });
     Object.assign(w, updated);
-    toast(bool(w.learned) ? 'Изучено! ✓' : 'Снято ✓');
+    toast(bool(w.learned) ? 'Изучено' : 'Снято');
     renderWords();
     renderSidebar();
   } catch(e) { toast('Ошибка: ' + e.message, 'err'); }
@@ -1386,7 +1379,7 @@ document.querySelectorAll('.filter-pill').forEach(pill => {
 function openWordModal(editId = null) {
   editingWordId = editId;
   const w = editId ? db.words.find(x => x.id === editId) : null;
-  document.getElementById('modal-word-title').textContent = editId ? '✎ Редактировать слово' : 'Добавить слово';
+  document.getElementById('modal-word-title').textContent = editId ? 'Редактировать слово' : 'Добавить слово';
   document.getElementById('inp-word').value = w?.word || '';
   document.getElementById('inp-translation').value = w?.translation || '';
   document.getElementById('inp-example').value = w?.example || '';
@@ -1537,7 +1530,7 @@ function renderTopics() {
       <div class="progress-bar"><div class="progress-fill" style="background:${t.color};width:${pct}%"></div></div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-ghost btn-sm" style="flex:1" data-open="${t.id}">Открыть</button>
-        <button class="btn btn-danger btn-sm btn-icon" data-del="${t.id}">✕</button>
+        <button class="btn btn-danger btn-sm btn-icon" data-del="${t.id}"></button>
       </div>
     </div>`;
   }).join('');
@@ -1638,8 +1631,8 @@ function renderQuizCard() {
         <div class="quiz-answer">${esc(w.translation||'—')}</div>
         ${w.example?`<div class="quiz-ex">"${esc(w.example)}"</div>`:''}
         <div class="quiz-btns">
-          <button class="btn btn-danger" id="btn-wrong">✗ Не знал</button>
-          <button class="btn btn-primary" style="background:var(--green)" id="btn-right">✓ Знал</button>
+          <button class="btn btn-danger" id="btn-wrong"> Не знал</button>
+          <button class="btn btn-primary" style="background:var(--green)" id="btn-right"> Знал</button>
         </div>
       `:`
         <p class="quiz-hint">Знаешь перевод?</p>
