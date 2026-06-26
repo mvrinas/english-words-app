@@ -543,13 +543,14 @@ function updateUserChip() {
   if (!currentUser) return;
   const name = currentUser.name || currentUser.email.split('@')[0];
   document.getElementById('user-avatar').textContent = name[0].toUpperCase();
-  document.getElementById('user-name-el').textContent = name;
+  const nameEl = document.getElementById('user-name-el');
+  nameEl.childNodes[0].textContent = name;
   const role = currentUser.role;
   const roleEl = document.getElementById('user-role-el');
   if (role === 'ceo') {
     roleEl.innerHTML = '<span class="ceo-badge">CEO</span>';
   } else {
-    roleEl.textContent = 'Пользователь';
+    roleEl.textContent = '';
   }
 }
 
