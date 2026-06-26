@@ -349,13 +349,14 @@ select.form-input{appearance:none;cursor:pointer}
 .bnav-item.has-badge .bnav-dot{display:block}
 
 @media(max-width:640px){
-  body{flex-direction:column}
-  .mobile-header{display:flex}
-  /* Сайдбар — выдвижной оверлей, не используется для навигации */
-  .sidebar{display:none}
+  body,#app-wrap{flex-direction:column}
+  .mobile-header{display:flex;width:100%}
+  .mobile-menu-btn{display:none}  /* прячем гамбургер — теперь bottom nav */
+  /* Сайдбар — скрыт на мобиле */
+  .sidebar{display:none!important}
   .sidebar-overlay.show{display:block}
   .bottom-nav{display:flex}
-  .main{padding:14px 12px 72px;min-height:0;overflow-y:auto}
+  .main{padding:14px 12px 72px;min-height:0;overflow-y:auto;width:100%;box-sizing:border-box}
   .page-header{flex-direction:column;gap:10px;align-items:stretch}
   .page-header .btn-primary{width:100%;justify-content:center}
   .stats-row{grid-template-columns:1fr 1fr}
@@ -483,7 +484,7 @@ select.form-input{appearance:none;cursor:pointer}
 <div id="app-wrap" style="display:none;width:100%;min-height:100vh">
 <div class="mobile-header">
   <span class="mobile-logo">WordsApp</span>
-  <button class="hamburger" id="btn-hamburger">≡</button>
+  <span id="mobile-user-level" style="font-size:11px;color:var(--text2);font-weight:500"></span>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
@@ -806,6 +807,9 @@ function updateUserChip() {
   } else {
     roleEl.textContent = '';
   }
+  // Mobile header level indicator
+  const mobileLevel = document.getElementById('mobile-user-level');
+  if (mobileLevel) mobileLevel.textContent = currentUser.level || '';
 }
 
 // ── API helper ─────────────────────────────────────────────────────────────────
