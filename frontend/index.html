@@ -492,9 +492,24 @@ function showAuthScreen() {
   document.getElementById('app-wrap').style.display = 'none';
 }
 
-function showApp() {
+async function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-wrap').style.display = '';
+  // Всегда получаем свежие данные пользователя с сервера
+  try {
+    const me = await fetch('/auth/me', {
+      headers: authToken ? {'Authorization': 'Bearer ' + authToken} : {}
+    });
+    if (me.ok) {
+      currentUser = await me.json();
+      localStorage.setItem('wapp_user', JSON.stringify(currentUser));
+    } else {
+      clearAuth(); showAuthScreen(); return;
+    }
+  } catch(e) {
+    // Offline? Используем кэш
+    if (!currentUser) { clearAuth(); showAuthScreen(); return; }
+  }
   updateUserChip();
   loadData();
   loadStreak();
@@ -567,8 +582,9 @@ async function loadData() {
       api('GET', '/topics'),
       api('GET', '/words')
     ]);
-    db.topics = topics;
-    db.words = words;
+    if (topics === null || words === null) return; // 401 уже обработан в api()
+    db.topics = Array.isArray(topics) ? topics : [];
+    db.words  = Array.isArray(words)  ? words  : [];
   } catch(e) {
     document.getElementById('words-list').innerHTML = `<div class="loading-screen" style="color:var(--red)">❌ Ошибка загрузки: ${e.message}</div>`;
     return;
