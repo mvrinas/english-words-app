@@ -639,11 +639,12 @@ function hideLevelPicker() {
 function showAuthScreen() {
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('app-wrap').style.display = 'none';
+  document.getElementById('level-screen').style.display = 'none';
 }
 
 async function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app-wrap').style.display = '';
+  document.getElementById('app-wrap').style.display = 'flex';
   // Всегда получаем свежие данные пользователя с сервера
   try {
     const me = await fetch('/auth/me', {
