@@ -210,24 +210,34 @@ select.form-input{appearance:none;cursor:pointer}
 .streak-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,.15);
   color:var(--yellow);border:1px solid rgba(245,158,11,.3);border-radius:20px;
   padding:4px 12px;font-size:13px;font-weight:600}
-.srs-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
-  padding:40px 32px;margin:16px 0}
-.srs-word{font-size:46px;font-weight:900;font-family:'Fraunces',serif;margin-bottom:8px;line-height:1.1;letter-spacing:-1px}
-.srs-topic{font-size:12px;color:var(--text2);margin-bottom:24px}
-.srs-translation{font-size:26px;font-weight:600;color:var(--accent2);margin:16px 0 6px}
-.srs-example{font-style:italic;color:var(--text2);font-size:13px;margin-bottom:24px}
-.srs-rating-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
-.srs-btn{border:none;border-radius:10px;padding:10px 6px;cursor:pointer;font-size:13px;
-  font-weight:600;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px}
-.srs-btn .srs-interval{font-size:10px;font-weight:400;opacity:.7}
-.srs-btn-again{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
-.srs-btn-again:hover{background:rgba(239,68,68,.3)}
-.srs-btn-hard{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
-.srs-btn-hard:hover{background:rgba(245,158,11,.3)}
-.srs-btn-good{background:rgba(99,102,241,.15);color:var(--accent2);border:1px solid rgba(99,102,241,.3)}
-.srs-btn-good:hover{background:rgba(99,102,241,.3)}
-.srs-btn-easy{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
-.srs-btn-easy:hover{background:rgba(16,185,129,.3)}
+.srs-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:40px 28px 36px;margin:8px 0;position:relative;overflow:visible;
+  cursor:grab;user-select:none;transform-origin:center 110%;will-change:transform;
+  box-shadow:0 4px 24px rgba(0,0,0,.09);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;min-height:280px}
+.srs-card.is-dragging{transition:none!important;cursor:grabbing}
+.srs-card.snap-back{transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.srs-card.fly-right{transition:transform .35s ease-in,opacity .35s ease-in}
+.srs-card.fly-left{transition:transform .35s ease-in,opacity .35s ease-in}
+.srs-word{font-size:46px;font-weight:900;font-family:'Fraunces',serif;margin-bottom:12px;
+  line-height:1.1;letter-spacing:-1px;z-index:1;text-align:center}
+.srs-translation{font-size:26px;font-weight:600;color:var(--accent2);margin:14px 0 6px;z-index:1}
+.srs-example{font-style:italic;color:var(--text2);font-size:13px;margin-bottom:8px;z-index:1}
+/* Свайп индикаторы */
+.swipe-hint{position:absolute;top:24px;padding:5px 14px;border-radius:8px;
+  font-size:17px;font-weight:800;font-family:'Fraunces',serif;
+  opacity:0;pointer-events:none;border:2.5px solid;transition:opacity .08s}
+.swipe-hint-left{left:16px;color:var(--red);border-color:var(--red);transform:rotate(-12deg)}
+.swipe-hint-right{right:16px;color:var(--green);border-color:var(--green);transform:rotate(12deg)}
+/* Кнопка показа перевода */
+.srs-reveal-btn{margin-top:20px;padding:13px 36px;border-radius:12px;
+  background:var(--text);color:var(--surface);border:none;font-size:15px;
+  font-weight:700;cursor:pointer;z-index:1;transition:transform .15s,opacity .15s;
+  font-family:'Fraunces',serif;letter-spacing:-.2px}
+.srs-reveal-btn:active{transform:scale(.96);opacity:.85}
+/* Подсказка внизу */
+.srs-swipe-tip{position:absolute;bottom:-32px;left:0;right:0;text-align:center;
+  font-size:11px;color:var(--text2);letter-spacing:.3px}
 .srs-done{text-align:center;padding:48px 20px}
 .srs-done-icon{font-size:64px;margin-bottom:16px}
 .srs-done-title{font-size:24px;font-weight:700;margin-bottom:8px}
@@ -284,8 +294,7 @@ select.form-input{appearance:none;cursor:pointer}
 
 @media(max-width:640px){
   .srs-word{font-size:32px}
-  .srs-rating-btns{grid-template-columns:repeat(2,1fr)}
-  .srs-card{padding:28px 20px}
+  .srs-card{padding:28px 20px;min-height:240px}
 }
 
 
@@ -1782,22 +1791,19 @@ function renderSRSCard() {
     <div class="srs-progress">
       <div class="srs-bar-wrap"><div class="srs-bar" style="width:${pct}%"></div></div>
       <span class="srs-count">${srsIdx}/${srsQueue.length}</span>
-      ${srsStreak > 0 ? `<span class="streak-badge"> ${srsStreak}</span>` : ''}
+      ${srsStreak > 0 ? `<span class="streak-badge">${srsStreak}</span>` : ''}
     </div>
-    <div class="srs-card">
+    <div class="srs-card" id="srs-swipe-card">
+      <div class="swipe-hint swipe-hint-left" id="sh-left">Учить</div>
+      <div class="swipe-hint swipe-hint-right" id="sh-right">Знаю</div>
       <div class="srs-word">${esc(w.word)}</div>
-      <div class="srs-topic">${w.topic_name ? esc(w.topic_name) : 'Без темы'}</div>
       ${srsRevealed ? `
         <div class="srs-translation">${esc(w.translation || '—')}</div>
         ${w.example ? `<div class="srs-example">"${esc(w.example)}"</div>` : ''}
-        <div class="srs-rating-btns">
-          <button class="srs-btn srs-btn-again" data-r="0">Снова</button>
-          <button class="srs-btn srs-btn-hard"  data-r="1">Сложно</button>
-          <button class="srs-btn srs-btn-good"  data-r="2">Хорошо</button>
-          <button class="srs-btn srs-btn-easy"  data-r="3">Легко</button>
-        </div>
+        <div class="srs-swipe-tip">Свайп вправо — знаю &nbsp;·&nbsp; влево — учить</div>
       ` : `
-        <button class="btn btn-primary" style="margin-top:8px" id="btn-srs-show">Показать перевод</button>
+        <button class="srs-reveal-btn" id="btn-srs-show">Показать перевод</button>
+        <div class="srs-swipe-tip">Нажми чтобы увидеть перевод</div>
       `}
     </div>
   </div>`;
@@ -1806,21 +1812,107 @@ function renderSRSCard() {
     srsRevealed = true; renderSRSCard();
   });
 
-  document.querySelectorAll('.srs-btn[data-r]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const rating = parseInt(btn.dataset.r);
-      try {
-        const res = await api('POST', `/words/${w.id}/review`, { rating });
-        srsStreak     = res.streak;
-        srsTodayCount = res.today_reviewed;
-        srsDailyGoal  = res.daily_goal;
-        // If "Again", push word back to end of queue
-        if (rating === 0) srsQueue.push(srsQueue[srsIdx]);
-        srsIdx++; srsRevealed = false;
-        renderSRSCard();
-        loadStreak();
-      } catch(e) { toast('Ошибка: ' + e.message, 'error'); }
-    });
+  // ── Swipe logic ──────────────────────────────────────────────────────────
+  const card = document.getElementById('srs-swipe-card');
+  if (!card) return;
+  const shL = document.getElementById('sh-left');
+  const shR = document.getElementById('sh-right');
+  let startX = 0, startY = 0, curX = 0, dragging = false, swipeDone = false;
+  const THRESHOLD = 90;
+
+  async function doRate(rating) {
+    if (swipeDone) return;
+    swipeDone = true;
+    try {
+      const res = await api('POST', `/words/${w.id}/review`, { rating });
+      srsStreak     = res.streak;
+      srsTodayCount = res.today_reviewed;
+      srsDailyGoal  = res.daily_goal;
+      if (rating === 0) srsQueue.push(srsQueue[srsIdx]);
+      srsIdx++; srsRevealed = false;
+      renderSRSCard();
+      loadStreak();
+    } catch(e) { toast('Ошибка: ' + e.message, 'error'); }
+  }
+
+  function applyDrag(dx) {
+    const rot = dx * 0.06;
+    card.style.transform = \`translateX(\${dx}px) rotate(\${rot}deg)\`;
+    const pctSwipe = Math.min(1, Math.abs(dx) / THRESHOLD);
+    if (dx > 0) {
+      shR.style.opacity = pctSwipe;
+      shL.style.opacity = 0;
+    } else {
+      shL.style.opacity = pctSwipe;
+      shR.style.opacity = 0;
+    }
+  }
+
+  function resetCard() {
+    card.classList.remove('is-dragging');
+    card.classList.add('snap-back');
+    card.style.transform = '';
+    shL.style.opacity = 0;
+    shR.style.opacity = 0;
+    setTimeout(() => card.classList.remove('snap-back'), 400);
+  }
+
+  function flyOff(right) {
+    card.classList.remove('is-dragging');
+    const dir = right ? 1 : -1;
+    card.classList.add(right ? 'fly-right' : 'fly-left');
+    card.style.transform = \`translateX(\${dir * window.innerWidth * 1.2}px) rotate(\${dir * 25}deg)\`;
+    card.style.opacity = '0';
+    setTimeout(() => doRate(right ? 2 : 0), 320);
+  }
+
+  // Touch
+  card.addEventListener('touchstart', e => {
+    if (swipeDone) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    curX = startX;
+    dragging = true;
+    card.classList.add('is-dragging');
+  }, {passive: true});
+
+  card.addEventListener('touchmove', e => {
+    if (!dragging || swipeDone) return;
+    curX = e.touches[0].clientX;
+    const dy = e.touches[0].clientY - startY;
+    const dx = curX - startX;
+    if (Math.abs(dy) > Math.abs(dx) + 10) return; // vertical scroll
+    applyDrag(dx);
+  }, {passive: true});
+
+  card.addEventListener('touchend', () => {
+    if (!dragging || swipeDone) return;
+    dragging = false;
+    const dx = curX - startX;
+    if (dx > THRESHOLD) flyOff(true);
+    else if (dx < -THRESHOLD) flyOff(false);
+    else resetCard();
+  });
+
+  // Mouse (desktop)
+  card.addEventListener('mousedown', e => {
+    if (swipeDone) return;
+    startX = e.clientX; curX = startX; dragging = true;
+    card.classList.add('is-dragging');
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging || swipeDone) return;
+    curX = e.clientX;
+    applyDrag(curX - startX);
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging || swipeDone) return;
+    dragging = false;
+    const dx = curX - startX;
+    if (dx > THRESHOLD) flyOff(true);
+    else if (dx < -THRESHOLD) flyOff(false);
+    else resetCard();
   });
 }
 
