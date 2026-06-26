@@ -6,6 +6,7 @@ from typing import Optional
 import os
 from sqlalchemy import text
 from deep_translator import GoogleTranslator, MyMemoryTranslator
+import requests as http_requests
 from database import init_db, get_conn, engine
 
 FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "index.html")
@@ -185,6 +186,27 @@ def translate(text_: str = "", text: str = ""):
     except Exception as e:
         raise HTTPException(500, f"Ошибка перевода: {e}")
 
+
+@app.get("/example")
+def get_example(word: str = ""):
+    if not word.strip():
+        return {"example": ""}
+    try:
+        r = http_requests.get(
+            f"https://api.dictionaryapi.dev/api/v2/entries/en/{word.strip()}",
+            timeout=5
+        )
+        if r.ok:
+            data = r.json()
+            for entry in data:
+                for meaning in entry.get("meanings", []):
+                    for defn in meaning.get("definitions", []):
+                        ex = defn.get("example", "")
+                        if ex:
+                            return {"example": ex}
+    except Exception:
+        pass
+    return {"example": ""}
 
 # ── Stats ──────────────────────────────────────────────────────────────────────
 

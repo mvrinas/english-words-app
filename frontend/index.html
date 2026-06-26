@@ -356,19 +356,13 @@ async function translate(text) {
   return null;
 }
 
-// ── Auto-fetch example sentence from Free Dictionary API ──────────────────────
+// ── Auto-fetch example sentence via backend ──────────────────────────────────
 async function fetchExample(word) {
   try {
-    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    const r = await fetch(`/example?word=${encodeURIComponent(word)}`);
     if (!r.ok) return null;
     const data = await r.json();
-    for (const entry of data) {
-      for (const meaning of (entry.meanings || [])) {
-        for (const def of (meaning.definitions || [])) {
-          if (def.example) return def.example;
-        }
-      }
-    }
+    return data.example || null;
   } catch(e) {}
   return null;
 }
