@@ -1398,12 +1398,11 @@ function renderSRSCard() {
       ${srsRevealed ? `
         <div class="srs-translation">${esc(w.translation || '—')}</div>
         ${w.example ? `<div class="srs-example">"${esc(w.example)}"</div>` : ''}
-        <div style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:8px;letter-spacing:.3px">Как хорошо ты знаешь это слово?</div>
         <div class="srs-rating-btns">
-          <button class="srs-btn srs-btn-again" data-r="0">Снова<span class="srs-interval">повтор: ${fmt(iAgain)}</span></button>
-          <button class="srs-btn srs-btn-hard"  data-r="1">Сложно<span class="srs-interval">повтор: ${fmt(iHard)}</span></button>
-          <button class="srs-btn srs-btn-good"  data-r="2">Хорошо<span class="srs-interval">повтор: ${fmt(iGood)}</span></button>
-          <button class="srs-btn srs-btn-easy"  data-r="3">Легко<span class="srs-interval">повтор: ${fmt(iEasy)}</span></button>
+          <button class="srs-btn srs-btn-again" data-r="0">Снова</button>
+          <button class="srs-btn srs-btn-hard"  data-r="1">Сложно</button>
+          <button class="srs-btn srs-btn-good"  data-r="2">Хорошо</button>
+          <button class="srs-btn srs-btn-easy"  data-r="3">Легко</button>
         </div>
       ` : `
         <button class="btn btn-primary" style="margin-top:8px" id="btn-srs-show">Показать перевод</button>
