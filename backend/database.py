@@ -76,6 +76,7 @@ def init_db():
                     password_hash TEXT NOT NULL,
                     name          TEXT,
                     role          TEXT NOT NULL DEFAULT 'user',
+                    level         TEXT DEFAULT NULL,
                     created_at    TEXT DEFAULT (CURRENT_TIMESTAMP)
                 )
             """))
@@ -87,6 +88,7 @@ def init_db():
                     password_hash TEXT NOT NULL,
                     name          TEXT,
                     role          TEXT NOT NULL DEFAULT 'user',
+                    level         TEXT DEFAULT NULL,
                     created_at    TEXT DEFAULT (datetime('now'))
                 )
             """))
@@ -128,6 +130,7 @@ def init_db():
                     srs_interval INTEGER DEFAULT 1,
                     ease_factor  REAL DEFAULT 2.5,
                     srs_reps     INTEGER DEFAULT 0,
+                    level        TEXT DEFAULT NULL,
                     created_at   TEXT DEFAULT (CURRENT_TIMESTAMP)
                 )
             """))
@@ -145,6 +148,7 @@ def init_db():
                     srs_interval INTEGER DEFAULT 1,
                     ease_factor  REAL DEFAULT 2.5,
                     srs_reps     INTEGER DEFAULT 0,
+                    level        TEXT DEFAULT NULL,
                     created_at   TEXT DEFAULT (datetime('now'))
                 )
             """))
@@ -164,6 +168,8 @@ def init_db():
         _add_col(conn, "words",  "srs_interval", "INTEGER DEFAULT 1")
         _add_col(conn, "words",  "ease_factor",  "REAL DEFAULT 2.5")
         _add_col(conn, "words",  "srs_reps",     "INTEGER DEFAULT 0")
+        _add_col(conn, "users",  "level",        "TEXT DEFAULT NULL")
+        _add_col(conn, "words",  "level",         "TEXT DEFAULT NULL")
         conn.commit()
 
         # ── CEO account ───────────────────────────────────────────────────────

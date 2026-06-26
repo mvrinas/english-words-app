@@ -6,6 +6,26 @@
 <title>English Words</title>
 <style>
 
+
+/* ── Level picker screen ─────────────────────────────────────────────────── */
+.level-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
+  justify-content:center;z-index:999;padding:20px;display:none}
+.level-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:36px 32px;width:100%;max-width:480px}
+.level-title{font-size:20px;font-weight:700;color:var(--text);text-align:center;margin-bottom:6px}
+.level-subtitle{font-size:13px;color:var(--text2);text-align:center;margin-bottom:24px}
+.level-grid{display:flex;flex-direction:column;gap:8px}
+.level-card{border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;
+  transition:all .15s;display:flex;align-items:flex-start;gap:12px}
+.level-card:hover{border-color:var(--accent);background:rgba(99,102,241,.06)}
+.level-card.selected{border-color:var(--accent);background:rgba(99,102,241,.1)}
+.level-code{font-size:16px;font-weight:700;color:var(--accent);min-width:28px;margin-top:1px}
+.level-info{}
+.level-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.level-desc{font-size:11px;color:var(--text2);line-height:1.4}
+.level-badge{font-size:10px;font-weight:600;color:var(--accent2);letter-spacing:.6px;
+  opacity:.8;margin-left:4px}
+
 /* ── Auth screen ─────────────────────────────────────────────────────────── */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
   justify-content:center;z-index:1000;padding:20px}
@@ -330,6 +350,60 @@ select.form-input{appearance:none;cursor:pointer}
   </div>
 </div>
 
+
+<!-- LEVEL PICKER SCREEN -->
+<div id="level-screen" class="level-screen">
+  <div class="level-box">
+    <div class="level-title">Выбери свой уровень</div>
+    <div class="level-subtitle">Это поможет подбирать подходящий контент. Можно изменить позже.</div>
+    <div class="level-grid">
+    <div class="level-card" data-level="A1">
+      <div class="level-code">A1</div>
+      <div class="level-info">
+        <div class="level-name">Beginner</div>
+        <div class="level-desc">Выживание: простые фразы, приветствия, базовые вопросы</div>
+      </div>
+    </div>
+    <div class="level-card" data-level="A2">
+      <div class="level-code">A2</div>
+      <div class="level-info">
+        <div class="level-name">Elementary</div>
+        <div class="level-desc">Бытовое общение: семья, покупки, знакомые ситуации</div>
+      </div>
+    </div>
+    <div class="level-card" data-level="B1">
+      <div class="level-code">B1</div>
+      <div class="level-info">
+        <div class="level-name">Intermediate</div>
+        <div class="level-desc">Самостоятельно: путешествия, описание событий, планы</div>
+      </div>
+    </div>
+    <div class="level-card" data-level="B2">
+      <div class="level-code">B2</div>
+      <div class="level-info">
+        <div class="level-name">Upper-Intermediate</div>
+        <div class="level-desc">Свободное общение с носителями, сложные тексты</div>
+      </div>
+    </div>
+    <div class="level-card" data-level="C1">
+      <div class="level-code">C1</div>
+      <div class="level-info">
+        <div class="level-name">Advanced</div>
+        <div class="level-desc">Беглая речь, академический и профессиональный уровень</div>
+      </div>
+    </div>
+    <div class="level-card" data-level="C2">
+      <div class="level-code">C2</div>
+      <div class="level-info">
+        <div class="level-name">Mastery</div>
+        <div class="level-desc">Уровень образованного носителя — любые темы и жанры</div>
+      </div>
+    </div>
+    </div>
+    <button class="btn btn-primary" id="btn-confirm-level" style="width:100%;margin-top:20px" disabled>Продолжить</button>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app-wrap" style="display:none;width:100%;min-height:100vh">
 <div class="mobile-header">
@@ -462,6 +536,18 @@ select.form-input{appearance:none;cursor:pointer}
       <label class="form-label">Тема</label>
       <select class="form-input" id="inp-topic-sel"></select>
     </div>
+    <div class="form-group">
+      <label class="form-label">Уровень слова</label>
+      <select class="form-input" id="inp-level">
+        <option value="">Не указан</option>
+        <option value="A1">A1 — Beginner</option>
+        <option value="A2">A2 — Elementary</option>
+        <option value="B1">B1 — Intermediate</option>
+        <option value="B2">B2 — Upper-Intermediate</option>
+        <option value="C1">C1 — Advanced</option>
+        <option value="C2">C2 — Mastery</option>
+      </select>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="btn-save-word">Сохранить</button>
       <button class="btn btn-ghost" id="btn-cancel-word">Отмена</button>
@@ -511,6 +597,53 @@ function clearAuth() {
   localStorage.removeItem('wapp_user');
 }
 
+function showLevelPicker() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('level-screen').style.display = 'flex';
+}
+
+function hideLevelPicker() {
+  document.getElementById('level-screen').style.display = 'none';
+}
+
+// Level picker logic
+document.querySelectorAll('.level-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('btn-confirm-level').disabled = false;
+    document.getElementById('btn-confirm-level').dataset.level = card.dataset.level;
+  });
+});
+
+document.querySelectorAll('.level-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('btn-confirm-level').disabled = false;
+    document.getElementById('btn-confirm-level').dataset.level = card.dataset.level;
+  });
+});
+
+document.getElementById('btn-confirm-level').addEventListener('click', async () => {
+  const lvl = document.getElementById('btn-confirm-level').dataset.level;
+  if (!lvl) return;
+  await api('PATCH', '/auth/level', {level: lvl});
+  if (currentUser) currentUser.level = lvl;
+  localStorage.setItem('wapp_user', JSON.stringify(currentUser));
+  hideLevelPicker();
+  await showApp();
+});
+
+function showLevelPicker() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('level-screen').style.display = 'flex';
+}
+
+function hideLevelPicker() {
+  document.getElementById('level-screen').style.display = 'none';
+}
+
 function showAuthScreen() {
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('app-wrap').style.display = 'none';
@@ -545,6 +678,8 @@ function updateUserChip() {
   document.getElementById('user-avatar').textContent = name[0].toUpperCase();
   const nameEl = document.getElementById('user-name-el');
   nameEl.childNodes[0].textContent = name;
+  const lvlEl = document.getElementById('user-level-el');
+  if (lvlEl) lvlEl.textContent = currentUser.level ? currentUser.level + ' · ' + {A1:'Beginner',A2:'Elementary',B1:'Intermediate',B2:'Upper-Intermediate',C1:'Advanced',C2:'Mastery'}[currentUser.level] : '';
   const role = currentUser.role;
   const roleEl = document.getElementById('user-role-el');
   if (role === 'ceo') {
@@ -868,6 +1003,7 @@ function openWordModal(editId = null) {
   document.getElementById('inp-word').value = w?.word || '';
   document.getElementById('inp-translation').value = w?.translation || '';
   document.getElementById('inp-example').value = w?.example || '';
+  document.getElementById('inp-level').value = w?.level || '';
   document.getElementById('translate-hint').textContent = '';
   document.getElementById('translate-hint').className = 'translate-hint';
 
@@ -927,6 +1063,7 @@ document.getElementById('btn-save-word').onclick = async () => {
     translation: document.getElementById('inp-translation').value.trim() || null,
     example: document.getElementById('inp-example').value.trim() || null,
     topic_id: topicVal ? parseInt(topicVal) : null,
+    level: document.getElementById('inp-level').value || null,
   };
   try {
     if (editingWordId) {
@@ -1335,7 +1472,11 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
     const data = await res.json();
     saveAuth(data.token, data.user);
-    showApp();
+    if (data.needs_level) {
+      showLevelPicker();
+    } else {
+      showApp();
+    }
   } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
 });
 

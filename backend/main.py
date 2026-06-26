@@ -62,6 +62,7 @@ class WordIn(BaseModel):
     example: Optional[str] = None
     topic_id: Optional[int] = None
     learned: Optional[bool] = False
+    level: Optional[str] = None
 
 class WordUpdate(BaseModel):
     word: Optional[str] = None
@@ -69,6 +70,7 @@ class WordUpdate(BaseModel):
     example: Optional[str] = None
     topic_id: Optional[int] = None
     learned: Optional[bool] = None
+    level: Optional[str] = None
 
 class ReviewIn(BaseModel):
     rating: int
@@ -113,35 +115,45 @@ def register(body: RegisterIn):
                 VALUES (:e, :ph, :n, 'user')
             """), {"e": body.email.lower(), "ph": ph, "n": body.name or body.email.split("@")[0]})
             uid = conn.execute(text("SELECT last_insert_rowid()")).scalar()
-            user = {"id": uid, "email": body.email.lower(), "name": body.name, "role": "user"}
+            user = {"id": uid, "email": body.email.lower(), "name": body.name, "role": "user", "level": None}
         conn.commit()
         _create_default_topics(conn, user["id"])
     token = make_token(user["id"], user["email"], user["role"])
-    return {"token": token, "user": {k: user[k] for k in ("id","email","name","role")}}
+    return {"token": token, "user": {k: user[k] for k in ("id","email","name","role","level") if k in user}, "needs_level": True}
 
 
 @app.post("/auth/login")
 def login(body: LoginIn):
     with get_conn() as conn:
         row = conn.execute(
-            text("SELECT id, email, name, role, password_hash FROM users WHERE email=:e"),
+            text("SELECT id, email, name, role, level, password_hash FROM users WHERE email=:e"),
             {"e": body.email.lower()}
         ).mappings().one_or_none()
     if not row or not check_pw(body.password, row["password_hash"]):
         raise HTTPException(401, "Неверный email или пароль")
     token = make_token(row["id"], row["email"], row["role"])
-    return {"token": token, "user": {"id": row["id"], "email": row["email"], "name": row["name"], "role": row["role"]}}
+    return {"token": token, "user": {"id": row["id"], "email": row["email"], "name": row["name"], "role": row["role"], "level": row["level"]}}
 
 
 @app.get("/auth/me")
 def me(u=Depends(get_user)):
     with get_conn() as conn:
         row = conn.execute(
-            text("SELECT id, email, name, role, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
+            text("SELECT id, email, name, role, level, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
         ).mappings().one_or_none()
     if not row:
         raise HTTPException(404, "Not found")
     return dict(row)
+
+@app.patch("/auth/level")
+def set_level(body: dict, u=Depends(get_user)):
+    lvl = body.get("level", "").strip().upper()
+    if lvl not in ("A1","A2","B1","B2","C1","C2"):
+        raise HTTPException(400, "Неверный уровень")
+    with get_conn() as conn:
+        conn.execute(text("UPDATE users SET level=:l WHERE id=:id"), {"l": lvl, "id": u["sub"]})
+        conn.commit()
+    return {"level": lvl}
 
 
 # ── Topics ─────────────────────────────────────────────────────────────────────
@@ -207,11 +219,11 @@ def list_words(topic_id: Optional[int]=None, learned: Optional[bool]=None, q: Op
 def create_word(body: WordIn, u=Depends(get_user)):
     with get_conn() as conn:
         row = conn.execute(text("""
-            INSERT INTO words (user_id, word, translation, example, topic_id, learned)
-            VALUES (:uid,:word,:translation,:example,:topic_id,:learned) RETURNING *
+            INSERT INTO words (user_id, word, translation, example, topic_id, learned, level)
+            VALUES (:uid,:word,:translation,:example,:topic_id,:learned,:level) RETURNING *
         """), {"uid": u["sub"], "word": body.word, "translation": body.translation,
                "example": body.example, "topic_id": body.topic_id,
-               "learned": 1 if body.learned else 0}).mappings().one()
+               "learned": 1 if body.learned else 0, "level": body.level}).mappings().one()
         conn.commit()
     return dict(row)
 
