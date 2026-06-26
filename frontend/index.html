@@ -1940,8 +1940,8 @@ function renderGrammarContent(catKey) {
         `<div class="grammar-ex">${en}<div class="grammar-ex-ru">${ru}</div></div>`
       ).join('');
       html += `
-        <div class="grammar-card word-card">
-          <div class="grammar-card-head" onclick="toggleGrammarCard(this.parentElement)">
+        <div class="grammar-card word-card" onclick="toggleGrammarCard(this)">
+          <div class="grammar-card-head">
             <div class="grammar-card-tag">${card.tag}</div>
             <div class="grammar-card-name">${card.name}</div>
           </div>
