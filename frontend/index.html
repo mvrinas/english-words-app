@@ -45,8 +45,8 @@
 .grammar-card-head{padding:18px 20px 14px}
 .grammar-card-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
   color:var(--text2);margin-bottom:8px}
-.grammar-card-name{font-size:19px;font-weight:300;font-family:'Fraunces',serif;
-  font-style:italic;color:var(--text);letter-spacing:-.3px;margin-bottom:3px}
+.grammar-card-name{font-size:19px;font-weight:800;font-family:'Fraunces',serif;
+  font-style:normal;color:var(--text);letter-spacing:-.5px;margin-bottom:3px}
 .grammar-card-ru{font-size:12px;color:var(--text2)}
 .grammar-card-body{padding:14px 20px 18px;border-top:1px solid var(--border);display:none}
 .grammar-card.open .grammar-card-body{display:block}
@@ -65,7 +65,7 @@
   justify-content:center;z-index:1000;padding:20px}
 .auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
   padding:36px 32px;width:100%;max-width:380px}
-.auth-logo{font-size:22px;font-weight:700;color:var(--accent2);text-align:center;margin-bottom:24px}
+.auth-logo{font-size:26px;font-weight:800;font-family:'Fraunces',serif;color:var(--text);text-align:center;margin-bottom:24px;letter-spacing:-.5px}
 .auth-tabs{display:flex;background:var(--surface2);border-radius:10px;padding:3px;margin-bottom:24px}
 .auth-tab{flex:1;padding:8px;border:none;background:none;color:var(--text2);border-radius:8px;
   cursor:pointer;font-size:14px;font-weight:500;transition:all .15s}
@@ -93,7 +93,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,Bl
 .sidebar{width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;min-height:100vh;font-size:13px}
 .main{flex:1;padding:28px 32px;overflow-y:auto}
 
-.logo{padding:22px 20px 18px;font-size:20px;font-weight:300;color:var(--text);font-family:'Fraunces',serif;font-style:italic;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);letter-spacing:-.5px}
+.logo{padding:22px 20px 18px;font-size:20px;font-weight:800;color:var(--text);font-family:'Fraunces',serif;font-style:normal;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);letter-spacing:-.5px}
 .nav-section{padding:14px 20px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text2)}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--text2);font-size:14px;transition:all .15s;border:none;background:none;width:100%;text-align:left}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
@@ -117,7 +117,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,Bl
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
-.page-title{font-size:28px;font-weight:300;font-family:'Fraunces',serif;font-style:italic;letter-spacing:-.5px;color:var(--text)}
+.page-title{font-size:28px;font-weight:800;font-family:'Fraunces',serif;font-style:normal;letter-spacing:-.8px;color:var(--text)}
 .page-sub{font-size:13px;color:var(--text2);margin-top:3px}
 
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
@@ -144,7 +144,7 @@ select.form-input{appearance:none;cursor:pointer}
 .word-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px)}
 .word-card.learned{opacity:.45}
 .word-main{flex:1;min-width:0}
-.word-text{font-size:17px;font-weight:400;font-family:'Fraunces',serif;letter-spacing:-.2px}
+.word-text{font-size:17px;font-weight:700;font-family:'Fraunces',serif;letter-spacing:-.3px}
 .word-tr{font-size:13px;color:var(--text2);margin-top:2px}
 .word-ex{font-size:12px;color:var(--text2);margin-top:5px;font-style:italic;border-left:2px solid var(--border);padding-left:8px}
 .word-badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;flex-shrink:0;white-space:nowrap}
@@ -173,7 +173,7 @@ select.form-input{appearance:none;cursor:pointer}
 .modal-actions .btn{flex:1}
 
 .quiz-wrap{max-width:480px;margin:0 auto;text-align:center}
-.quiz-word{font-size:42px;font-weight:700;margin:28px 0 10px}
+.quiz-word{font-size:42px;font-weight:900;font-family:'Fraunces',serif;margin:28px 0 10px;letter-spacing:-.8px}
 .quiz-hint{color:var(--text2);font-size:14px;margin-bottom:28px}
 .quiz-answer{font-size:22px;color:var(--accent2);font-weight:600;padding:12px}
 .quiz-ex{font-style:italic;color:var(--text2);font-size:13px;margin-top:6px}
@@ -196,7 +196,7 @@ select.form-input{appearance:none;cursor:pointer}
 .loading-screen{display:flex;align-items:center;justify-content:center;min-height:200px;color:var(--text2);font-size:15px;gap:10px}
 
 .mobile-header{display:none;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-shrink:0}
-.mobile-logo{font-size:16px;font-weight:700;color:var(--accent2)}
+.mobile-logo{font-size:18px;font-weight:800;color:var(--text);font-family:'Fraunces',serif;letter-spacing:-.4px}
 .hamburger{background:none;border:none;cursor:pointer;color:var(--text);font-size:24px;padding:4px;line-height:1;display:flex;align-items:center}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:190}
 
@@ -212,7 +212,7 @@ select.form-input{appearance:none;cursor:pointer}
   padding:4px 12px;font-size:13px;font-weight:600}
 .srs-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
   padding:40px 32px;margin:16px 0}
-.srs-word{font-size:46px;font-weight:700;margin-bottom:8px;line-height:1.1}
+.srs-word{font-size:46px;font-weight:900;font-family:'Fraunces',serif;margin-bottom:8px;line-height:1.1;letter-spacing:-1px}
 .srs-topic{font-size:12px;color:var(--text2);margin-bottom:24px}
 .srs-translation{font-size:26px;font-weight:600;color:var(--accent2);margin:16px 0 6px}
 .srs-example{font-style:italic;color:var(--text2);font-size:13px;margin-bottom:24px}
@@ -431,9 +431,9 @@ select.form-input{appearance:none;cursor:pointer}
   border-radius:4px;opacity:.9}
 
 /* Слово внутри папки */
-.wg-word{font-family:'Fraunces',serif;font-style:italic;font-weight:300;
+.wg-word{font-family:'Fraunces',serif;font-style:normal;font-weight:800;
   font-size:18px;color:#1c1b18;text-align:center;line-height:1.2;
-  letter-spacing:-.3px;padding:0 10px;z-index:1;
+  letter-spacing:-.5px;padding:0 10px;z-index:1;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Подпись под карточкой */
@@ -461,8 +461,8 @@ select.form-input{appearance:none;cursor:pointer}
 
 
 /* ── Dashboard ────────────────────────────────────────────────────────────── */
-.dash-greeting{font-size:22px;font-weight:300;font-family:'Fraunces',serif;
-  font-style:italic;color:var(--text);margin-bottom:20px;letter-spacing:-.3px}
+.dash-greeting{font-size:24px;font-weight:800;font-family:'Fraunces',serif;
+  font-style:normal;color:var(--text);margin-bottom:20px;letter-spacing:-.6px}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .dash-card{background:var(--surface);border:1px solid var(--border);
   border-radius:16px;padding:18px 16px;display:flex;flex-direction:column;gap:6px}
@@ -471,7 +471,7 @@ select.form-input{appearance:none;cursor:pointer}
 .dash-label{font-size:11px;font-weight:600;text-transform:uppercase;
   letter-spacing:.8px;color:var(--text2);opacity:.7}
 .dash-card.accent .dash-label{color:rgba(255,255,255,.6);opacity:1}
-.dash-value{font-size:32px;font-weight:700;color:var(--text);line-height:1}
+.dash-value{font-size:36px;font-weight:900;font-family:'Fraunces',serif;color:var(--text);line-height:1;letter-spacing:-.5px}
 .dash-card.accent .dash-value{color:#fff}
 .dash-sub{font-size:12px;color:var(--text2)}
 .dash-card.accent .dash-sub{color:rgba(255,255,255,.6)}
@@ -511,7 +511,7 @@ select.form-input{appearance:none;cursor:pointer}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,600;1,9..144,700;1,9..144,800;1,9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
