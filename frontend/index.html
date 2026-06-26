@@ -356,14 +356,21 @@ async function translate(text) {
   return null;
 }
 
-// ── Auto-fetch example sentence via backend ──────────────────────────────────
+// ── Auto-fetch example sentence from Free Dictionary API ─────────────────────
 async function fetchExample(word) {
   try {
-    const r = await fetch(`/example?word=${encodeURIComponent(word)}`);
+    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim())}`);
     if (!r.ok) return null;
     const data = await r.json();
-    return data.example || null;
-  } catch(e) {}
+    if (!Array.isArray(data)) return null;
+    for (const entry of data) {
+      for (const meaning of (entry.meanings || [])) {
+        for (const def of (meaning.definitions || [])) {
+          if (def.example && def.example.trim()) return def.example.trim();
+        }
+      }
+    }
+  } catch(e) { console.warn('fetchExample error:', e); }
   return null;
 }
 
@@ -544,12 +551,15 @@ document.getElementById('inp-word').addEventListener('input', e => {
     if (result) {
       document.getElementById('inp-translation').value = result;
       hint.className = 'translate-hint';
-      hint.textContent = '✨ Переведено автоматически';
+      hint.textContent = example
+        ? '✨ Перевод и пример найдены автоматически'
+        : '✨ Переведено автоматически';
     } else {
       hint.textContent = '';
     }
-    if (example && !document.getElementById('inp-example').value.trim()) {
-      document.getElementById('inp-example').value = example;
+    const exInp = document.getElementById('inp-example');
+    if (example && !exInp.value.trim()) {
+      exInp.value = example;
     }
   }, 700);
 });
