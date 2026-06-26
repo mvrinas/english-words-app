@@ -397,7 +397,7 @@ select.form-input{appearance:none;cursor:pointer}
 
 
 /* ── Words grid view ──────────────────────────────────────────────────────── */
-.words-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:4px}
+.words-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;padding:0 2px}
 
 /* Карточка-папка */
 .wg-card{cursor:pointer;opacity:0;transform:translateY(20px);
@@ -408,27 +408,27 @@ select.form-input{appearance:none;cursor:pointer}
 
 /* Папка */
 .wg-folder{position:relative;border-radius:20px;background:#ebebea;
-  width:100%;height:130px;overflow:visible;flex-shrink:0;
+  width:100%;aspect-ratio:1/1;overflow:hidden;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 8px rgba(0,0,0,.07);
   transition:transform .2s,box-shadow .2s}
 .wg-card:hover .wg-folder{box-shadow:0 6px 20px rgba(0,0,0,.12);transform:translateY(-2px)}
 
 /* Папка-вкладка сверху */
-.wg-folder::before{content:'';position:absolute;top:-10px;left:16px;
-  width:50%;height:14px;border-radius:6px 6px 0 0;
-  background:inherit;filter:brightness(.92)}
+.wg-folder::before{content:'';position:absolute;top:0;left:14px;
+  width:44%;height:10px;border-radius:0 0 6px 6px;
+  background:rgba(0,0,0,.06)}
 
 /* Статус-бейдж (сверху слева) */
-.wg-status{position:absolute;top:-6px;left:14px;width:20px;height:20px;
+.wg-status{position:absolute;top:10px;left:12px;width:18px;height:18px;
   border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;border:2px solid #ebebea;z-index:2}
+  font-size:9px;font-weight:700;z-index:2}
 .wg-status.learned{background:#16a34a;color:#fff}
-.wg-status.new-word{background:#e5e4e0;color:#aaa}
+.wg-status.new-word{background:rgba(0,0,0,.08);color:transparent}
 
 /* Акцент-метка (правый верх папки) */
-.wg-accent{position:absolute;top:-6px;right:16px;width:14px;height:24px;
-  border-radius:3px;opacity:.85}
+.wg-accent{position:absolute;top:8px;right:12px;width:12px;height:28px;
+  border-radius:4px;opacity:.9}
 
 /* Слово внутри папки */
 .wg-word{font-family:'Fraunces',serif;font-style:italic;font-weight:300;
@@ -455,8 +455,7 @@ select.form-input{appearance:none;cursor:pointer}
 /* View toggle — hide on mobile */
 @media(max-width:640px){
   .view-toggle{display:none}
-  .words-grid{gap:10px}
-  .wg-folder{height:110px}
+  .words-grid{gap:10px;padding:0 1px}
   .wg-word{font-size:15px}
 }
 
