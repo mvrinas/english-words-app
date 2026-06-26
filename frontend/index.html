@@ -610,7 +610,14 @@ function hideLevelPicker() {
 // Level picker logic
 document.querySelectorAll('.level-card').forEach(card => {
   card.addEventListener('click', () => {
-    document.getElementById('btn-confirm-level').addEventListener('click', async () => {
+    document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('btn-confirm-level').disabled = false;
+    document.getElementById('btn-confirm-level').dataset.level = card.dataset.level;
+  });
+});
+
+document.getElementById('btn-confirm-level').addEventListener('click', async () => {
   const lvl = document.getElementById('btn-confirm-level').dataset.level;
   if (!lvl) return;
   await api('PATCH', '/auth/level', {level: lvl});
