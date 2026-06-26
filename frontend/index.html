@@ -345,13 +345,13 @@ async function loadData() {
   renderWords();
 }
 
-// ── Auto-translate via MyMemory ────────────────────────────────────────────────
+// ── Auto-translate via backend ────────────────────────────────────────────────
 async function translate(text) {
   try {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ru`;
-    const r = await fetch(url);
+    const r = await fetch(`/translate?text=${encodeURIComponent(text)}`);
+    if (!r.ok) return null;
     const data = await r.json();
-    if (data.responseStatus === 200) return data.responseData.translatedText;
+    return data.translation || null;
   } catch(e) {}
   return null;
 }
