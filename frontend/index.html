@@ -307,6 +307,32 @@ select.form-input{appearance:none;cursor:pointer}
 </head>
 <body>
 
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">🇬🇧 WordsApp</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login">Войти</button>
+      <button class="auth-tab" id="tab-register">Регистрация</button>
+    </div>
+    <div id="form-login" class="auth-form">
+      <input class="form-input" type="email" id="login-email" placeholder="Email"/>
+      <input class="form-input" type="password" id="login-password" placeholder="Пароль"/>
+      <button class="btn btn-primary" id="btn-login" style="width:100%">Войти →</button>
+      <div class="auth-error" id="login-error"></div>
+    </div>
+    <div id="form-register" class="auth-form" style="display:none">
+      <input class="form-input" type="text" id="reg-name" placeholder="Имя (необязательно)"/>
+      <input class="form-input" type="email" id="reg-email" placeholder="Email"/>
+      <input class="form-input" type="password" id="reg-password" placeholder="Пароль (мин. 6 символов)"/>
+      <button class="btn btn-primary" id="btn-register" style="width:100%">Создать аккаунт →</button>
+      <div class="auth-error" id="reg-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrap" style="display:none;width:100%;min-height:100vh;display:none">
 <div class="mobile-header">
   <span class="mobile-logo">🇬🇧 WordsApp</span>
   <button class="hamburger" id="btn-hamburger">☰</button>
