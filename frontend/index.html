@@ -26,6 +26,29 @@
 .level-badge{font-size:10px;font-weight:600;color:var(--accent2);letter-spacing:.6px;
   opacity:.8;margin-left:4px}
 
+
+/* ── Grammar page ─────────────────────────────────────────────────────────── */
+.grammar-intro{font-size:15px;color:var(--text2);margin-bottom:28px;max-width:560px;line-height:1.6}
+.tense-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.tense-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:24px;transition:box-shadow .2s,transform .2s}
+.tense-block:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+.tense-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text2);margin-bottom:10px}
+.tense-name{font-size:20px;font-weight:300;font-family:'Fraunces',serif;font-style:italic;
+  color:var(--text);margin-bottom:4px;letter-spacing:-.3px}
+.tense-ru{font-size:12px;color:var(--text2);margin-bottom:14px}
+.tense-formula{background:var(--surface2);border-radius:8px;padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);
+  margin-bottom:14px;border-left:3px solid var(--border)}
+.tense-when{font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5}
+.tense-examples{display:flex;flex-direction:column;gap:6px}
+.tense-ex{font-size:13px;color:var(--text);font-style:italic;padding:6px 10px;
+  background:var(--surface2);border-radius:6px}
+.tense-ex span{color:var(--text2);font-style:normal;font-size:11px;display:block;margin-top:2px}
+.tense-section-title{font-size:13px;font-weight:600;color:var(--text2);
+  text-transform:uppercase;letter-spacing:.8px;margin:24px 0 12px}
+
 /* ── Auth screen ─────────────────────────────────────────────────────────── */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
   justify-content:center;z-index:1000;padding:20px}
@@ -421,7 +444,8 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="nav-section">Навигация</div>
   <button class="nav-item active" data-page="words">Все слова</button>
   <button class="nav-item" data-page="quiz">Тест</button>
-  <button class="nav-item" data-page="topics">Темы</button>
+  <button class="nav-item" data-page="topics">Карточки</button>
+  <button class="nav-item" data-page="grammar">Грамматика</button>
   <button class="nav-item" data-page="srs" id="nav-srs">Повторение <span class="due-badge hidden" id="due-badge">0</span></button>
   <button class="nav-item" data-page="stats">Статистика</button>
   <div class="nav-divider"></div>
@@ -491,7 +515,7 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="page" id="page-topics">
     <div class="page-header">
       <div>
-        <div class="page-title">Темы</div>
+        <div class="page-title">Карточки</div>
         <div class="page-sub" id="topics-sub"></div>
       </div>
       <button class="btn btn-primary" id="btn-add-topic-main">Новая тема</button>
@@ -511,6 +535,128 @@ select.form-input{appearance:none;cursor:pointer}
   </div>
 
   <!-- STATS -->
+
+  <div class="page" id="page-grammar">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Грамматика</div>
+        <div class="page-sub">Английские времена — с нуля</div>
+      </div>
+    </div>
+    <p class="grammar-intro">Английский язык имеет 12 основных времён. Начнём с самых важных — тех, которые нужны в 90% ситуаций.</p>
+
+    <div class="tense-section-title">Настоящее время</div>
+    <div class="tense-grid">
+
+      <div class="tense-block">
+        <div class="tense-tag">Present Simple</div>
+        <div class="tense-name">Настоящее простое</div>
+        <div class="tense-ru">Постоянные действия, привычки, факты</div>
+        <div class="tense-formula">I/You/We/They + V<br>He/She/It + V+s</div>
+        <div class="tense-when">Когда использовать: каждый день / всегда / обычно / никогда</div>
+        <div class="tense-examples">
+          <div class="tense-ex">She works every day.<span>Она работает каждый день.</span></div>
+          <div class="tense-ex">The sun rises in the east.<span>Солнце встаёт на востоке.</span></div>
+        </div>
+      </div>
+
+      <div class="tense-block">
+        <div class="tense-tag">Present Continuous</div>
+        <div class="tense-name">Настоящее длительное</div>
+        <div class="tense-ru">Действие происходит прямо сейчас</div>
+        <div class="tense-formula">I am + V-ing<br>He/She/It is + V-ing<br>We/They are + V-ing</div>
+        <div class="tense-when">Когда использовать: сейчас / в данный момент / смотри!</div>
+        <div class="tense-examples">
+          <div class="tense-ex">I am reading a book.<span>Я читаю книгу (прямо сейчас).</span></div>
+          <div class="tense-ex">They are playing outside.<span>Они играют на улице.</span></div>
+        </div>
+      </div>
+
+      <div class="tense-block">
+        <div class="tense-tag">Present Perfect</div>
+        <div class="tense-name">Настоящее совершённое</div>
+        <div class="tense-ru">Прошлое действие, важное сейчас</div>
+        <div class="tense-formula">I/You/We/They have + V3<br>He/She/It has + V3</div>
+        <div class="tense-when">Когда использовать: уже / только что / никогда / когда-либо</div>
+        <div class="tense-examples">
+          <div class="tense-ex">I have just eaten.<span>Я только что поел.</span></div>
+          <div class="tense-ex">Have you ever been to Paris?<span>Ты когда-нибудь был в Париже?</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tense-section-title">Прошедшее время</div>
+    <div class="tense-grid">
+
+      <div class="tense-block">
+        <div class="tense-tag">Past Simple</div>
+        <div class="tense-name">Прошедшее простое</div>
+        <div class="tense-ru">Завершённое действие в прошлом</div>
+        <div class="tense-formula">I/You/He/She + V2 (или V+ed)</div>
+        <div class="tense-when">Когда использовать: вчера / в 2020 / когда я был ребёнком</div>
+        <div class="tense-examples">
+          <div class="tense-ex">She called me yesterday.<span>Она позвонила мне вчера.</span></div>
+          <div class="tense-ex">We went to the beach last summer.<span>Мы ездили на пляж прошлым летом.</span></div>
+        </div>
+      </div>
+
+      <div class="tense-block">
+        <div class="tense-tag">Past Continuous</div>
+        <div class="tense-name">Прошедшее длительное</div>
+        <div class="tense-ru">Действие было в процессе в прошлом</div>
+        <div class="tense-formula">I/He/She was + V-ing<br>We/They were + V-ing</div>
+        <div class="tense-when">Когда использовать: я делал что-то, когда произошло другое</div>
+        <div class="tense-examples">
+          <div class="tense-ex">I was sleeping when he called.<span>Я спал, когда он позвонил.</span></div>
+          <div class="tense-ex">They were watching TV all evening.<span>Они смотрели телевизор весь вечер.</span></div>
+        </div>
+      </div>
+
+      <div class="tense-block">
+        <div class="tense-tag">Past Perfect</div>
+        <div class="tense-name">Прошедшее совершённое</div>
+        <div class="tense-ru">Действие завершилось до другого прошлого</div>
+        <div class="tense-formula">I/He/She/They had + V3</div>
+        <div class="tense-when">Когда использовать: к тому времени / уже / до того как</div>
+        <div class="tense-examples">
+          <div class="tense-ex">She had left before I arrived.<span>Она ушла до того, как я пришёл.</span></div>
+          <div class="tense-ex">I had never seen snow before.<span>Я никогда раньше не видел снег.</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tense-section-title">Будущее время</div>
+    <div class="tense-grid">
+
+      <div class="tense-block">
+        <div class="tense-tag">Future Simple</div>
+        <div class="tense-name">Будущее простое</div>
+        <div class="tense-ru">Спонтанное решение или предсказание</div>
+        <div class="tense-formula">I/You/He/She + will + V</div>
+        <div class="tense-when">Когда использовать: я думаю / наверное / решил прямо сейчас</div>
+        <div class="tense-examples">
+          <div class="tense-ex">I will call you tomorrow.<span>Я позвоню тебе завтра.</span></div>
+          <div class="tense-ex">It will be sunny.<span>Будет солнечно.</span></div>
+        </div>
+      </div>
+
+      <div class="tense-block">
+        <div class="tense-tag">Going to</div>
+        <div class="tense-name">Планируемое будущее</div>
+        <div class="tense-ru">Заранее запланированное действие</div>
+        <div class="tense-formula">I am going to + V<br>He/She is going to + V</div>
+        <div class="tense-when">Когда использовать: я планирую / собираюсь / уже решил</div>
+        <div class="tense-examples">
+          <div class="tense-ex">I am going to study abroad.<span>Я собираюсь учиться за рубежом.</span></div>
+          <div class="tense-ex">She is going to have a baby.<span>Она ждёт ребёнка.</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="page" id="page-stats">
     <div class="page-header"><div class="page-title">Статистика</div></div>
     <div id="stats-content"></div>
@@ -792,6 +938,7 @@ function showPage(id) {
   if (id === 'topics') renderTopics();
   if (id === 'stats')  renderStats();
   if (id === 'srs')    renderSRS();
+  if (id === 'grammar') {} // static content
 }
 
 document.querySelectorAll('.nav-item').forEach(b => {
