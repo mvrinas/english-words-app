@@ -331,13 +331,31 @@ select.form-input{appearance:none;cursor:pointer}
   .wcd-body{padding:0 18px 18px}
 }
 
+/* ── Bottom nav (mobile only) ─────────────────────────────────────────────── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  z-index:200;padding:0 0 env(safe-area-inset-bottom)}
+.bottom-nav-inner{display:flex;align-items:stretch}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px 6px;border:none;background:none;color:var(--text2);font-size:9px;
+  font-weight:500;letter-spacing:.3px;cursor:pointer;gap:3px;min-height:52px;
+  position:relative;transition:color .15s}
+.bnav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.bnav-item.active{color:var(--text)}
+.bnav-item .bnav-dot{position:absolute;top:7px;right:calc(50% - 14px);
+  width:7px;height:7px;background:var(--red);border-radius:50%;
+  border:2px solid var(--surface);display:none}
+.bnav-item.has-badge .bnav-dot{display:block}
+
 @media(max-width:640px){
   body{flex-direction:column}
   .mobile-header{display:flex}
-  .sidebar{position:fixed;left:-270px;top:0;height:100vh;z-index:200;transition:left .25s ease;width:260px;overflow-y:auto;min-height:unset}
-  .sidebar.open{left:0}
+  /* Сайдбар — выдвижной оверлей, не используется для навигации */
+  .sidebar{display:none}
   .sidebar-overlay.show{display:block}
-  .main{padding:14px 12px;min-height:0;overflow-y:auto}
+  .bottom-nav{display:flex}
+  .main{padding:14px 12px 72px;min-height:0;overflow-y:auto}
   .page-header{flex-direction:column;gap:10px;align-items:stretch}
   .page-header .btn-primary{width:100%;justify-content:center}
   .stats-row{grid-template-columns:1fr 1fr}
@@ -347,14 +365,33 @@ select.form-input{appearance:none;cursor:pointer}
   .word-card{padding:12px 14px;gap:10px}
   .topics-grid{grid-template-columns:1fr 1fr}
   .quiz-word{font-size:30px;margin:16px 0 8px}
-  .toast{bottom:14px;right:10px;left:10px;text-align:center}
-  .modal{padding:20px}
-  .page-title{font-size:18px}
+  .toast{bottom:72px;right:10px;left:10px;text-align:center}
+  .modal{padding:20px;margin:10px}
+  .page-title{font-size:20px}
+  /* Грамматика */
+  .grammar-cats{gap:6px}
+  .grammar-cat{padding:7px 12px;font-size:12px}
+  .grammar-grid{grid-template-columns:1fr}
+  .grammar-card-head{padding:14px 16px 12px}
+  .grammar-card-body{padding:12px 16px 16px}
+  /* Auth */
+  .auth-box{padding:28px 20px;margin:0 12px}
+  /* Inputs — prevent iOS zoom (must be ≥16px) */
+  .form-input{font-size:16px}
+  /* Level picker */
+  .level-box{padding:24px 20px}
+  .level-cards{grid-template-columns:repeat(3,1fr)}
+  /* Quiz */
+  .quiz-options{grid-template-columns:1fr}
+  /* SRS */
+  .srs-rating-btns{grid-template-columns:repeat(2,1fr);gap:8px}
+  .srs-word{font-size:28px}
 }
 
 @media(max-width:400px){
   .topics-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr}
+  .level-cards{grid-template-columns:repeat(2,1fr)}
 }
 
 </style>
@@ -449,6 +486,33 @@ select.form-input{appearance:none;cursor:pointer}
   <button class="hamburger" id="btn-hamburger">≡</button>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- Bottom navigation (mobile) -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" data-page="words">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Слова
+    </button>
+    <button class="bnav-item" data-page="srs" id="bnav-srs">
+      <div class="bnav-dot"></div>
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+      Повторение
+    </button>
+    <button class="bnav-item" data-page="quiz">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      Тест
+    </button>
+    <button class="bnav-item" data-page="grammar">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Грамматика
+    </button>
+    <button class="bnav-item" data-page="stats">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Статистика
+    </button>
+  </div>
+</nav>
 
 <div class="sidebar">
   <div class="logo">WordsApp</div>
@@ -854,6 +918,10 @@ function showPage(id) {
     if (activeCat) renderGrammarContent(activeCat.dataset.cat);
     else renderGrammarContent('tenses');
   }
+  // Sync bottom nav
+  document.querySelectorAll('.bnav-item').forEach(b =>
+    b.classList.toggle('active', b.dataset.page === id)
+  );
 }
 
 document.querySelectorAll('.nav-item').forEach(b => {
@@ -862,6 +930,13 @@ document.querySelectorAll('.nav-item').forEach(b => {
     showPage(b.dataset.page);
     renderSidebar();
     closeSidebar();
+  });
+});
+
+document.querySelectorAll('.bnav-item').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.page !== 'words') selectedTopic = null;
+    showPage(b.dataset.page);
   });
 });
 
@@ -1370,11 +1445,14 @@ async function loadStreak() {
     const pct = Math.min(100, Math.round((s.today_reviewed / s.daily_goal) * 100));
     barEl.style.width = pct + '%';
     goalEl.textContent = `Сегодня: ${s.today_reviewed} / ${s.daily_goal} слов`;
+    const bnavSrs = document.getElementById('bnav-srs');
     if (s.due_count > 0) {
       badgeEl.textContent = s.due_count > 99 ? '99+' : s.due_count;
       badgeEl.classList.remove('hidden');
+      bnavSrs && bnavSrs.classList.add('has-badge');
     } else {
       badgeEl.classList.add('hidden');
+      bnavSrs && bnavSrs.classList.remove('has-badge');
     }
   } catch(e) {}
 }
