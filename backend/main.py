@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 from sqlalchemy import text
-from deep_translator import GoogleTranslator
+from deep_translator import GoogleTranslator, MyMemoryTranslator
 from database import init_db, get_conn, engine
 
 FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "index.html")
@@ -169,12 +169,19 @@ def delete_word(word_id: int):
 
 @app.get("/translate")
 def translate(text_: str = "", text: str = ""):
-    val = text_ or text
-    if not val.strip():
+    val = (text_ or text).strip()
+    if not val:
         return {"translation": ""}
+    # Try Google first, then MyMemory as fallback
     try:
-        result = GoogleTranslator(source="en", target="ru").translate(val.strip())
-        return {"translation": result}
+        result = GoogleTranslator(source="en", target="ru").translate(val)
+        if result:
+            return {"translation": result}
+    except Exception:
+        pass
+    try:
+        result = MyMemoryTranslator(source="en-US", target="ru-RU").translate(val)
+        return {"translation": result or ""}
     except Exception as e:
         raise HTTPException(500, f"Ошибка перевода: {e}")
 
