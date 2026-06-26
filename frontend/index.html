@@ -1837,7 +1837,7 @@ function renderSRSCard() {
 
   function applyDrag(dx) {
     const rot = dx * 0.06;
-    card.style.transform = \`translateX(\${dx}px) rotate(\${rot}deg)\`;
+    card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
     const pctSwipe = Math.min(1, Math.abs(dx) / THRESHOLD);
     if (dx > 0) {
       shR.style.opacity = pctSwipe;
@@ -1861,7 +1861,7 @@ function renderSRSCard() {
     card.classList.remove('is-dragging');
     const dir = right ? 1 : -1;
     card.classList.add(right ? 'fly-right' : 'fly-left');
-    card.style.transform = \`translateX(\${dir * window.innerWidth * 1.2}px) rotate(\${dir * 25}deg)\`;
+    card.style.transform = `translateX(${dir * window.innerWidth * 1.2}px) rotate(${dir * 25}deg)`;
     card.style.opacity = '0';
     setTimeout(() => doRate(right ? 2 : 0), 320);
   }
