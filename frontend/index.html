@@ -5,6 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>English Words</title>
 <style>
+
+/* ── Auth screen ─────────────────────────────────────────────────────────── */
+.auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
+  justify-content:center;z-index:1000;padding:20px}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:36px 32px;width:100%;max-width:380px}
+.auth-logo{font-size:22px;font-weight:700;color:var(--accent2);text-align:center;margin-bottom:24px}
+.auth-tabs{display:flex;background:var(--surface2);border-radius:10px;padding:3px;margin-bottom:24px}
+.auth-tab{flex:1;padding:8px;border:none;background:none;color:var(--text2);border-radius:8px;
+  cursor:pointer;font-size:14px;font-weight:500;transition:all .15s}
+.auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-error{color:var(--red);font-size:13px;text-align:center;padding:8px;
+  background:rgba(239,68,68,.1);border-radius:8px;display:none}
+.auth-divider{text-align:center;color:var(--text2);font-size:12px;margin:4px 0}
+.user-chip{display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--surface2);border-radius:10px;margin-bottom:8px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600;color:var(--text)}
+.user-role{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.ceo-badge{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:10px;
+  font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.5px}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0f0f13;--surface:#1a1a24;--surface2:#22222f;--border:#2e2e3e;
@@ -306,7 +330,15 @@ select.form-input{appearance:none;cursor:pointer}
   </button>
   <div id="topic-pills"></div>
   <div class="sidebar-bottom">
-    <div class="sidebar-streak" id="sidebar-streak" style="display:none">🔥 <span id="streak-val">0</span> дн. подряд</div>
+    <div class="user-chip" id="user-chip">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div style="flex:1;min-width:0">
+        <div class="user-name" id="user-name-el">…</div>
+        <div class="user-role" id="user-role-el"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:4px 8px;font-size:12px">↪</button>
+    </div>
+    <div class="sidebar-streak" id="sidebar-streak" id="sidebar-streak" style="display:none">🔥 <span id="streak-val">0</span> дн. подряд</div>
     <div class="goal-bar-wrap"><div class="goal-bar" id="goal-bar" style="width:0%"></div></div>
     <div class="sidebar-goal" id="sidebar-goal"></div>
     <button class="btn btn-ghost" style="width:100%;font-size:13px" id="btn-new-topic">＋ Новая тема</button>
@@ -439,13 +471,59 @@ select.form-input{appearance:none;cursor:pointer}
 
 <script>
 // ── API helper ─────────────────────────────────────────────────────────────────
+// ── Auth state ────────────────────────────────────────────────────────────────
+let authToken = localStorage.getItem('wapp_token');
+let currentUser = JSON.parse(localStorage.getItem('wapp_user') || 'null');
+
+function saveAuth(token, user) {
+  authToken = token; currentUser = user;
+  localStorage.setItem('wapp_token', token);
+  localStorage.setItem('wapp_user', JSON.stringify(user));
+}
+
+function clearAuth() {
+  authToken = null; currentUser = null;
+  localStorage.removeItem('wapp_token');
+  localStorage.removeItem('wapp_user');
+}
+
+function showAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-wrap').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-wrap').style.display = '';
+  updateUserChip();
+  loadData();
+  loadStreak();
+}
+
+function updateUserChip() {
+  if (!currentUser) return;
+  const name = currentUser.name || currentUser.email.split('@')[0];
+  document.getElementById('user-avatar').textContent = name[0].toUpperCase();
+  document.getElementById('user-name-el').textContent = name;
+  const role = currentUser.role;
+  const roleEl = document.getElementById('user-role-el');
+  if (role === 'ceo') {
+    roleEl.innerHTML = '<span class="ceo-badge">👑 CEO</span>';
+  } else {
+    roleEl.textContent = 'Пользователь';
+  }
+}
+
+// ── API helper ─────────────────────────────────────────────────────────────────
 async function api(method, path, body) {
   const opts = { method, headers: {} };
   if (body !== undefined) {
     opts.body = JSON.stringify(body);
     opts.headers['Content-Type'] = 'application/json';
   }
+  if (authToken) opts.headers['Authorization'] = 'Bearer ' + authToken;
   const r = await fetch(path, opts);
+  if (r.status === 401) { clearAuth(); showAuthScreen(); return null; }
   if (r.status === 204) return null;
   if (!r.ok) { const e = await r.text(); throw new Error(e); }
   return r.json();
@@ -1171,9 +1249,72 @@ function renderSRSCard() {
   });
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────────
-loadData();
-loadStreak();
+// ── Auth UI ──────────────────────────────────────────────────────────────────────
+document.getElementById('tab-login').addEventListener('click', () => {
+  document.getElementById('tab-login').classList.add('active');
+  document.getElementById('tab-register').classList.remove('active');
+  document.getElementById('form-login').style.display = '';
+  document.getElementById('form-register').style.display = 'none';
+});
+document.getElementById('tab-register').addEventListener('click', () => {
+  document.getElementById('tab-register').classList.add('active');
+  document.getElementById('tab-login').classList.remove('active');
+  document.getElementById('form-register').style.display = '';
+  document.getElementById('form-login').style.display = 'none';
+});
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/auth/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
+    const data = await res.json();
+    saveAuth(data.token, data.user);
+    showApp();
+  } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
+});
+
+document.getElementById('btn-register').addEventListener('click', async () => {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const errEl = document.getElementById('reg-error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/auth/register', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name, email, password})
+    });
+    if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
+    const data = await res.json();
+    saveAuth(data.token, data.user);
+    showApp();
+  } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
+});
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  if (!confirm('Выйти из аккаунта?')) return;
+  clearAuth();
+  showAuthScreen();
+});
+
+// Enter key в полях
+['login-email','login-password'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('btn-login').click(); })
+);
+['reg-name','reg-email','reg-password'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('btn-register').click(); })
+);
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+if (authToken) { showApp(); } else { showAuthScreen(); }
 </script>
+</div><!-- /app-wrap -->
 </body>
 </html>
