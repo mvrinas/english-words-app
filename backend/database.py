@@ -176,19 +176,22 @@ def init_db():
             if IS_PG:
                 ceo_row = conn.execute(text("""
                     INSERT INTO users (email, password_hash, name, role)
-                    VALUES (:e, :ph, 'Marina (CEO)', 'ceo') RETURNING id
+                    VALUES (:e, :ph, 'Marina K', 'ceo') RETURNING id
                 """), {"e": CEO_EMAIL, "ph": ph}).one()
                 ceo_id = ceo_row[0]
             else:
                 conn.execute(text("""
                     INSERT INTO users (email, password_hash, name, role)
-                    VALUES (:e, :ph, 'Marina (CEO)', 'ceo')
+                    VALUES (:e, :ph, 'Marina K', 'ceo')
                 """), {"e": CEO_EMAIL, "ph": ph})
                 ceo_id = conn.execute(text("SELECT last_insert_rowid()")).scalar()
             conn.commit()
             _create_default_topics(conn, ceo_id)
         else:
             ceo_id = ceo[0]
+
+        # Update CEO name if it was set to old default
+        conn.execute(text("UPDATE users SET name='Marina K' WHERE email=:e AND name='Marina (CEO)'"), {"e": CEO_EMAIL})
 
         # Assign pre-auth orphan records to CEO
         conn.execute(text("UPDATE topics SET user_id=:u WHERE user_id IS NULL"), {"u": ceo_id})
