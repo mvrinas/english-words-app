@@ -395,6 +395,41 @@ select.form-input{appearance:none;cursor:pointer}
   .level-cards{grid-template-columns:repeat(2,1fr)}
 }
 
+
+/* ── Words grid view ──────────────────────────────────────────────────────── */
+.words-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:4px}
+.wg-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  overflow:hidden;cursor:pointer;opacity:0;transform:translateY(20px);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .25s,opacity .3s}
+.wg-card.card-visible{opacity:1;transform:translateY(0)}
+.wg-card:active{transform:scale(.97)}
+.wg-card-top{height:90px;display:flex;align-items:center;justify-content:center;
+  padding:12px;position:relative}
+.wg-card-top.learned-card::after{content:'✓';position:absolute;top:8px;right:10px;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.85);
+  background:rgba(0,0,0,.18);border-radius:50%;width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;line-height:20px;text-align:center}
+.wg-word{font-family:'Fraunces',serif;font-style:italic;font-size:22px;
+  font-weight:300;color:rgba(255,255,255,.95);text-align:center;
+  line-height:1.2;letter-spacing:-.3px;word-break:break-word}
+.wg-card-body{padding:10px 12px 12px;background:var(--surface)}
+.wg-translation{font-size:13px;font-weight:500;color:var(--text);
+  margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-badge{font-size:10px;color:var(--text2)}
+/* Filter pills */
+.filter-pills{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.filter-pill{padding:7px 14px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text2);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .15s;white-space:nowrap}
+.filter-pill.active{background:var(--text);color:var(--surface);border-color:var(--text)}
+/* View toggle — hide on mobile, grid is default */
+@media(max-width:640px){
+  .view-toggle{display:none}
+  .words-grid{gap:10px}
+  .wg-card-top{height:80px}
+  .wg-word{font-size:18px}
+}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -564,13 +599,11 @@ select.form-input{appearance:none;cursor:pointer}
         <button class="btn btn-primary" id="btn-add-word">Добавить слово</button>
       </div>
     </div>
-    <div class="search-row">
-      <input class="form-input" id="search-input" placeholder="Поиск…"/>
-      <select class="form-input" style="width:160px" id="filter-learned">
-        <option value="all">Все</option>
-        <option value="new">Не изученные</option>
-        <option value="learned">Изученные</option>
-      </select>
+    <input class="form-input" id="search-input" placeholder="Поиск…" style="margin-bottom:12px"/>
+    <div class="filter-pills">
+      <button class="filter-pill active" data-filter="all">Все</button>
+      <button class="filter-pill" data-filter="new">Новые</button>
+      <button class="filter-pill" data-filter="learned">Изученные</button>
     </div>
     <div class="words-list" id="words-list"></div>
   </div>
@@ -979,7 +1012,8 @@ function renderSidebar() {
 // ── Words ──────────────────────────────────────────────────────────────────────
 function getFiltered() {
   const q = document.getElementById('search-input').value.toLowerCase();
-  const lf = document.getElementById('filter-learned').value;
+  const activePill = document.querySelector('.filter-pill.active');
+  const lf = activePill ? activePill.dataset.filter : 'all';
   return db.words.filter(w => {
     const matchT = selectedTopic === null || w.topic_id === selectedTopic;
     const matchQ = !q || w.word.toLowerCase().includes(q) || (w.translation||'').toLowerCase().includes(q);
@@ -1006,6 +1040,19 @@ function cardGrad(w) {
   return `linear-gradient(145deg,${c1},${c2})`;
 }
 
+
+const CARD_COLORS = [
+  ['#7c6af5','#9b8af8'],['#e8815a','#f0a07a'],['#5aa8e8','#7abef0'],
+  ['#e85a8f','#f07aaf'],['#5ae8a8','#7af0c0'],['#e8c85a','#f0d87a'],
+  ['#8f5ae8','#af7af0'],['#5ae8d8','#7af0e8'],['#e8705a','#f09070'],
+  ['#5a8fe8','#7aafe0'],
+];
+function wordColor(word) {
+  let h = 0;
+  for (const c of (word||'')) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+  return CARD_COLORS[h % CARD_COLORS.length];
+}
+
 function renderWords() {
   const words = getFiltered();
   const topic = selectedTopic ? getTopic(selectedTopic) : null;
@@ -1013,7 +1060,7 @@ function renderWords() {
   document.getElementById('words-sub').textContent = `${words.length} слов`;
 
   const list = document.getElementById('words-list');
-  list.className = 'words-list'; // reset
+  list.className = 'words-list';
 
   if (!words.length) {
     const q = document.getElementById('search-input').value;
@@ -1022,6 +1069,13 @@ function renderWords() {
   }
 
   if (currentView === 'cards') { renderCardsView(words, list); return; }
+
+  // Grid view on mobile, list on desktop (unless toggled)
+  const isMobile = window.innerWidth <= 640;
+  if (isMobile || currentView === 'grid') {
+    renderGridView(words, list);
+    return;
+  }
 
   list.innerHTML = words.map(w => {
     const isLearned = bool(w.learned);
@@ -1049,6 +1103,36 @@ function renderWords() {
     if (b.dataset.action === 'edit')   b.onclick = () => openWordModal(id);
     if (b.dataset.action === 'del')    b.onclick = () => deleteWord(id);
   });
+}
+
+function renderGridView(words, list) {
+  list.className = 'words-grid';
+  list.innerHTML = words.map(w => {
+    const isLearned = bool(w.learned);
+    const [c1, c2] = wordColor(w.word);
+    const t = w.topic_id ? getTopic(w.topic_id) : null;
+    const tn = t ? t.name : (w.topic_name || '');
+    return `<div class="wg-card" data-id="${w.id}">
+      <div class="wg-card-top ${isLearned?'learned-card':''}"
+           style="background:linear-gradient(135deg,${c1},${c2})">
+        <div class="wg-word">${esc(w.word)}</div>
+      </div>
+      <div class="wg-card-body">
+        <div class="wg-translation">${esc(w.translation||'—')}</div>
+        ${tn?`<div class="wg-badge">${esc(tn)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.wg-card').forEach(card => {
+    card.addEventListener('click', () => openWordModal(parseInt(card.dataset.id)));
+  });
+
+  setTimeout(() => {
+    list.querySelectorAll('.wg-card').forEach((c, i) =>
+      setTimeout(() => c.classList.add('card-visible'), i * 40)
+    );
+  }, 20);
 }
 
 function renderCardsView(words, list) {
@@ -1132,7 +1216,13 @@ document.getElementById('vbtn-cards').addEventListener('click', () => {
 });
 
 document.getElementById('search-input').addEventListener('input', () => { renderWords(); animateCards(); });
-document.getElementById('filter-learned').addEventListener('change', () => { renderWords(); animateCards(); });
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderWords();
+  });
+});
 
 // ── Word Modal ─────────────────────────────────────────────────────────────────
 function openWordModal(editId = null) {
