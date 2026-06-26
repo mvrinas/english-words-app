@@ -28,13 +28,17 @@ def _add_col(conn, table, col, col_type):
     if IS_PG:
         try:
             conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {col_type}"))
+            conn.commit()
         except Exception:
-            pass
+            try: conn.rollback()
+            except: pass
     else:
         try:
             conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_type}"))
+            conn.commit()
         except Exception:
-            pass
+            try: conn.rollback()
+            except: pass
 
 
 def hash_pw(password: str) -> str:

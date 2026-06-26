@@ -662,7 +662,8 @@ function updateUserChip() {
   const name = currentUser.name || currentUser.email.split('@')[0];
   document.getElementById('user-avatar').textContent = name[0].toUpperCase();
   const nameEl = document.getElementById('user-name-el');
-  nameEl.childNodes[0].textContent = name;
+  if (nameEl.childNodes[0]) nameEl.childNodes[0].textContent = name;
+  else nameEl.textContent = name;
   const lvlEl = document.getElementById('user-level-el');
   if (lvlEl) lvlEl.textContent = currentUser.level ? currentUser.level + ' · ' + {A1:'Beginner',A2:'Elementary',B1:'Intermediate',B2:'Upper-Intermediate',C1:'Advanced',C2:'Mastery'}[currentUser.level] : '';
   const role = currentUser.role;

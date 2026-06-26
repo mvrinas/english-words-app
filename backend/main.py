@@ -125,34 +125,57 @@ def register(body: RegisterIn):
 @app.post("/auth/login")
 def login(body: LoginIn):
     with get_conn() as conn:
-        row = conn.execute(
-            text("SELECT id, email, name, role, level, password_hash FROM users WHERE email=:e"),
-            {"e": body.email.lower()}
-        ).mappings().one_or_none()
+        try:
+            row = conn.execute(
+                text("SELECT id, email, name, role, level, password_hash FROM users WHERE email=:e"),
+                {"e": body.email.lower()}
+            ).mappings().one_or_none()
+        except Exception:
+            conn.rollback()
+            row = conn.execute(
+                text("SELECT id, email, name, role, password_hash FROM users WHERE email=:e"),
+                {"e": body.email.lower()}
+            ).mappings().one_or_none()
     if not row or not check_pw(body.password, row["password_hash"]):
         raise HTTPException(401, "Неверный email или пароль")
     token = make_token(row["id"], row["email"], row["role"])
-    return {"token": token, "user": {"id": row["id"], "email": row["email"], "name": row["name"], "role": row["role"], "level": row["level"]}}
+    user_data = {"id": row["id"], "email": row["email"], "name": row["name"], "role": row["role"], "level": row.get("level")}
+    return {"token": token, "user": user_data}
 
 
 @app.get("/auth/me")
 def me(u=Depends(get_user)):
     with get_conn() as conn:
-        row = conn.execute(
-            text("SELECT id, email, name, role, level, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
-        ).mappings().one_or_none()
+        try:
+            row = conn.execute(
+                text("SELECT id, email, name, role, level, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
+            ).mappings().one_or_none()
+        except Exception:
+            conn.rollback()
+            row = conn.execute(
+                text("SELECT id, email, name, role, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
+            ).mappings().one_or_none()
     if not row:
         raise HTTPException(404, "Not found")
-    return dict(row)
+    result = dict(row)
+    result.setdefault("level", None)
+    return result
+
+class LevelIn(BaseModel):
+    level: str
 
 @app.patch("/auth/level")
-def set_level(body: dict, u=Depends(get_user)):
-    lvl = body.get("level", "").strip().upper()
+def set_level(body: LevelIn, u=Depends(get_user)):
+    lvl = body.level.strip().upper()
     if lvl not in ("A1","A2","B1","B2","C1","C2"):
         raise HTTPException(400, "Неверный уровень")
     with get_conn() as conn:
-        conn.execute(text("UPDATE users SET level=:l WHERE id=:id"), {"l": lvl, "id": u["sub"]})
-        conn.commit()
+        try:
+            conn.execute(text("UPDATE users SET level=:l WHERE id=:id"), {"l": lvl, "id": u["sub"]})
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise HTTPException(500, "Не удалось сохранить уровень")
     return {"level": lvl}
 
 
