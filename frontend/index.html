@@ -161,10 +161,96 @@ select.form-input{appearance:none;cursor:pointer}
 .sidebar-goal{font-size:11px;color:var(--text2);margin-bottom:10px}
 .goal-bar-wrap{height:4px;background:var(--surface2);border-radius:2px;margin-bottom:12px}
 .goal-bar{height:4px;background:var(--green);border-radius:2px;transition:width .3s}
+
+/* ── Card deck view ──────────────────────────────────────────────────────────── */
+.view-toggle{display:flex;gap:3px;background:var(--surface2);padding:3px;border-radius:8px;flex-shrink:0}
+.view-btn{padding:5px 14px;border-radius:6px;border:none;background:none;color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s}
+.view-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+.cards-deck-wrap{position:relative}
+.cards-deck-inner{position:relative}
+.word-card-deck{
+  position:sticky;
+  border-radius:20px;
+  margin-bottom:8px;
+  overflow:hidden;
+  cursor:default;
+  box-shadow:0 4px 20px rgba(0,0,0,.35);
+  transition:box-shadow .2s;
+}
+.word-card-deck:hover{box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.wcd-header{
+  padding:20px 24px 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.wcd-word{font-size:24px;font-weight:700;color:rgba(255,255,255,.95);flex:1;line-height:1.2}
+.wcd-learned-tag{font-size:11px;background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);
+  padding:3px 8px;border-radius:12px;white-space:nowrap}
+.wcd-body{padding:0 24px 22px;color:rgba(255,255,255,.9)}
+.wcd-translation{font-size:18px;font-weight:600;margin-bottom:6px}
+.wcd-example{font-size:13px;font-style:italic;opacity:.75;line-height:1.4;margin-bottom:14px}
+.wcd-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wcd-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.9);border-radius:8px;padding:6px 14px;font-size:12px;
+  cursor:pointer;transition:all .15s}
+.wcd-btn:hover{background:rgba(255,255,255,.28)}
+.wcd-btn-del{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.4);color:#fca5a5}
+.wcd-btn-del:hover{background:rgba(239,68,68,.45)}
+@media(max-width:640px){
+  .wcd-word{font-size:20px}
+  .wcd-translation{font-size:16px}
+  .word-card-deck{border-radius:16px}
+  .wcd-header{padding:16px 18px 12px}
+  .wcd-body{padding:0 18px 18px}
+}
+
 @media(max-width:640px){
   .srs-word{font-size:32px}
   .srs-rating-btns{grid-template-columns:repeat(2,1fr)}
   .srs-card{padding:28px 20px}
+}
+
+
+/* ── Card deck view ──────────────────────────────────────────────────────────── */
+.view-toggle{display:flex;gap:3px;background:var(--surface2);padding:3px;border-radius:8px;flex-shrink:0}
+.view-btn{padding:5px 14px;border-radius:6px;border:none;background:none;color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s}
+.view-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+.cards-deck-wrap{position:relative}
+.cards-deck-inner{position:relative}
+.word-card-deck{
+  position:sticky;
+  border-radius:20px;
+  margin-bottom:8px;
+  overflow:hidden;
+  cursor:default;
+  box-shadow:0 4px 20px rgba(0,0,0,.35);
+  transition:box-shadow .2s;
+}
+.word-card-deck:hover{box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.wcd-header{
+  padding:20px 24px 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.wcd-word{font-size:24px;font-weight:700;color:rgba(255,255,255,.95);flex:1;line-height:1.2}
+.wcd-learned-tag{font-size:11px;background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);
+  padding:3px 8px;border-radius:12px;white-space:nowrap}
+.wcd-body{padding:0 24px 22px;color:rgba(255,255,255,.9)}
+.wcd-translation{font-size:18px;font-weight:600;margin-bottom:6px}
+.wcd-example{font-size:13px;font-style:italic;opacity:.75;line-height:1.4;margin-bottom:14px}
+.wcd-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wcd-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.9);border-radius:8px;padding:6px 14px;font-size:12px;
+  cursor:pointer;transition:all .15s}
+.wcd-btn:hover{background:rgba(255,255,255,.28)}
+.wcd-btn-del{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.4);color:#fca5a5}
+.wcd-btn-del:hover{background:rgba(239,68,68,.45)}
+@media(max-width:640px){
+  .wcd-word{font-size:20px}
+  .wcd-translation{font-size:16px}
+  .word-card-deck{border-radius:16px}
+  .wcd-header{padding:16px 18px 12px}
+  .wcd-body{padding:0 18px 18px}
 }
 
 @media(max-width:640px){
@@ -235,7 +321,13 @@ select.form-input{appearance:none;cursor:pointer}
         <div class="page-title" id="words-title">📚 Все слова</div>
         <div class="page-sub" id="words-sub"></div>
       </div>
-      <button class="btn btn-primary" id="btn-add-word">➕ Добавить слово</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="view-toggle">
+          <button class="view-btn active" id="vbtn-list">≡</button>
+          <button class="view-btn" id="vbtn-cards">⊟</button>
+        </div>
+        <button class="btn btn-primary" id="btn-add-word">➕ Добавить слово</button>
+      </div>
     </div>
     <div class="search-row">
       <input class="form-input" id="search-input" placeholder="🔍 Поиск…"/>
@@ -366,6 +458,7 @@ let editingWordId = null;
 let selectedColor = '#6366f1';
 let translateDebounce = null;
 let quizQueue = [], quizIdx = 0, quizCorrect = 0, quizRevealed = false;
+let currentView = 'list';
 let srsQueue = [], srsIdx = 0, srsRevealed = false, srsStreak = 0, srsTodayCount = 0, srsDailyGoal = 10;
 
 const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
@@ -503,6 +596,23 @@ function getFiltered() {
   });
 }
 
+// ── Gradient helper for cards ─────────────────────────────────────────────────
+const CARD_GRADIENTS = [
+  ['#6366f1','#4338ca'],['#f59e0b','#b45309'],['#10b981','#047857'],
+  ['#3b82f6','#1d4ed8'],['#ef4444','#b91c1c'],['#8b5cf6','#6d28d9'],
+  ['#ec4899','#be185d'],['#06b6d4','#0e7490'],['#84cc16','#4d7c0f'],
+  ['#f97316','#c2410c'],
+];
+function cardGrad(w) {
+  const tc = w.topic_color;
+  if (tc && tc !== '#6366f1') {
+    const r=parseInt(tc.slice(1,3),16),g=parseInt(tc.slice(3,5),16),b=parseInt(tc.slice(5,7),16);
+    return `linear-gradient(145deg,${tc},rgb(${Math.round(r*.5)},${Math.round(g*.5)},${Math.round(b*.5)}))`;
+  }
+  const [c1,c2]=CARD_GRADIENTS[(w.id||0)%CARD_GRADIENTS.length];
+  return `linear-gradient(145deg,${c1},${c2})`;
+}
+
 function renderWords() {
   const words = getFiltered();
   const topic = selectedTopic ? getTopic(selectedTopic) : null;
@@ -510,11 +620,16 @@ function renderWords() {
   document.getElementById('words-sub').textContent = `${words.length} слов`;
 
   const list = document.getElementById('words-list');
+  list.className = 'words-list'; // reset
+
   if (!words.length) {
     const q = document.getElementById('search-input').value;
     list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Слов не найдено</div><div>${q?'Попробуй другой запрос':'Нажми «Добавить слово»'}</div></div>`;
     return;
   }
+
+  if (currentView === 'cards') { renderCardsView(words, list); return; }
+
   list.innerHTML = words.map(w => {
     const isLearned = bool(w.learned);
     const t = w.topic_id ? getTopic(w.topic_id) : null;
@@ -543,6 +658,47 @@ function renderWords() {
   });
 }
 
+function renderCardsView(words, list) {
+  const PEEK = 68; // px visible per stacked card
+  // Need enough scroll height for all cards to be reachable
+  const extraH = Math.max(0, (words.length - 1)) * PEEK + 400;
+
+  list.className = 'words-list cards-deck-wrap';
+  list.innerHTML = `<div class="cards-deck-inner" style="padding-bottom:${extraH}px">` +
+    words.map((w, i) => {
+      const isLearned = bool(w.learned);
+      const bg = cardGrad(w);
+      return `<div class="word-card-deck" data-id="${w.id}"
+          style="top:${i * PEEK}px;z-index:${i+1};background:${bg}">
+        <div class="wcd-header">
+          <div class="wcd-word">${esc(w.word)}</div>
+          ${isLearned ? '<span class="wcd-learned-tag">✓ изучено</span>' : ''}
+        </div>
+        <div class="wcd-body">
+          ${w.translation ? `<div class="wcd-translation">${esc(w.translation)}</div>` : ''}
+          ${w.example ? `<div class="wcd-example">"${esc(w.example)}"</div>` : ''}
+          <div class="wcd-actions">
+            <button class="wcd-btn" data-action="toggle" data-id="${w.id}">
+              ${isLearned ? '↩ Снять' : '✓ Изучил'}
+            </button>
+            <button class="wcd-btn" data-action="edit" data-id="${w.id}">✏️ Изменить</button>
+            <button class="wcd-btn wcd-btn-del" data-action="del" data-id="${w.id}">🗑 Удалить</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+
+  list.querySelectorAll('[data-action]').forEach(b => {
+    const id = parseInt(b.dataset.id);
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      if (b.dataset.action === 'toggle') toggleLearned(id);
+      if (b.dataset.action === 'edit')   openWordModal(id);
+      if (b.dataset.action === 'del')    deleteWord(id);
+    });
+  });
+}
+
 async function toggleLearned(id) {
   const w = db.words.find(x => x.id === id);
   const newVal = !bool(w.learned);
@@ -566,6 +722,21 @@ async function deleteWord(id) {
     renderSidebar();
   } catch(e) { toast('Ошибка: ' + e.message, 'err'); }
 }
+
+
+// ── View toggle ───────────────────────────────────────────────────────────────
+document.getElementById('vbtn-list').addEventListener('click', () => {
+  currentView = 'list';
+  document.getElementById('vbtn-list').classList.add('active');
+  document.getElementById('vbtn-cards').classList.remove('active');
+  renderWords();
+});
+document.getElementById('vbtn-cards').addEventListener('click', () => {
+  currentView = 'cards';
+  document.getElementById('vbtn-cards').classList.add('active');
+  document.getElementById('vbtn-list').classList.remove('active');
+  renderWords();
+});
 
 document.getElementById('search-input').addEventListener('input', renderWords);
 document.getElementById('filter-learned').addEventListener('change', renderWords);
