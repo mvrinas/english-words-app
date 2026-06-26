@@ -247,6 +247,9 @@ def create_word(body: WordIn, u=Depends(get_user)):
         """), {"uid": u["sub"], "word": body.word, "translation": body.translation,
                "example": body.example, "topic_id": body.topic_id,
                "learned": 1 if body.learned else 0, "level": body.level}).mappings().one()
+        uid = u["sub"]
+        xp = int(_get_s(conn, uid, "xp", "0"))
+        _set_s(conn, uid, "xp", xp + 5)
         conn.commit()
     return dict(row)
 
@@ -309,23 +312,27 @@ def _set_s(conn, uid, key, value):
     else:
         conn.execute(text("INSERT OR REPLACE INTO settings(key,value) VALUES(:k,:v)"), {"k":k,"v":str(value)})
 
-def _update_streak(conn, uid):
+def _update_streak(conn, uid, xp_gain=10):
     today     = date.today().isoformat()
     yesterday = (date.today() - timedelta(days=1)).isoformat()
     last_date   = _get_s(conn, uid, "last_study_date")
     streak      = int(_get_s(conn, uid, "streak", "0"))
     today_count = int(_get_s(conn, uid, "today_reviewed", "0"))
     daily_goal  = int(_get_s(conn, uid, "daily_goal", "10"))
+    xp          = int(_get_s(conn, uid, "xp", "0"))
     if last_date == today:
         today_count += 1
     else:
         if last_date == yesterday and today_count >= daily_goal:
             streak += 1
+            xp += 20  # бонус за сохранение стрика
         elif last_date != yesterday:
             streak = 0
         _set_s(conn, uid, "streak", streak)
         today_count = 1
         _set_s(conn, uid, "last_study_date", today)
+    xp += xp_gain
+    _set_s(conn, uid, "xp", xp)
     _set_s(conn, uid, "today_reviewed", today_count)
 
 
@@ -353,10 +360,13 @@ def review_word(word_id: int, body: ReviewIn, u=Depends(get_user)):
                      {"r":reps,"e":ease,"i":interval,"nr":nr,"id":word_id})
         _update_streak(conn, uid)
         conn.commit()
+        xp = int(_get_s(conn,uid,"xp","0"))
+        level = max(1, int(xp ** 0.5) // 3 + 1)
         return {"next_review": nr, "interval": interval,
                 "today_reviewed": int(_get_s(conn,uid,"today_reviewed","0")),
                 "streak": int(_get_s(conn,uid,"streak","0")),
-                "daily_goal": int(_get_s(conn,uid,"daily_goal","10"))}
+                "daily_goal": int(_get_s(conn,uid,"daily_goal","10")),
+                "xp": xp, "level": level}
 
 
 @app.get("/streak")
@@ -370,7 +380,13 @@ def get_streak(u=Depends(get_user)):
         if last_date and last_date != today: today_count = 0
         due = conn.execute(text("SELECT COUNT(*) FROM words WHERE user_id=:uid AND (next_review IS NULL OR next_review<=:t)"),
                            {"uid":uid,"t":today}).scalar()
-    return {"streak":streak,"today_reviewed":today_count,"daily_goal":daily_goal,"due_count":due}
+    xp = int(_get_s(conn,uid,"xp","0"))
+    level = max(1, int(xp ** 0.5) // 3 + 1)  # плавная кривая уровней
+    xp_for_level = ((level - 1) * 3) ** 2
+    xp_next = (level * 3) ** 2
+    return {"streak":streak,"today_reviewed":today_count,"daily_goal":daily_goal,
+            "due_count":due,"xp":xp,"level":level,
+            "xp_for_level":xp_for_level,"xp_next":xp_next}
 
 
 # ── Translate / Example ────────────────────────────────────────────────────────

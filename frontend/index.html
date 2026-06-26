@@ -459,6 +459,55 @@ select.form-input{appearance:none;cursor:pointer}
   .wg-word{font-size:15px}
 }
 
+
+/* ── Dashboard ────────────────────────────────────────────────────────────── */
+.dash-greeting{font-size:22px;font-weight:300;font-family:'Fraunces',serif;
+  font-style:italic;color:var(--text);margin-bottom:20px;letter-spacing:-.3px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.dash-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:18px 16px;display:flex;flex-direction:column;gap:6px}
+.dash-card.full{grid-column:1/-1}
+.dash-card.accent{background:var(--text);border-color:var(--text);color:var(--surface)}
+.dash-label{font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text2);opacity:.7}
+.dash-card.accent .dash-label{color:rgba(255,255,255,.6);opacity:1}
+.dash-value{font-size:32px;font-weight:700;color:var(--text);line-height:1}
+.dash-card.accent .dash-value{color:#fff}
+.dash-sub{font-size:12px;color:var(--text2)}
+.dash-card.accent .dash-sub{color:rgba(255,255,255,.6)}
+/* Progress bar */
+.dash-bar-wrap{background:var(--surface2);border-radius:99px;height:8px;
+  overflow:hidden;margin-top:4px}
+.dash-bar{height:100%;border-radius:99px;background:var(--text);
+  transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.dash-card.accent .dash-bar-wrap{background:rgba(255,255,255,.2)}
+.dash-card.accent .dash-bar{background:#fff}
+/* XP level badge */
+.dash-level{display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface2);border-radius:99px;padding:4px 10px 4px 4px;
+  font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px}
+.dash-level-num{background:var(--text);color:var(--surface);border-radius:50%;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700}
+/* Quick actions */
+.dash-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.dash-action{background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;gap:4px;text-align:left}
+.dash-action:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
+.dash-action:active{transform:scale(.97)}
+.dash-action-icon{font-size:22px;margin-bottom:2px}
+.dash-action-title{font-size:14px;font-weight:600;color:var(--text)}
+.dash-action-sub{font-size:11px;color:var(--text2)}
+/* Streak fire */
+.streak-fire{font-size:28px;line-height:1}
+@media(max-width:640px){
+  .dash-grid{gap:10px}
+  .dash-value{font-size:26px}
+  .dash-actions{gap:8px}
+  .dash-action{padding:12px}
+}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -555,7 +604,11 @@ select.form-input{appearance:none;cursor:pointer}
 <!-- Bottom navigation (mobile) -->
 <nav class="bottom-nav" id="bottom-nav">
   <div class="bottom-nav-inner">
-    <button class="bnav-item active" data-page="words">
+    <button class="bnav-item active" data-page="home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Главная
+    </button>
+    <button class="bnav-item" data-page="words">
       <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       Слова
     </button>
@@ -563,10 +616,6 @@ select.form-input{appearance:none;cursor:pointer}
       <div class="bnav-dot"></div>
       <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
       Повторение
-    </button>
-    <button class="bnav-item" data-page="quiz">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-      Тест
     </button>
     <button class="bnav-item" data-page="grammar">
       <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -582,7 +631,8 @@ select.form-input{appearance:none;cursor:pointer}
 <div class="sidebar">
   <div class="logo">WordsApp</div>
   <div class="nav-section">Навигация</div>
-  <button class="nav-item active" data-page="words">Все слова</button>
+  <button class="nav-item active" data-page="home">Главная</button>
+  <button class="nav-item" data-page="words">Все слова</button>
   <button class="nav-item" data-page="quiz">Тест</button>
   <button class="nav-item" data-page="topics">Карточки</button>
   <button class="nav-item" data-page="grammar">Грамматика</button>
@@ -614,7 +664,82 @@ select.form-input{appearance:none;cursor:pointer}
 
 <div class="main">
   <!-- WORDS -->
-  <div class="page active" id="page-words">
+  <div class="page active" id="page-home">
+    <div class="dash-greeting" id="dash-greeting">Привет!</div>
+
+    <div class="dash-grid">
+      <!-- Стрик -->
+      <div class="dash-card accent">
+        <div class="dash-label">Стрик</div>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <div class="streak-fire">🔥</div>
+          <div class="dash-value" id="dash-streak">0</div>
+        </div>
+        <div class="dash-sub">дней подряд</div>
+      </div>
+
+      <!-- Уровень / XP -->
+      <div class="dash-card">
+        <div class="dash-label">Уровень</div>
+        <div class="dash-value" id="dash-level">1</div>
+        <div class="dash-sub" id="dash-xp-sub">0 XP</div>
+      </div>
+
+      <!-- Дневная цель -->
+      <div class="dash-card full">
+        <div class="dash-level" id="dash-level-badge">
+          <div class="dash-level-num" id="dash-lvl-num">1</div>
+          <span id="dash-lvl-label">Начинающий</span>
+        </div>
+        <div class="dash-label">Цель на сегодня</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0">
+          <div style="font-size:14px;font-weight:500;color:var(--text)" id="dash-goal-text">0 / 10 слов</div>
+          <div style="font-size:13px;color:var(--text2)" id="dash-goal-pct">0%</div>
+        </div>
+        <div class="dash-bar-wrap">
+          <div class="dash-bar" id="dash-goal-bar" style="width:0%"></div>
+        </div>
+        <!-- XP прогресс -->
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <div style="font-size:11px;color:var(--text2)">Прогресс XP</div>
+            <div style="font-size:11px;color:var(--text2)" id="dash-xp-progress">0 / 100</div>
+          </div>
+          <div class="dash-bar-wrap">
+            <div class="dash-bar" id="dash-xp-bar" style="width:0%;background:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;
+      color:var(--text2);margin-bottom:10px">Быстрый старт</div>
+    <div class="dash-actions">
+      <div class="dash-action" onclick="showPage('srs')">
+        <div class="dash-action-icon">🔁</div>
+        <div class="dash-action-title">Повторить</div>
+        <div class="dash-action-sub" id="dash-due-count">Загрузка…</div>
+      </div>
+      <div class="dash-action" onclick="showPage('words');document.getElementById('btn-add-word').click()">
+        <div class="dash-action-icon">➕</div>
+        <div class="dash-action-title">Добавить слово</div>
+        <div class="dash-action-sub">+5 XP за слово</div>
+      </div>
+      <div class="dash-action" onclick="showPage('grammar')">
+        <div class="dash-action-icon">📖</div>
+        <div class="dash-action-title">Грамматика</div>
+        <div class="dash-action-sub">5 разделов</div>
+      </div>
+      <div class="dash-action" onclick="showPage('quiz')">
+        <div class="dash-action-icon">🎯</div>
+        <div class="dash-action-title">Тест</div>
+        <div class="dash-action-sub">Проверь себя</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-words">
     <div class="page-header">
       <div>
         <div class="page-title" id="words-title">Все слова</div>
@@ -974,6 +1099,7 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(b =>
     b.classList.toggle('active', b.dataset.page === id)
   );
+  if (id === 'home')   renderDashboard();
   if (id === 'words')  renderWords();
   if (id === 'quiz')   renderQuizStart();
   if (id === 'topics') renderTopics();
@@ -1026,7 +1152,7 @@ function renderSidebar() {
   container.querySelectorAll('.topic-pill').forEach(b => {
     b.addEventListener('click', () => {
       selectedTopic = parseInt(b.dataset.topic);
-      showPage('words');
+      showPage('home');
       renderSidebar();
     });
   });
@@ -1781,6 +1907,54 @@ if (authToken) { showApp(); } else { showAuthScreen(); }
 /* ────────────────────────────────────────────────────────────────────────────
    GRAMMAR PAGE
    ──────────────────────────────────────────────────────────────────────────── */
+
+const LEVEL_NAMES = ['','Начинающий','Элементарный','Средний','Выше среднего',
+  'Продвинутый','Эксперт','Мастер','Легенда'];
+
+async function renderDashboard() {
+  try {
+    const s = await api('GET', '/streak');
+    // Приветствие
+    const name = currentUser ? (currentUser.name || currentUser.email.split('@')[0]) : '';
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер';
+    document.getElementById('dash-greeting').textContent = `${greeting}, ${name}!`;
+
+    // Стрик
+    document.getElementById('dash-streak').textContent = s.streak || 0;
+
+    // XP и уровень
+    const xp = s.xp || 0;
+    const level = s.level || 1;
+    const xpFor = s.xp_for_level || 0;
+    const xpNext = s.xp_next || 100;
+    const xpInLevel = xp - xpFor;
+    const xpNeeded = xpNext - xpFor;
+    const xpPct = xpNeeded > 0 ? Math.round((xpInLevel / xpNeeded) * 100) : 100;
+
+    document.getElementById('dash-level').textContent = level;
+    document.getElementById('dash-xp-sub').textContent = `${xp} XP всего`;
+    document.getElementById('dash-lvl-num').textContent = level;
+    document.getElementById('dash-lvl-label').textContent = LEVEL_NAMES[Math.min(level, LEVEL_NAMES.length-1)] || `Уровень ${level}`;
+    document.getElementById('dash-xp-progress').textContent = `${xpInLevel} / ${xpNeeded} XP`;
+    document.getElementById('dash-xp-bar').style.width = xpPct + '%';
+
+    // Дневная цель
+    const reviewed = s.today_reviewed || 0;
+    const goal = s.daily_goal || 10;
+    const pct = Math.min(100, Math.round((reviewed / goal) * 100));
+    document.getElementById('dash-goal-text').textContent = `${reviewed} / ${goal} слов`;
+    document.getElementById('dash-goal-pct').textContent = pct + '%';
+    document.getElementById('dash-goal-bar').style.width = pct + '%';
+
+    // Слов на повторение
+    const due = s.due_count || 0;
+    document.getElementById('dash-due-count').textContent =
+      due > 0 ? `${due} слов ждут` : 'Всё повторено!';
+  } catch(e) {
+    console.error('Dashboard error:', e);
+  }
+}
 
 const GRAMMAR_DATA = {
   tenses: {
