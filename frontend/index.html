@@ -28,26 +28,37 @@
 
 
 /* ── Grammar page ─────────────────────────────────────────────────────────── */
-.grammar-intro{font-size:15px;color:var(--text2);margin-bottom:28px;max-width:560px;line-height:1.6}
-.tense-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-.tense-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-  padding:24px;transition:box-shadow .2s,transform .2s}
-.tense-block:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
-.tense-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
-  color:var(--text2);margin-bottom:10px}
-.tense-name{font-size:20px;font-weight:300;font-family:'Fraunces',serif;font-style:italic;
-  color:var(--text);margin-bottom:4px;letter-spacing:-.3px}
-.tense-ru{font-size:12px;color:var(--text2);margin-bottom:14px}
-.tense-formula{background:var(--surface2);border-radius:8px;padding:10px 14px;
-  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);
-  margin-bottom:14px;border-left:3px solid var(--border)}
-.tense-when{font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5}
-.tense-examples{display:flex;flex-direction:column;gap:6px}
-.tense-ex{font-size:13px;color:var(--text);font-style:italic;padding:6px 10px;
-  background:var(--surface2);border-radius:6px}
-.tense-ex span{color:var(--text2);font-style:normal;font-size:11px;display:block;margin-top:2px}
-.tense-section-title{font-size:13px;font-weight:600;color:var(--text2);
-  text-transform:uppercase;letter-spacing:.8px;margin:24px 0 12px}
+.grammar-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.grammar-cat{padding:8px 16px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text2);font-size:13px;cursor:pointer;
+  transition:all .15s;font-weight:500}
+.grammar-cat:hover{border-color:var(--text2);color:var(--text)}
+.grammar-cat.active{background:var(--text);color:var(--surface);border-color:var(--text)}
+.grammar-section{margin-bottom:32px}
+.grammar-section-title{font-size:12px;font-weight:600;text-transform:uppercase;
+  letter-spacing:1px;color:var(--text2);margin-bottom:12px;padding-bottom:8px;
+  border-bottom:1px solid var(--border)}
+.grammar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.grammar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s}
+.grammar-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
+.grammar-card-head{padding:18px 20px 14px}
+.grammar-card-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text2);margin-bottom:8px}
+.grammar-card-name{font-size:19px;font-weight:300;font-family:'Fraunces',serif;
+  font-style:italic;color:var(--text);letter-spacing:-.3px;margin-bottom:3px}
+.grammar-card-ru{font-size:12px;color:var(--text2)}
+.grammar-card-body{padding:14px 20px 18px;border-top:1px solid var(--border);display:none}
+.grammar-card.open .grammar-card-body{display:block}
+.grammar-formula{background:var(--surface2);border-radius:8px;padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:var(--text);
+  margin-bottom:12px;border-left:3px solid var(--border)}
+.grammar-when{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6}
+.grammar-when strong{color:var(--text);font-weight:600}
+.grammar-exs{display:flex;flex-direction:column;gap:6px}
+.grammar-ex{font-size:13px;font-style:italic;padding:8px 12px;
+  background:var(--surface2);border-radius:8px;line-height:1.4}
+.grammar-ex-ru{font-style:normal;font-size:11px;color:var(--text2);margin-top:3px}
 
 /* ── Auth screen ─────────────────────────────────────────────────────────── */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
@@ -540,121 +551,21 @@ select.form-input{appearance:none;cursor:pointer}
     <div class="page-header">
       <div>
         <div class="page-title">Грамматика</div>
-        <div class="page-sub">Английские времена — с нуля</div>
+        <div class="page-sub">Выбери тему для изучения</div>
       </div>
     </div>
-    <p class="grammar-intro">Английский язык имеет 12 основных времён. Начнём с самых важных — тех, которые нужны в 90% ситуаций.</p>
 
-    <div class="tense-section-title">Настоящее время</div>
-    <div class="tense-grid">
-
-      <div class="tense-block">
-        <div class="tense-tag">Present Simple</div>
-        <div class="tense-name">Настоящее простое</div>
-        <div class="tense-ru">Постоянные действия, привычки, факты</div>
-        <div class="tense-formula">I/You/We/They + V<br>He/She/It + V+s</div>
-        <div class="tense-when">Когда использовать: каждый день / всегда / обычно / никогда</div>
-        <div class="tense-examples">
-          <div class="tense-ex">She works every day.<span>Она работает каждый день.</span></div>
-          <div class="tense-ex">The sun rises in the east.<span>Солнце встаёт на востоке.</span></div>
-        </div>
-      </div>
-
-      <div class="tense-block">
-        <div class="tense-tag">Present Continuous</div>
-        <div class="tense-name">Настоящее длительное</div>
-        <div class="tense-ru">Действие происходит прямо сейчас</div>
-        <div class="tense-formula">I am + V-ing<br>He/She/It is + V-ing<br>We/They are + V-ing</div>
-        <div class="tense-when">Когда использовать: сейчас / в данный момент / смотри!</div>
-        <div class="tense-examples">
-          <div class="tense-ex">I am reading a book.<span>Я читаю книгу (прямо сейчас).</span></div>
-          <div class="tense-ex">They are playing outside.<span>Они играют на улице.</span></div>
-        </div>
-      </div>
-
-      <div class="tense-block">
-        <div class="tense-tag">Present Perfect</div>
-        <div class="tense-name">Настоящее совершённое</div>
-        <div class="tense-ru">Прошлое действие, важное сейчас</div>
-        <div class="tense-formula">I/You/We/They have + V3<br>He/She/It has + V3</div>
-        <div class="tense-when">Когда использовать: уже / только что / никогда / когда-либо</div>
-        <div class="tense-examples">
-          <div class="tense-ex">I have just eaten.<span>Я только что поел.</span></div>
-          <div class="tense-ex">Have you ever been to Paris?<span>Ты когда-нибудь был в Париже?</span></div>
-        </div>
-      </div>
-
+    <!-- Категории -->
+    <div class="grammar-cats" id="grammar-cats">
+      <button class="grammar-cat active" data-cat="tenses">Времена</button>
+      <button class="grammar-cat" data-cat="articles">Артикли</button>
+      <button class="grammar-cat" data-cat="modals">Модальные глаголы</button>
+      <button class="grammar-cat" data-cat="prepositions">Предлоги</button>
+      <button class="grammar-cat" data-cat="conditionals">Условные предложения</button>
     </div>
 
-    <div class="tense-section-title">Прошедшее время</div>
-    <div class="tense-grid">
-
-      <div class="tense-block">
-        <div class="tense-tag">Past Simple</div>
-        <div class="tense-name">Прошедшее простое</div>
-        <div class="tense-ru">Завершённое действие в прошлом</div>
-        <div class="tense-formula">I/You/He/She + V2 (или V+ed)</div>
-        <div class="tense-when">Когда использовать: вчера / в 2020 / когда я был ребёнком</div>
-        <div class="tense-examples">
-          <div class="tense-ex">She called me yesterday.<span>Она позвонила мне вчера.</span></div>
-          <div class="tense-ex">We went to the beach last summer.<span>Мы ездили на пляж прошлым летом.</span></div>
-        </div>
-      </div>
-
-      <div class="tense-block">
-        <div class="tense-tag">Past Continuous</div>
-        <div class="tense-name">Прошедшее длительное</div>
-        <div class="tense-ru">Действие было в процессе в прошлом</div>
-        <div class="tense-formula">I/He/She was + V-ing<br>We/They were + V-ing</div>
-        <div class="tense-when">Когда использовать: я делал что-то, когда произошло другое</div>
-        <div class="tense-examples">
-          <div class="tense-ex">I was sleeping when he called.<span>Я спал, когда он позвонил.</span></div>
-          <div class="tense-ex">They were watching TV all evening.<span>Они смотрели телевизор весь вечер.</span></div>
-        </div>
-      </div>
-
-      <div class="tense-block">
-        <div class="tense-tag">Past Perfect</div>
-        <div class="tense-name">Прошедшее совершённое</div>
-        <div class="tense-ru">Действие завершилось до другого прошлого</div>
-        <div class="tense-formula">I/He/She/They had + V3</div>
-        <div class="tense-when">Когда использовать: к тому времени / уже / до того как</div>
-        <div class="tense-examples">
-          <div class="tense-ex">She had left before I arrived.<span>Она ушла до того, как я пришёл.</span></div>
-          <div class="tense-ex">I had never seen snow before.<span>Я никогда раньше не видел снег.</span></div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="tense-section-title">Будущее время</div>
-    <div class="tense-grid">
-
-      <div class="tense-block">
-        <div class="tense-tag">Future Simple</div>
-        <div class="tense-name">Будущее простое</div>
-        <div class="tense-ru">Спонтанное решение или предсказание</div>
-        <div class="tense-formula">I/You/He/She + will + V</div>
-        <div class="tense-when">Когда использовать: я думаю / наверное / решил прямо сейчас</div>
-        <div class="tense-examples">
-          <div class="tense-ex">I will call you tomorrow.<span>Я позвоню тебе завтра.</span></div>
-          <div class="tense-ex">It will be sunny.<span>Будет солнечно.</span></div>
-        </div>
-      </div>
-
-      <div class="tense-block">
-        <div class="tense-tag">Going to</div>
-        <div class="tense-name">Планируемое будущее</div>
-        <div class="tense-ru">Заранее запланированное действие</div>
-        <div class="tense-formula">I am going to + V<br>He/She is going to + V</div>
-        <div class="tense-when">Когда использовать: я планирую / собираюсь / уже решил</div>
-        <div class="tense-examples">
-          <div class="tense-ex">I am going to study abroad.<span>Я собираюсь учиться за рубежом.</span></div>
-          <div class="tense-ex">She is going to have a baby.<span>Она ждёт ребёнка.</span></div>
-        </div>
-      </div>
-
-    </div>
+    <!-- Контент категории -->
+    <div id="grammar-content"></div>
   </div>
 
   <div class="page" id="page-stats">
@@ -938,7 +849,11 @@ function showPage(id) {
   if (id === 'topics') renderTopics();
   if (id === 'stats')  renderStats();
   if (id === 'srs')    renderSRS();
-  if (id === 'grammar') {} // static content
+  if (id === 'grammar') {
+    const activeCat = document.querySelector('.grammar-cat.active');
+    if (activeCat) renderGrammarContent(activeCat.dataset.cat);
+    else renderGrammarContent('tenses');
+  }
 }
 
 document.querySelectorAll('.nav-item').forEach(b => {
@@ -1658,7 +1573,405 @@ function animateCards() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 if (authToken) { showApp(); } else { showAuthScreen(); }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   GRAMMAR PAGE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+const GRAMMAR_DATA = {
+  tenses: {
+    label: 'Времена',
+    sections: [
+      {
+        title: 'Настоящее время',
+        cards: [
+          {
+            tag: 'Present Simple',
+            name: 'Настоящее простое',
+            formula: 'I/You/We/They + V\nHe/She/It + V+s/es',
+            when: '<strong>Факты и привычки.</strong> Регулярные действия, законы природы, расписания.',
+            examples: [
+              ['She works every day.', 'Она работает каждый день.'],
+              ['The sun rises in the east.', 'Солнце восходит на востоке.'],
+            ]
+          },
+          {
+            tag: 'Present Continuous',
+            name: 'Настоящее длительное',
+            formula: 'am/is/are + V-ing',
+            when: '<strong>Прямо сейчас.</strong> Действие происходит в момент речи или в ближайшем будущем.',
+            examples: [
+              ['I am reading a book right now.', 'Я читаю книгу прямо сейчас.'],
+              ['We are meeting tomorrow.', 'Мы встречаемся завтра.'],
+            ]
+          },
+          {
+            tag: 'Present Perfect',
+            name: 'Настоящее совершённое',
+            formula: 'have/has + V3 (Past Participle)',
+            when: '<strong>Результат важен сейчас.</strong> Опыт, изменения, свежие новости.',
+            examples: [
+              ['I have just finished the report.', 'Я только что закончил отчёт.'],
+              ['She has never been to Paris.', 'Она никогда не была в Париже.'],
+            ]
+          },
+          {
+            tag: 'Present Perfect Continuous',
+            name: 'Настоящее совершённое длительное',
+            formula: 'have/has + been + V-ing',
+            when: '<strong>Длительность до сейчас.</strong> Действие началось в прошлом и продолжается или только закончилось.',
+            examples: [
+              ['I have been studying for two hours.', 'Я учусь уже два часа.'],
+              ['It has been raining since morning.', 'Дождь идёт с утра.'],
+            ]
+          },
+        ]
+      },
+      {
+        title: 'Прошедшее время',
+        cards: [
+          {
+            tag: 'Past Simple',
+            name: 'Прошедшее простое',
+            formula: 'V2 (V+ed) / irregular form\ndid + not + V',
+            when: '<strong>Завершённый момент.</strong> Действие закончено в прошлом, обычно с указанием времени.',
+            examples: [
+              ['She called me yesterday.', 'Она позвонила мне вчера.'],
+              ['They went to Spain last summer.', 'Они ездили в Испанию прошлым летом.'],
+            ]
+          },
+          {
+            tag: 'Past Continuous',
+            name: 'Прошедшее длительное',
+            formula: 'was/were + V-ing',
+            when: '<strong>Процесс в прошлом.</strong> Действие шло в определённый момент прошлого.',
+            examples: [
+              ['I was sleeping when you called.', 'Я спал, когда ты позвонил.'],
+              ['They were watching a film at 8pm.', 'Они смотрели фильм в 8 вечера.'],
+            ]
+          },
+          {
+            tag: 'Past Perfect',
+            name: 'Прошедшее совершённое',
+            formula: 'had + V3 (Past Participle)',
+            when: '<strong>До другого прошлого.</strong> Действие завершилось раньше другого прошедшего.',
+            examples: [
+              ['She had left before I arrived.', 'Она ушла до того, как я пришёл.'],
+              ['He had never seen snow before.', 'Он никогда раньше не видел снег.'],
+            ]
+          },
+        ]
+      },
+      {
+        title: 'Будущее время',
+        cards: [
+          {
+            tag: 'Future Simple',
+            name: 'Будущее простое',
+            formula: 'will + V (infinitive)',
+            when: '<strong>Решение на ходу, предсказание.</strong> Спонтанное решение или прогноз.',
+            examples: [
+              ['I will help you with this.', 'Я помогу тебе с этим.'],
+              ['It will rain tomorrow.', 'Завтра будет дождь.'],
+            ]
+          },
+          {
+            tag: 'Going to',
+            name: 'Запланированное будущее',
+            formula: 'am/is/are + going to + V',
+            when: '<strong>План или намерение.</strong> Заранее принятое решение или очевидное следствие.',
+            examples: [
+              ['I am going to study tonight.', 'Я собираюсь учиться сегодня вечером.'],
+              ['Look at those clouds — it is going to rain.', 'Смотри на тучи — сейчас пойдёт дождь.'],
+            ]
+          },
+          {
+            tag: 'Future Continuous',
+            name: 'Будущее длительное',
+            formula: 'will + be + V-ing',
+            when: '<strong>Процесс в будущем.</strong> Действие будет происходить в определённый момент.',
+            examples: [
+              ['At 5pm I will be driving home.', 'В 5 вечера я буду ехать домой.'],
+              ['This time next week, she will be flying to Tokyo.', 'В это время на следующей неделе она будет лететь в Токио.'],
+            ]
+          },
+        ]
+      },
+    ]
+  },
+
+  articles: {
+    label: 'Артикли',
+    sections: [
+      {
+        title: 'Артикли',
+        cards: [
+          {
+            tag: 'The',
+            name: 'Определённый артикль',
+            formula: 'the + noun',
+            when: '<strong>Конкретный предмет.</strong> Оба знают, о чём речь. Единственный в своём роде. Повторное упоминание.',
+            examples: [
+              ['Close the door, please.', 'Закрой дверь, пожалуйста. (конкретную)'],
+              ['The sun is very bright today.', 'Солнце сегодня очень яркое. (единственное)'],
+            ]
+          },
+          {
+            tag: 'A / An',
+            name: 'Неопределённый артикль',
+            formula: 'a + consonant sound\nan + vowel sound',
+            when: '<strong>Один из многих.</strong> Первое упоминание, неважно какой конкретно, один из класса.',
+            examples: [
+              ['I need a pen.', 'Мне нужна ручка. (любая)'],
+              ['She is an engineer.', 'Она инженер.'],
+            ]
+          },
+          {
+            tag: 'Zero article',
+            name: 'Нулевой артикль',
+            formula: '— + noun (без артикля)',
+            when: '<strong>Обобщение.</strong> Неисчисляемые существительные, множественное число в общем смысле, имена, страны, языки.',
+            examples: [
+              ['Water is essential for life.', 'Вода необходима для жизни.'],
+              ['She speaks French and English.', 'Она говорит по-французски и по-английски.'],
+            ]
+          },
+        ]
+      }
+    ]
+  },
+
+  modals: {
+    label: 'Модальные глаголы',
+    sections: [
+      {
+        title: 'Возможность и способность',
+        cards: [
+          {
+            tag: 'Can / Could',
+            name: 'Умею / Мог бы',
+            formula: 'can + V (настоящее)\ncould + V (прошлое / вежливо)',
+            when: '<strong>Способность, разрешение, возможность.</strong> Can — сейчас, could — в прошлом или вежливо.',
+            examples: [
+              ['I can speak three languages.', 'Я говорю на трёх языках.'],
+              ['Could you help me, please?', 'Не могли бы вы помочь мне?'],
+            ]
+          },
+          {
+            tag: 'May / Might',
+            name: 'Может быть',
+            formula: 'may + V (вероятно)\nmight + V (менее вероятно)',
+            when: '<strong>Вероятность или разрешение.</strong> May — более вероятно (~50%), might — менее (~30%).',
+            examples: [
+              ['It may rain later.', 'Возможно, позже пойдёт дождь.'],
+              ['She might not come today.', 'Она, наверное, не придёт сегодня.'],
+            ]
+          },
+        ]
+      },
+      {
+        title: 'Обязанность и необходимость',
+        cards: [
+          {
+            tag: 'Must / Have to',
+            name: 'Должен / Обязан',
+            formula: 'must + V (внутренняя обязанность)\nhave to + V (внешняя)',
+            when: '<strong>Необходимость.</strong> Must — сам считаю нужным, have to — кто-то требует.',
+            examples: [
+              ['I must call my mom tonight.', 'Я должен позвонить маме сегодня вечером.'],
+              ['You have to wear a seatbelt.', 'Ты обязан пристегнуть ремень. (закон)'],
+            ]
+          },
+          {
+            tag: 'Should / Ought to',
+            name: 'Следует',
+            formula: 'should + V\nought to + V',
+            when: '<strong>Совет или рекомендация.</strong> Менее строго, чем must.',
+            examples: [
+              ['You should drink more water.', 'Тебе стоит пить больше воды.'],
+              ['We should leave early.', 'Нам следует выйти пораньше.'],
+            ]
+          },
+          {
+            tag: "Don't have to / Needn't",
+            name: 'Нет необходимости',
+            formula: "don't have to + V\nneedn't + V",
+            when: '<strong>Отсутствие обязанности.</strong> Не обязательно, но можно.',
+            examples: [
+              ["You don't have to come.", 'Тебе необязательно приходить.'],
+              ["You needn't hurry.", 'Тебе не нужно торопиться.'],
+            ]
+          },
+        ]
+      },
+    ]
+  },
+
+  prepositions: {
+    label: 'Предлоги',
+    sections: [
+      {
+        title: 'Предлоги места',
+        cards: [
+          {
+            tag: 'In / On / At',
+            name: 'Базовые предлоги места',
+            formula: 'in — внутри чего-то\non — на поверхности\nat — точка, место',
+            when: '<strong>In</strong> — комнаты, города, страны. <strong>On</strong> — поверхности, улицы. <strong>At</strong> — адреса, места событий.',
+            examples: [
+              ['She is in the kitchen / in London.', 'Она на кухне / в Лондоне.'],
+              ['The book is on the table / at the station.', 'Книга на столе / мы на вокзале.'],
+            ]
+          },
+          {
+            tag: 'By / Near / Next to',
+            name: 'Рядом',
+            formula: 'by / next to — вплотную\nnear — недалеко',
+            when: '<strong>Близость.</strong> By/next to — вплотную, near — в общем рядом.',
+            examples: [
+              ['Sit next to me.', 'Садись рядом со мной.'],
+              ['There is a café near the office.', 'Рядом с офисом есть кафе.'],
+            ]
+          },
+          {
+            tag: 'Above / Below / Between',
+            name: 'Относительное положение',
+            formula: 'above — выше\nbelow — ниже\nbetween — между',
+            when: '<strong>Вертикаль и расположение.</strong>',
+            examples: [
+              ['The lamp is above the table.', 'Лампа над столом.'],
+              ['The shop is between the bank and the café.', 'Магазин между банком и кафе.'],
+            ]
+          },
+        ]
+      },
+      {
+        title: 'Предлоги времени',
+        cards: [
+          {
+            tag: 'In / On / At (time)',
+            name: 'Время: in / on / at',
+            formula: 'in — периоды (месяц, год, сезон)\non — дни, даты\nat — точное время',
+            when: '<strong>In</strong> — in July, in 2024, in the morning. <strong>On</strong> — on Monday, on July 4th. <strong>At</strong> — at 5pm, at noon.',
+            examples: [
+              ['She was born in 1995, on a Monday, at 3am.', 'Она родилась в 1995-м, в понедельник, в 3 ночи.'],
+              ['We meet on Fridays at 10am.', 'Мы встречаемся по пятницам в 10 утра.'],
+            ]
+          },
+          {
+            tag: 'For / Since / During',
+            name: 'Длительность',
+            formula: 'for + период (for two hours)\nsince + точка (since 2020)\nduring + событие',
+            when: '<strong>For</strong> — продолжительность, <strong>since</strong> — с какого момента, <strong>during</strong> — в течение события.',
+            examples: [
+              ['I have lived here for 5 years / since 2019.', 'Я живу здесь 5 лет / с 2019 года.'],
+              ['She fell asleep during the lecture.', 'Она уснула во время лекции.'],
+            ]
+          },
+        ]
+      },
+    ]
+  },
+
+  conditionals: {
+    label: 'Условные предложения',
+    sections: [
+      {
+        title: 'Типы условных предложений',
+        cards: [
+          {
+            tag: 'Zero Conditional',
+            name: 'Нулевое условное',
+            formula: 'If + Present Simple, Present Simple',
+            when: '<strong>Факт, закон природы.</strong> Всегда верно.',
+            examples: [
+              ['If you heat water to 100°C, it boils.', 'Если нагреть воду до 100°C, она закипит.'],
+              ['If it rains, the ground gets wet.', 'Если идёт дождь, земля мокнет.'],
+            ]
+          },
+          {
+            tag: 'First Conditional',
+            name: 'Первое условное',
+            formula: 'If + Present Simple, will + V',
+            when: '<strong>Реальное будущее.</strong> Условие вероятно, результат вполне возможен.',
+            examples: [
+              ['If you study hard, you will pass the exam.', 'Если ты будешь учиться, ты сдашь экзамен.'],
+              ['If it rains, I will stay home.', 'Если пойдёт дождь, я останусь дома.'],
+            ]
+          },
+          {
+            tag: 'Second Conditional',
+            name: 'Второе условное',
+            formula: 'If + Past Simple, would + V',
+            when: '<strong>Нереальное настоящее.</strong> Гипотетическая ситуация, маловероятная или невозможная сейчас.',
+            examples: [
+              ['If I had a car, I would drive to work.', 'Если бы у меня была машина, я бы ездил на работу.'],
+              ['If she were rich, she would travel the world.', 'Если бы она была богатой, она бы путешествовала.'],
+            ]
+          },
+          {
+            tag: 'Third Conditional',
+            name: 'Третье условное',
+            formula: 'If + Past Perfect, would have + V3',
+            when: '<strong>Сожаление о прошлом.</strong> Прошлое нельзя изменить — фантазируем о том, что могло бы быть.',
+            examples: [
+              ["If I had studied, I would have passed.", 'Если бы я учился, я бы сдал.'],
+              ["If she hadn't missed the bus, she wouldn't have been late.", 'Если бы она не опоздала на автобус, она бы не опоздала.'],
+            ]
+          },
+        ]
+      }
+    ]
+  },
+};
+
+function renderGrammarContent(catKey) {
+  const cat = GRAMMAR_DATA[catKey];
+  if (!cat) return;
+  const el = document.getElementById('grammar-content');
+  let html = '';
+  for (const section of cat.sections) {
+    html += `<div class="grammar-section">`;
+    if (section.title) html += `<div class="grammar-section-title">${section.title}</div>`;
+    html += `<div class="grammar-grid">`;
+    for (const card of section.cards) {
+      const formulaHtml = card.formula.replace(/\n/g, '<br>');
+      const examplesHtml = card.examples.map(([en, ru]) =>
+        `<div class="grammar-ex">${en}<div class="grammar-ex-ru">${ru}</div></div>`
+      ).join('');
+      html += `
+        <div class="grammar-card word-card">
+          <div class="grammar-card-head" onclick="toggleGrammarCard(this.parentElement)">
+            <div class="grammar-card-tag">${card.tag}</div>
+            <div class="grammar-card-name">${card.name}</div>
+          </div>
+          <div class="grammar-card-body">
+            <div class="grammar-formula">${formulaHtml}</div>
+            <div class="grammar-when">${card.when}</div>
+            <div class="grammar-exs">${examplesHtml}</div>
+          </div>
+        </div>`;
+    }
+    html += `</div></div>`;
+  }
+  el.innerHTML = html;
+  setTimeout(() => animateCards(), 20);
+}
+
+function toggleGrammarCard(card) {
+  card.classList.toggle('open');
+}
+
+// Инициализация вкладок грамматики
+document.getElementById('grammar-cats').addEventListener('click', e => {
+  const btn = e.target.closest('.grammar-cat');
+  if (!btn) return;
+  document.querySelectorAll('.grammar-cat').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrammarContent(btn.dataset.cat);
+});
+
+// Показ грамматики при переходе на страницу
+
+
 </script>
-</div><!-- /app-wrap -->
-</body>
-</html>
