@@ -2362,13 +2362,18 @@ async function declineFriend(userId, btn) {
 
 async function checkNotifications() {
   try {
-    const data = await api('GET', '/friends/requests');
-    const count = (data.received || []).length;
+    const [reqData, msgData] = await Promise.all([
+      api('GET', '/friends/requests'),
+      api('GET', '/messages')
+    ]);
+    const friendCount = (reqData.received || []).length;
+    const msgCount = (msgData || []).reduce((s, c) => s + (c.unread || 0), 0);
+    const total = friendCount + msgCount;
     ['chip-notif-badge', 'chip-notif-badge-d'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      if (count > 0) {
-        el.textContent = count;
+      if (total > 0) {
+        el.textContent = total;
         el.style.display = 'flex';
       } else {
         el.style.display = 'none';
