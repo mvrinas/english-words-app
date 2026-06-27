@@ -361,6 +361,10 @@ def init_db():
             _create_default_topics(conn, ceo_id)
         else:
             ceo_id = ceo[0]
+            # Always sync password and role from env var
+            ph = hash_pw(CEO_PASSWORD)
+            conn.execute(text("UPDATE users SET password_hash=:ph, role='ceo' WHERE email=:e"), {"ph": ph, "e": CEO_EMAIL})
+            conn.commit()
 
         # ── Teacher account ────────────────────────────────────────────────────
         teacher_email = os.environ.get("TEACHER_EMAIL", "")
