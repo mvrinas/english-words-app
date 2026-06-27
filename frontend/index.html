@@ -703,9 +703,8 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="logo">WordsApp</div>
   <div class="nav-section">Навигация</div>
   <button class="nav-item active" data-page="home">Главная</button>
-  <button class="nav-item" data-page="words">Все слова</button>
+  <button class="nav-item" data-page="words">Карточки</button>
   <button class="nav-item" data-page="quiz">Тест</button>
-  <button class="nav-item" data-page="topics">Карточки</button>
   <button class="nav-item" data-page="grammar">Грамматика</button>
   <button class="nav-item" data-page="srs" id="nav-srs">Повторение <span class="due-badge hidden" id="due-badge">0</span></button>
   <button class="nav-item" data-page="games">Игры</button>
@@ -809,7 +808,7 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="page" id="page-words">
     <div class="page-header">
       <div>
-        <div class="page-title" id="words-title">Все слова</div>
+        <div class="page-title" id="words-title">Карточки</div>
         <div class="page-sub" id="words-sub"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -1404,7 +1403,7 @@ function wordColor(word) {
 function renderWords() {
   const words = getFiltered();
   const topic = selectedTopic ? getTopic(selectedTopic) : null;
-  document.getElementById('words-title').textContent = '' + (topic ? topic.name : 'Все слова');
+  document.getElementById('words-title').textContent = '' + (topic ? topic.name : 'Карточки');
   document.getElementById('words-sub').textContent = `${words.length} слов`;
 
   const list = document.getElementById('words-list');
