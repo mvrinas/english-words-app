@@ -79,6 +79,11 @@
   box-shadow:0 2px 12px rgba(0,0,0,.08)}
 .user-chip-desktop{position:fixed;top:14px;right:16px;z-index:200;display:none}
 @media(min-width:641px){.user-chip-desktop{display:flex}}
+.chip-notif-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;
+  border-radius:50%;background:var(--red);border:2px solid var(--bg);display:none}
+.chip-notif-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;
+  border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;
+  display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--bg)}
 .user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .user-name{font-size:13px;font-weight:600;color:var(--text)}
@@ -696,8 +701,9 @@ select.form-input{appearance:none;cursor:pointer}
 
 <div class="mobile-header">
   <span class="mobile-logo">WordsApp</span>
-  <div class="user-chip" id="user-chip">
+  <div class="user-chip" id="user-chip" style="position:relative">
     <div class="user-avatar" id="user-avatar">?</div>
+    <span class="chip-notif-badge" id="chip-notif-badge"></span>
     <div style="flex:1;min-width:0;overflow:hidden">
       <div class="user-name" id="user-name-el">…<span id="user-role-el" style="margin-left:4px"></span></div>
     </div>
@@ -761,8 +767,9 @@ select.form-input{appearance:none;cursor:pointer}
 </div>
 
 <!-- Desktop floating user chip -->
-<div class="user-chip user-chip-desktop" id="user-chip-desktop">
+<div class="user-chip user-chip-desktop" id="user-chip-desktop" style="position:relative">
   <div class="user-avatar" id="user-avatar-d">?</div>
+  <span class="chip-notif-badge" id="chip-notif-badge-d"></span>
   <div class="user-name" id="user-name-d" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
   <button class="btn btn-ghost btn-sm" onclick="document.getElementById('btn-logout').click()" title="Выйти" style="padding:3px 7px;font-size:12px">↪</button>
 </div>
@@ -1190,6 +1197,8 @@ async function showApp() {
   updateUserChip();
   loadData();
   loadStreak();
+  setTimeout(checkNotifications, 1500);
+  setInterval(checkNotifications, 60000); // check every minute
 }
 
 function updateUserChip() {
@@ -2044,8 +2053,11 @@ function showProfileModal(user, isOwn) {
       ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-edit-profile">Редактировать</button>` : ''}
       ${isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openSearchModal()">Найти людей</button>` : ''}
     </div>
+    ${isOwn ? `<div id="profile-requests-section"></div>` : ''}
     ${isOwn ? renderProfileEditForm(user) : ''}
   `;
+
+  if (isOwn) loadFriendRequests();
 
   if (isOwn) {
     document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
@@ -2239,6 +2251,100 @@ async function removeFriend(userId) {
   await api('DELETE', '/friends/' + userId);
   toast('Удалён из друзей');
   document.getElementById('modal-profile').classList.add('hidden');
+}
+
+// ── Friend Requests & Notifications ─────────────────────────────────────────
+
+async function loadFriendRequests() {
+  const section = document.getElementById('profile-requests-section');
+  if (!section) return;
+  try {
+    const data = await api('GET', '/friends/requests');
+    const { sent, received } = data;
+    let out = '';
+
+    if (received.length) {
+      out += `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">
+          Входящие заявки (${received.length})
+        </div>`;
+      received.forEach(u => {
+        const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
+        const uname = u.username ? '@' + u.username : '';
+        const init = name[0].toUpperCase();
+        out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px">
+          <div class="user-search-avatar" style="width:34px;height:34px;font-size:13px">${esc(init)}</div>
+          <div class="user-search-info">
+            <div class="user-search-name">${esc(name)}</div>
+            <div class="user-search-username">${esc(uname)}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-primary btn-sm" onclick="acceptFriend(${u.id}, this)">Принять</button>
+            <button class="btn btn-ghost btn-sm" onclick="declineFriend(${u.id}, this)">Отклонить</button>
+          </div>
+        </div>`;
+      });
+      out += '</div>';
+    }
+
+    if (sent.length) {
+      out += `<div style="margin-top:14px;${received.length ? '' : 'border-top:1px solid var(--border);padding-top:14px'}">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">
+          Отправленные заявки (${sent.length})
+        </div>`;
+      sent.forEach(u => {
+        const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
+        const uname = u.username ? '@' + u.username : '';
+        const init = name[0].toUpperCase();
+        out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px">
+          <div class="user-search-avatar" style="width:34px;height:34px;font-size:13px">${esc(init)}</div>
+          <div class="user-search-info">
+            <div class="user-search-name">${esc(name)}</div>
+            <div class="user-search-username">${esc(uname)}</div>
+          </div>
+          <span style="font-size:11px;color:var(--text2);flex-shrink:0">Ожидает</span>
+        </div>`;
+      });
+      out += '</div>';
+    }
+
+    section.innerHTML = out;
+  } catch(e) {}
+}
+
+async function acceptFriend(userId, btn) {
+  try {
+    await api('POST', '/friends/' + userId);
+    btn.closest('.user-search-item').remove();
+    toast('Заявка принята!');
+    checkNotifications();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function declineFriend(userId, btn) {
+  try {
+    await api('DELETE', '/friends/' + userId);
+    btn.closest('.user-search-item').remove();
+    toast('Заявка отклонена');
+    checkNotifications();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function checkNotifications() {
+  try {
+    const data = await api('GET', '/friends/requests');
+    const count = (data.received || []).length;
+    ['chip-notif-badge', 'chip-notif-badge-d'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (count > 0) {
+        el.textContent = count;
+        el.style.display = 'flex';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  } catch(e) {}
 }
 
 // ── Search ────────────────────────────────────────────────────────────────────

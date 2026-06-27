@@ -314,6 +314,20 @@ def send_friend_request(user_id: int, u=Depends(get_user)):
         conn.execute(text("INSERT INTO friendships (sender_id, receiver_id) VALUES (:me, :them)"),
                      {"me": u["sub"], "them": user_id})
         conn.commit()
+        # Email notification to receiver
+        try:
+            sender = conn.execute(text("SELECT name, username FROM users WHERE id=:id"), {"id": u["sub"]}).one_or_none()
+            receiver_email = conn.execute(text("SELECT email, name FROM users WHERE id=:id"), {"id": user_id}).one_or_none()
+            if sender and receiver_email:
+                sname = sender[1] and f"@{sender[1]}" or sender[0] or "Пользователь"
+                html_notif = f"""<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
+                  <h2 style="font-size:22px;margin-bottom:8px">Новая заявка в друзья</h2>
+                  <p style="color:#555">{sname} отправил(а) вам заявку в друзья в WordsApp.</p>
+                  <p style="color:#888;font-size:13px;margin-top:20px">Войдите в приложение чтобы принять или отклонить.</p>
+                </div>"""
+                _send_email(receiver_email[0], f"{sname} хочет добавить вас в друзья — WordsApp", html_notif)
+        except Exception as ex:
+            print(f"Friend notify email error: {ex}")
     return {"status": "pending"}
 
 
@@ -348,6 +362,28 @@ def send_message(body: MessageIn, u=Depends(get_user)):
         conn.execute(text("INSERT INTO messages (sender_id, receiver_id, content) VALUES (:s, :r, :c)"),
                      {"s": u["sub"], "r": body.receiver_id, "c": body.content.strip()[:1000]})
         conn.commit()
+        # Email notification to receiver (only if they have no unread from sender already)
+        try:
+            unread = conn.execute(text(
+                "SELECT COUNT(*) FROM messages WHERE sender_id=:s AND receiver_id=:r AND is_read=0"
+            ), {"s": u["sub"], "r": body.receiver_id}).scalar()
+            if unread <= 1:  # first unread from this sender
+                sender = conn.execute(text("SELECT name, username FROM users WHERE id=:id"), {"id": u["sub"]}).one_or_none()
+                recv   = conn.execute(text("SELECT email, name FROM users WHERE id=:id"), {"id": body.receiver_id}).one_or_none()
+                if sender and recv:
+                    sname = sender[1] and f"@{sender[1]}" or sender[0] or "Пользователь"
+                    preview = body.content.strip()[:80]
+                    html_notif = f"""<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
+                      <h2 style="font-size:22px;margin-bottom:8px">Новое сообщение</h2>
+                      <p style="color:#555">{sname} написал(а) вам:</p>
+                      <div style="background:#f5f4f0;border-radius:12px;padding:16px;margin:16px 0;color:#1c1b18;font-style:italic">
+                        &ldquo;{preview}&rdquo;
+                      </div>
+                      <p style="color:#888;font-size:13px">Войдите в WordsApp чтобы ответить.</p>
+                    </div>"""
+                    _send_email(recv[0], f"Сообщение от {sname} — WordsApp", html_notif)
+        except Exception as ex:
+            print(f"Message notify email error: {ex}")
     return {"ok": True}
 
 
@@ -634,6 +670,24 @@ def stats(u=Depends(get_user)):
         learned = conn.execute(text("SELECT COUNT(*) FROM words WHERE user_id=:uid AND learned=1"), {"uid":uid}).scalar()
         topics  = conn.execute(text("SELECT COUNT(*) FROM topics WHERE user_id=:uid"), {"uid":uid}).scalar()
     return {"total":total,"learned":learned,"not_learned":total-learned,"topics":topics}
+
+
+# ── Friend requests ───────────────────────────────────────────────────────────
+
+@app.get("/friends/requests")
+def get_friend_requests(u=Depends(get_user)):
+    with get_conn() as conn:
+        sent = conn.execute(text("""
+            SELECT u.id, u.name, u.username, u.first_name, u.last_name, f.created_at
+            FROM friendships f JOIN users u ON u.id=f.receiver_id
+            WHERE f.sender_id=:me AND f.status='pending'
+        """), {"me": u["sub"]}).mappings().all()
+        received = conn.execute(text("""
+            SELECT u.id, u.name, u.username, u.first_name, u.last_name, f.created_at, f.id as fid
+            FROM friendships f JOIN users u ON u.id=f.sender_id
+            WHERE f.receiver_id=:me AND f.status='pending'
+        """), {"me": u["sub"]}).mappings().all()
+    return {"sent": [dict(r) for r in sent], "received": [dict(r) for r in received]}
 
 
 # ── Admin: list users (CEO only) ───────────────────────────────────────────────
