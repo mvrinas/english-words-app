@@ -706,7 +706,6 @@ select.form-input{appearance:none;cursor:pointer}
   <button class="nav-item" data-page="grammar">Грамматика</button>
   <button class="nav-item" data-page="srs" id="nav-srs">Повторение <span class="due-badge hidden" id="due-badge">0</span></button>
   <button class="nav-item" data-page="games">Игры</button>
-  <div class="nav-divider"></div>
   <div class="nav-section">Темы</div>
   <button class="topic-pill active" id="pill-all">
     <span class="topic-dot" style="background:var(--text2)"></span>
@@ -719,7 +718,6 @@ select.form-input{appearance:none;cursor:pointer}
     <div class="sidebar-streak" id="sidebar-streak" id="sidebar-streak" style="display:none"> <span id="streak-val">0</span> дн. подряд</div>
     <div class="goal-bar-wrap"><div class="goal-bar" id="goal-bar" style="width:0%"></div></div>
     <div class="sidebar-goal" id="sidebar-goal"></div>
-    <button class="btn btn-ghost" style="width:100%;font-size:13px" id="btn-new-topic">+ Новая тема</button>
   </div>
 </div>
 
@@ -1672,7 +1670,6 @@ function openTopicModal() {
 
 function closeTopicModal() { document.getElementById('modal-topic').classList.add('hidden'); }
 
-document.getElementById('btn-new-topic').onclick = openTopicModal;
 document.getElementById('btn-close-topic-modal').onclick = closeTopicModal;
 document.getElementById('btn-cancel-topic').onclick = closeTopicModal;
 document.getElementById('modal-topic').onclick = e => { if(e.target===e.currentTarget) closeTopicModal(); };
