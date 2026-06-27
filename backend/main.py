@@ -721,27 +721,6 @@ def list_users(u=Depends(get_user)):
     return [dict(r) for r in rows]
 
 
-# ── TEMP: admin password reset (will be removed after use) ───────────────────
-ADMIN_SECRET = os.environ.get("ADMIN_RESET_SECRET", "r3s3t2024xq")
-
-@app.post("/admin/reset-pw")
-def admin_reset_pw(body: dict):
-    secret = body.get("secret", "")
-    email = body.get("email", "").lower()
-    new_pw = body.get("new_password", "")
-    if not ADMIN_SECRET or secret != ADMIN_SECRET:
-        raise HTTPException(403, "Invalid secret")
-    if len(new_pw) < 6:
-        raise HTTPException(400, "Password too short")
-    ph = hash_pw(new_pw)
-    with get_conn() as conn:
-        r = conn.execute(text("UPDATE users SET password_hash=:ph WHERE email=:e"), {"ph": ph, "e": email})
-        conn.commit()
-        if r.rowcount == 0:
-            raise HTTPException(404, f"User {email} not found")
-    return {"ok": True, "email": email}
-
-
 # ── Change password ────────────────────────────────────────────────────────────
 
 class PasswordChange(BaseModel):
