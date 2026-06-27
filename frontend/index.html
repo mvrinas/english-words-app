@@ -2053,11 +2053,12 @@ function showProfileModal(user, isOwn) {
       ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-edit-profile">Редактировать</button>` : ''}
       ${isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openSearchModal()">Найти людей</button>` : ''}
     </div>
+    ${isOwn ? `<div id="profile-friends-section"></div>` : ''}
     ${isOwn ? `<div id="profile-requests-section"></div>` : ''}
     ${isOwn ? renderProfileEditForm(user) : ''}
   `;
 
-  if (isOwn) loadFriendRequests();
+  if (isOwn) { loadFriendRequests(); loadFriendsList(); }
 
   if (isOwn) {
     document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
@@ -2308,6 +2309,35 @@ async function loadFriendRequests() {
       out += '</div>';
     }
 
+    section.innerHTML = out;
+  } catch(e) {}
+}
+
+async function loadFriendsList() {
+  const section = document.getElementById('profile-friends-section');
+  if (!section) return;
+  try {
+    const friends = await api('GET', '/friends');
+    const accepted = friends.filter(f => f.status === 'accepted');
+    if (!accepted.length) { section.innerHTML = ''; return; }
+    let out = `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">
+        Друзья (${accepted.length})
+      </div>`;
+    accepted.forEach(u => {
+      const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
+      const uname = u.username ? '@' + u.username : '';
+      const init = name[0].toUpperCase();
+      out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px">
+        <div class="user-search-avatar" style="width:34px;height:34px;font-size:13px">${esc(init)}</div>
+        <div class="user-search-info" onclick="openUserProfile('${esc(u.username||'')}')">
+          <div class="user-search-name">${esc(name)}</div>
+          <div class="user-search-username">${esc(uname)}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="openChat(${u.id},'${esc(name)}')">Написать</button>
+      </div>`;
+    });
+    out += '</div>';
     section.innerHTML = out;
   } catch(e) {}
 }
