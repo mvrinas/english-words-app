@@ -2035,7 +2035,8 @@ function showProfileModal(user, isOwn) {
     }
   }
 
-  body.innerHTML = `
+  // Build HTML safely in parts
+  let bodyHtml = `
     <div class="profile-header">
       <div class="profile-avatar-lg">${initials}</div>
       <div>
@@ -2054,9 +2055,12 @@ function showProfileModal(user, isOwn) {
     ${isOwn ? `<div id="profile-requests-panel" style="display:none;margin-top:4px"></div>` : ''}
     ${isOwn ? `<div id="profile-incoming-section"></div>` : ''}
     ${isOwn ? `<div id="profile-friends-section"></div>` : ''}
-    <div id="profile-messages-section"></div>
-    ${isOwn ? renderProfileEditForm(user) : ''}
+    <div id="profile-messages-section"><div style="margin-top:18px"><div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">Сообщения</div><div style="font-size:13px;color:var(--text2);padding:6px 0">Загрузка...</div></div></div>
   `;
+  if (isOwn) {
+    try { bodyHtml += renderProfileEditForm(user); } catch(e) { console.error('renderProfileEditForm error:', e); }
+  }
+  body.innerHTML = bodyHtml;
 
   if (isOwn) { loadFriendRequests(); loadFriendsList(); loadProfileMessages(); }
 
@@ -2349,7 +2353,6 @@ async function loadProfileMessages() {
   if (!section) { console.warn('profile-messages-section not found'); return; }
   try {
     const convos = await api('GET', '/messages');
-    console.log('loadProfileMessages convos:', convos);
     let out = `<div style="margin-top:18px">
       <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Сообщения</div>`;
     if (!convos || !convos.length) {
