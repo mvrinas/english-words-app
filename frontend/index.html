@@ -562,6 +562,12 @@ select.form-input{appearance:none;cursor:pointer}
 .profile-edit-form{display:flex;flex-direction:column;gap:10px}
 .profile-field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
+
+/* ── FAB add word ─────────────────────────────────────────────────────────── */
+#fab-add-word{display:none}
+#fab-add-word:hover{transform:scale(1.08);box-shadow:0 6px 22px rgba(79,70,229,.5)!important}
+#fab-add-word:active{transform:scale(.94)}
+@media(max-width:640px){#fab-add-word{bottom:138px!important}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -816,7 +822,7 @@ select.form-input{appearance:none;cursor:pointer}
           <button class="view-btn active" id="vbtn-list">≡</button>
           <button class="view-btn" id="vbtn-cards">⊟</button>
         </div>
-        <button class="btn btn-primary" id="btn-add-word">Добавить слово</button>
+        <button class="btn btn-primary" id="btn-add-word" style="display:none" aria-hidden="true"></button>
       </div>
     </div>
     <input class="form-input" id="search-input" placeholder="Поиск…" style="margin-bottom:12px"/>
@@ -1089,6 +1095,7 @@ function saveAuth(token, user) {
 function clearAuth() {
   authToken = null; currentUser = null;
   const _cw=document.getElementById('chat-widget'); if(_cw) _cw.style.display='none';
+  const _fab2=document.getElementById('fab-add-word'); if(_fab2) _fab2.style.display='none';
   localStorage.removeItem('wapp_token');
   localStorage.removeItem('wapp_user');
 }
@@ -1141,6 +1148,7 @@ async function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-wrap').style.display = 'flex';
   const _cw=document.getElementById('chat-widget'); if(_cw) _cw.style.display='flex';
+  const _fab=document.getElementById('fab-add-word');
   // Всегда получаем свежие данные пользователя с сервера
   try {
     const me = await fetch('/auth/me', {
@@ -1281,6 +1289,8 @@ async function fetchExample(word) {
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 function showPage(id) {
+  const _fab=document.getElementById('fab-add-word');
+  if (_fab) _fab.style.display = (id === 'words') ? 'flex' : 'none';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b =>
@@ -1604,6 +1614,7 @@ function closeWordModal() {
 }
 
 document.getElementById('btn-add-word').onclick = () => openWordModal();
+document.getElementById('fab-add-word').onclick = () => openWordModal();
 document.getElementById('btn-close-word-modal').onclick = closeWordModal;
 document.getElementById('btn-cancel-word').onclick = closeWordModal;
 document.getElementById('modal-word').onclick = e => { if(e.target===e.currentTarget) closeWordModal(); };
@@ -3316,6 +3327,16 @@ document.addEventListener('click', function(e) {
 
 </script>
 <!-- Floating chat widget -->
+<button id="fab-add-word" aria-label="Добавить слово" title="Добавить слово"
+  style="display:none;position:fixed;bottom:90px;right:24px;z-index:9998;
+    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+    background:#4f46e5;color:#fff;font-size:26px;line-height:1;
+    box-shadow:0 4px 16px rgba(79,70,229,.4);
+    transition:transform .15s,box-shadow .15s;
+    align-items:center;justify-content:center">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
 <div id="chat-widget" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;flex-direction:column;align-items:flex-end">
   <div id="chat-widget-panel" style="display:none;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden;margin-bottom:10px">
     <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
