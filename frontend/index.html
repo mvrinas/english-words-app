@@ -1175,7 +1175,7 @@ function updateUserChip() {
   const role = currentUser.role;
   const roleEl = document.getElementById('user-role-el');
   if (role === 'ceo') {
-    roleEl.innerHTML = '<span class="ceo-badge">CEO</span>';
+    roleEl.innerHTML = '<span class="ceo-badge">Founder & CEO</span>';
   } else {
     roleEl.textContent = '';
   }
@@ -1183,7 +1183,7 @@ function updateUserChip() {
   const dAvatar = document.getElementById('user-avatar-d');
   const dName = document.getElementById('user-name-d');
   if (dAvatar) dAvatar.textContent = name[0].toUpperCase();
-  if (dName) dName.innerHTML = esc(name) + (role === 'ceo' ? ' <span class="ceo-badge">CEO</span>' : '');
+  if (dName) dName.innerHTML = esc(name) + (role === 'ceo' ? ' <span class="ceo-badge">Founder & CEO</span>' : '');
 }
 
 // ── API helper ─────────────────────────────────────────────────────────────────
@@ -1994,6 +1994,7 @@ function showProfileModal(user, isOwn) {
       <div>
         <div class="profile-name">${esc(fullName || username)}</div>
         <div class="profile-username">${esc(username)}</div>
+        ${user.role === 'ceo' ? '<div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);opacity:.7;margin-top:3px">Founder & CEO</div>' : ''}
         ${user.bio ? `<div class="profile-bio">${esc(user.bio)}</div>` : ''}
       </div>
     </div>
