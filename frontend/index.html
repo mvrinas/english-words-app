@@ -2469,12 +2469,32 @@ async function loadMessages() {
   try {
     const msgs = await api('GET', '/messages/' + chatPartnerId);
     const box = document.getElementById('chat-messages');
-    box.innerHTML = msgs.map(m => {
-      const mine = m.sender_id == currentUser?.id || m.sender_id === currentUser?.sub;
+    const myId = currentUser?.id || currentUser?.sub;
+
+    // Find index of last message sent by me
+    let lastMineIdx = -1;
+    msgs.forEach((m, i) => { if (String(m.sender_id) === String(myId)) lastMineIdx = i; });
+
+    box.innerHTML = msgs.map((m, i) => {
+      const mine = String(m.sender_id) === String(myId);
       const time = m.created_at ? m.created_at.slice(11,16) : '';
-      return `<div class="chat-msg ${mine?'mine':'theirs'}">
-        ${esc(m.content)}
-        <div class="chat-msg-time">${time}</div>
+      const isLastMine = mine && i === lastMineIdx;
+
+      let statusHtml = '';
+      if (isLastMine) {
+        if (m.is_read) {
+          statusHtml = `<div style="font-size:10px;color:var(--text2);text-align:right;margin-top:2px;margin-right:2px">Прочитано в ${time}</div>`;
+        } else {
+          statusHtml = `<div style="font-size:10px;color:var(--text2);text-align:right;margin-top:2px;margin-right:2px">Доставлено</div>`;
+        }
+      }
+
+      return `<div>
+        <div class="chat-msg ${mine?'mine':'theirs'}">
+          ${esc(m.content)}
+          <div class="chat-msg-time">${time}</div>
+        </div>
+        ${statusHtml}
       </div>`;
     }).join('');
     box.scrollTop = box.scrollHeight;
