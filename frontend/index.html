@@ -716,8 +716,6 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="sidebar-bottom">
     <div id="user-level-el" style="font-size:11px;color:var(--text2);margin-bottom:8px;letter-spacing:.3px"></div>
     <div class="sidebar-streak" id="sidebar-streak" id="sidebar-streak" style="display:none"> <span id="streak-val">0</span> дн. подряд</div>
-    <div class="goal-bar-wrap"><div class="goal-bar" id="goal-bar" style="width:0%"></div></div>
-    <div class="sidebar-goal" id="sidebar-goal"></div>
   </div>
 </div>
 
@@ -2491,8 +2489,8 @@ async function loadStreak() {
     streakEl.style.display = s.streak > 0 ? 'flex' : 'none';
     document.getElementById('streak-val').textContent = s.streak;
     const pct = Math.min(100, Math.round((s.today_reviewed / s.daily_goal) * 100));
-    barEl.style.width = pct + '%';
-    goalEl.textContent = `Сегодня: ${s.today_reviewed} / ${s.daily_goal} слов`;
+    if (barEl) barEl.style.width = pct + '%';
+    if (goalEl) goalEl.textContent = `Сегодня: ${s.today_reviewed} / ${s.daily_goal} слов`;
     const bnavSrs = document.getElementById('bnav-srs');
     if (s.due_count > 0) {
       badgeEl.textContent = s.due_count > 99 ? '99+' : s.due_count;
