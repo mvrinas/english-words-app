@@ -840,11 +840,7 @@ select.form-input{appearance:none;cursor:pointer}
   <!-- TOPICS -->
   <div class="page" id="page-topics">
     <div class="page-header">
-      <div>
-        <div class="page-title">Карточки</div>
-        <div class="page-sub" id="topics-sub"></div>
-      </div>
-      <button class="btn btn-primary" id="btn-add-topic-main">Новая тема</button>
+      <div class="page-title">Карточки</div>
     </div>
     <div class="topics-grid" id="topics-grid"></div>
   </div>
@@ -1681,7 +1677,6 @@ function openTopicModal() {
 function closeTopicModal() { document.getElementById('modal-topic').classList.add('hidden'); }
 
 document.getElementById('btn-new-topic').onclick = openTopicModal;
-document.getElementById('btn-add-topic-main').onclick = openTopicModal;
 document.getElementById('btn-close-topic-modal').onclick = closeTopicModal;
 document.getElementById('btn-cancel-topic').onclick = closeTopicModal;
 document.getElementById('modal-topic').onclick = e => { if(e.target===e.currentTarget) closeTopicModal(); };
@@ -1707,7 +1702,6 @@ document.getElementById('btn-save-topic').onclick = async () => {
 
 // ── Topics page ────────────────────────────────────────────────────────────────
 function renderTopics() {
-  document.getElementById('topics-sub').textContent = `${db.topics.length} тем`;
   const grid = document.getElementById('topics-grid');
   if (!db.topics.length) {
     grid.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">Тем пока нет</div></div>`;
@@ -1727,6 +1721,13 @@ function renderTopics() {
       </div>
     </div>`;
   }).join('');
+
+  // Add "Добавить слова" button below the topic cards
+  const addWordsBtn = document.createElement('div');
+  addWordsBtn.style.cssText = 'margin-top:16px';
+  addWordsBtn.innerHTML = `<button class="btn btn-ghost" style="font-size:14px;padding:10px 20px;border:1.5px dashed var(--border);border-radius:12px;width:100%;color:var(--text2)" id="btn-topics-add-word">+ Добавить слова</button>`;
+  grid.appendChild(addWordsBtn);
+  document.getElementById('btn-topics-add-word').onclick = () => { showPage('words'); setTimeout(() => openWordModal(), 100); };
 
   grid.querySelectorAll('[data-open]').forEach(b => {
     b.onclick = () => { selectedTopic = parseInt(b.dataset.open); showPage('words'); renderSidebar(); };
