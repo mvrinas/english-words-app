@@ -314,31 +314,34 @@ select.form-input{appearance:none;cursor:pointer}
 .cards-deck-inner{position:relative}
 .word-card-deck{
   position:sticky;
-  border-radius:20px;
+  border-radius:16px;
   margin-bottom:8px;
   overflow:hidden;
   cursor:default;
-  box-shadow:0 4px 20px rgba(0,0,0,.35);
-  transition:box-shadow .2s;
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 2px 10px rgba(0,0,0,.07);
+  transition:box-shadow .2s,transform .15s;
 }
-.word-card-deck:hover{box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.word-card-deck:hover{box-shadow:0 6px 20px rgba(0,0,0,.10);transform:translateY(-1px)}
 .wcd-header{
-  padding:20px 24px 16px;
+  padding:18px 20px 12px 20px;
   display:flex;align-items:center;gap:10px;
+  border-left:4px solid var(--wcd-color,var(--border));
 }
-.wcd-word{font-size:24px;font-weight:700;color:rgba(255,255,255,.95);flex:1;line-height:1.2}
-.wcd-learned-tag{font-size:11px;background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);
-  padding:3px 8px;border-radius:12px;white-space:nowrap}
-.wcd-body{padding:0 24px 22px;color:rgba(255,255,255,.9)}
-.wcd-translation{font-size:18px;font-weight:600;margin-bottom:6px}
-.wcd-example{font-size:13px;font-style:italic;opacity:.75;line-height:1.4;margin-bottom:14px}
+.wcd-word{font-size:22px;font-weight:800;font-family:'Fraunces',serif;color:var(--text);flex:1;line-height:1.2}
+.wcd-learned-tag{font-size:11px;background:var(--surface2);color:var(--text2);
+  padding:3px 8px;border-radius:12px;white-space:nowrap;font-weight:600}
+.wcd-body{padding:0 20px 18px 24px;color:var(--text)}
+.wcd-translation{font-size:16px;font-weight:600;margin-bottom:5px;color:var(--text)}
+.wcd-example{font-size:12px;font-style:italic;color:var(--text2);line-height:1.4;margin-bottom:14px;border-left:2px solid var(--border);padding-left:8px}
 .wcd-actions{display:flex;gap:8px;flex-wrap:wrap}
-.wcd-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
-  color:rgba(255,255,255,.9);border-radius:8px;padding:6px 14px;font-size:12px;
+.wcd-btn{background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;
   cursor:pointer;transition:all .15s}
-.wcd-btn:hover{background:rgba(255,255,255,.28)}
-.wcd-btn-del{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.4);color:#fca5a5}
-.wcd-btn-del:hover{background:rgba(239,68,68,.45)}
+.wcd-btn:hover{background:var(--border);border-color:var(--text2)}
+.wcd-btn-del{background:transparent;border:1px solid #fca5a5;color:#ef4444}
+.wcd-btn-del:hover{background:#fee2e2;border-color:#ef4444}
 @media(max-width:640px){
   .wcd-word{font-size:20px}
   .wcd-translation{font-size:16px}
@@ -366,31 +369,34 @@ select.form-input{appearance:none;cursor:pointer}
 .cards-deck-inner{position:relative}
 .word-card-deck{
   position:sticky;
-  border-radius:20px;
+  border-radius:16px;
   margin-bottom:8px;
   overflow:hidden;
   cursor:default;
-  box-shadow:0 4px 20px rgba(0,0,0,.35);
-  transition:box-shadow .2s;
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 2px 10px rgba(0,0,0,.07);
+  transition:box-shadow .2s,transform .15s;
 }
-.word-card-deck:hover{box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.word-card-deck:hover{box-shadow:0 6px 20px rgba(0,0,0,.10);transform:translateY(-1px)}
 .wcd-header{
-  padding:20px 24px 16px;
+  padding:18px 20px 12px 20px;
   display:flex;align-items:center;gap:10px;
+  border-left:4px solid var(--wcd-color,var(--border));
 }
-.wcd-word{font-size:24px;font-weight:700;color:rgba(255,255,255,.95);flex:1;line-height:1.2}
-.wcd-learned-tag{font-size:11px;background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);
-  padding:3px 8px;border-radius:12px;white-space:nowrap}
-.wcd-body{padding:0 24px 22px;color:rgba(255,255,255,.9)}
-.wcd-translation{font-size:18px;font-weight:600;margin-bottom:6px}
-.wcd-example{font-size:13px;font-style:italic;opacity:.75;line-height:1.4;margin-bottom:14px}
+.wcd-word{font-size:22px;font-weight:800;font-family:'Fraunces',serif;color:var(--text);flex:1;line-height:1.2}
+.wcd-learned-tag{font-size:11px;background:var(--surface2);color:var(--text2);
+  padding:3px 8px;border-radius:12px;white-space:nowrap;font-weight:600}
+.wcd-body{padding:0 20px 18px 24px;color:var(--text)}
+.wcd-translation{font-size:16px;font-weight:600;margin-bottom:5px;color:var(--text)}
+.wcd-example{font-size:12px;font-style:italic;color:var(--text2);line-height:1.4;margin-bottom:14px;border-left:2px solid var(--border);padding-left:8px}
 .wcd-actions{display:flex;gap:8px;flex-wrap:wrap}
-.wcd-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
-  color:rgba(255,255,255,.9);border-radius:8px;padding:6px 14px;font-size:12px;
+.wcd-btn{background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;
   cursor:pointer;transition:all .15s}
-.wcd-btn:hover{background:rgba(255,255,255,.28)}
-.wcd-btn-del{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.4);color:#fca5a5}
-.wcd-btn-del:hover{background:rgba(239,68,68,.45)}
+.wcd-btn:hover{background:var(--border);border-color:var(--text2)}
+.wcd-btn-del{background:transparent;border:1px solid #fca5a5;color:#ef4444}
+.wcd-btn-del:hover{background:#fee2e2;border-color:#ef4444}
 @media(max-width:640px){
   .wcd-word{font-size:20px}
   .wcd-translation{font-size:16px}
@@ -1541,8 +1547,9 @@ function renderCardsView(words, list) {
     words.map((w, i) => {
       const isLearned = bool(w.learned);
       const bg = cardGrad(w);
+      const [cc] = bg.match(/#[0-9a-fA-F]{6}/g) || ['#888'];
       return `<div class="word-card-deck" data-id="${w.id}"
-          style="top:${i * PEEK}px;z-index:${i+1};background:${bg}">
+          style="top:${i * PEEK}px;z-index:${i+1};--wcd-color:${cc}">
         <div class="wcd-header">
           <div class="wcd-word">${esc(w.word)}</div>
           ${isLearned ? '<span class="wcd-learned-tag">изучено</span>' : ''}
