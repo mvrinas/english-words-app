@@ -1099,7 +1099,7 @@ function updateUserChip() {
   const dAvatar = document.getElementById('user-avatar-d');
   const dName = document.getElementById('user-name-d');
   if (dAvatar) dAvatar.textContent = name[0].toUpperCase();
-  if (dName) dName.textContent = name + (role === 'ceo' ? ' CEO' : '');
+  if (dName) dName.innerHTML = esc(name) + (role === 'ceo' ? ' <span class="ceo-badge">CEO</span>' : '');
 }
 
 // ── API helper ─────────────────────────────────────────────────────────────────
