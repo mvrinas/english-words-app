@@ -1026,7 +1026,8 @@ select.form-input{appearance:none;cursor:pointer}
 <div class="modal-overlay hidden" id="modal-search">
   <div class="modal" style="max-width:480px">
     <div class="modal-header">
-      <div class="modal-title">Поиск пользователей</div>
+      <button class="btn btn-ghost btn-sm" id="btn-back-search" title="Назад" style="padding:3px 6px;line-height:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="modal-title" style="flex:1;text-align:center">Поиск пользователей</div>
       <button class="btn btn-ghost btn-sm" id="btn-close-search">✕</button>
     </div>
     <input class="form-input" id="search-users-inp" placeholder="Имя или @никнейм..." style="margin-bottom:12px"/>
@@ -2051,6 +2052,7 @@ function showProfileModal(user, isOwn) {
       ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-requests-profile" onclick="toggleRequestsPanel()">Отправленные заявки</button>` : ''}
     </div>
     ${isOwn ? `<div id="profile-requests-panel" style="display:none;margin-top:4px"></div>` : ''}
+    ${isOwn ? `<div id="profile-incoming-section"></div>` : ''}
     ${isOwn ? `<div id="profile-friends-section"></div>` : ''}
     <div id="profile-messages-section"></div>
     ${isOwn ? renderProfileEditForm(user) : ''}
@@ -2289,16 +2291,12 @@ async function loadFriendRequests() {
     }
     if (inSection) inSection.innerHTML = sentOut;
 
-    // Incoming requests shown inside messages section header if any
-    window._pendingReceived = received;
-    const msgSec = document.getElementById('profile-messages-section');
-    if (msgSec && received.length) {
-      const existing = msgSec.querySelector('.incoming-block');
-      if (!existing) {
-        const block = document.createElement('div');
-        block.className = 'incoming-block';
-        block.style.cssText = 'border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:4px';
-        let inHtml = `<div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Входящие заявки (${received.length})</div>`;
+    // Incoming requests — render in dedicated section
+    const incomingSec = document.getElementById('profile-incoming-section');
+    if (incomingSec) {
+      if (received.length) {
+        let inHtml = `<div style="margin-top:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:8px">Входящие заявки (${received.length})</div>`;
         received.forEach(u => {
           const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
           const uname = u.username ? '@' + u.username : '';
@@ -2315,8 +2313,10 @@ async function loadFriendRequests() {
             </div>
           </div>`;
         });
-        block.innerHTML = inHtml;
-        msgSec.prepend(block);
+        inHtml += '</div>';
+        incomingSec.innerHTML = inHtml;
+      } else {
+        incomingSec.innerHTML = '';
       }
     }
   } catch(e) {}
@@ -2325,7 +2325,17 @@ async function loadFriendRequests() {
 function toggleRequestsPanel() {
   const panel = document.getElementById('profile-requests-panel');
   if (!panel) return;
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  // Add/remove back-style header inside panel
+  if (isHidden && !panel.querySelector('.req-panel-header')) {
+    const header = document.createElement('div');
+    header.className = 'req-panel-header';
+    header.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 0 12px;border-bottom:1px solid var(--border);margin-bottom:8px';
+    const backSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+    header.innerHTML = `<button class="btn btn-ghost btn-sm" style="padding:3px 6px;line-height:0" onclick="toggleRequestsPanel()">${backSvg}</button><span style="font-size:14px;font-weight:600">Отправленные заявки</span>`;
+    panel.prepend(header);
+  }
 }
 
 async function loadProfileMessages() {
@@ -2340,7 +2350,7 @@ async function loadProfileMessages() {
     } else {
       convos.forEach(c => {
         const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.name || c.username || '?';
-        const preview = c.last_message ? (c.last_message.length > 38 ? c.last_message.slice(0,38) + '...' : c.last_message) : '';
+        const preview = c.last_msg ? (c.last_message.length > 38 ? c.last_message.slice(0,38) + '...' : c.last_message) : '';
         const init = name[0].toUpperCase();
         const hasUnread = c.unread > 0;
         out += `<div onclick="openChat(${c.id},'${esc(name)}')" style="display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:10px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
@@ -2432,9 +2442,8 @@ async function checkNotifications() {
 
 // ── Search ────────────────────────────────────────────────────────────────────
 function openSearchModal() {
-  document.getElementById('modal-profile').classList.add('hidden');
   document.getElementById('modal-search').classList.remove('hidden');
-  document.getElementById('search-users-inp').focus();
+  setTimeout(() => document.getElementById('search-users-inp').focus(), 50);
   document.getElementById('search-results').innerHTML = '';
 }
 
@@ -2509,7 +2518,8 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
 
 // Close modals
 document.getElementById('btn-close-profile').addEventListener('click', () => document.getElementById('modal-profile').classList.add('hidden'));
-document.getElementById('btn-close-search').addEventListener('click',  () => document.getElementById('modal-search').classList.add('hidden'));
+document.getElementById('btn-close-search').addEventListener('click', () => document.getElementById('modal-search').classList.add('hidden'));
+document.getElementById('btn-back-search').addEventListener('click', () => document.getElementById('modal-search').classList.add('hidden'));
 document.getElementById('btn-close-chat').addEventListener('click',    () => { document.getElementById('modal-chat').classList.add('hidden'); chatPartnerId = null; });
 
 // ── Mobile hamburger ──────────────────────────────────────────────────────────
