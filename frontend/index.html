@@ -481,8 +481,6 @@ select.form-input{appearance:none;cursor:pointer}
 
 
 /* ── Dashboard ────────────────────────────────────────────────────────────── */
-.dash-greeting{font-size:24px;font-weight:800;font-family:'Fraunces',serif;
-  font-style:normal;color:var(--text);margin-bottom:20px;letter-spacing:-.6px}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .dash-card{background:var(--surface);border:1px solid var(--border);
   border-radius:16px;padding:18px 16px;display:flex;flex-direction:column;gap:6px}
@@ -736,7 +734,6 @@ select.form-input{appearance:none;cursor:pointer}
 <div class="main">
   <!-- WORDS -->
   <div class="page active" id="page-home">
-    <div class="dash-greeting" id="dash-greeting">Привет!</div>
 
     <div class="dash-grid">
       <!-- Стрик -->
@@ -2822,11 +2819,6 @@ const LEVEL_NAMES = ['','Начинающий','Элементарный','Ср�
 async function renderDashboard() {
   try {
     const s = await api('GET', '/streak');
-    // Приветствие
-    const name = currentUser ? (currentUser.name || currentUser.email.split('@')[0]) : '';
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер';
-    document.getElementById('dash-greeting').textContent = `${greeting}, ${name}!`;
 
     // Стрик
     document.getElementById('dash-streak').textContent = s.streak || 0;
