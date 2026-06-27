@@ -1079,31 +1079,7 @@ select.form-input{appearance:none;cursor:pointer}
       <div class="page-header">
         <div class="page-title" id="hw-page-title">Домашние задания</div>
       </div>
-      <!-- Teacher: create form -->
-      <div class="hw-create-form" id="hw-create-form">
-        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px">Новое задание</div>
-        <select class="hw-input" id="hw-student-select"><option value="">Выбрать ученика...</option></select>
-        <input class="hw-input" id="hw-title-input" placeholder="Название задания" maxlength="120">
-        <div id="hw-desc-rte"></div>
-        <input class="hw-input" id="hw-due-input" type="date" placeholder="Срок сдачи (необязательно)">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Ссылки и видео</div>
-        <div class="hw-links-list" id="hw-links-list"></div>
-        <div class="hw-link-row" style="margin-bottom:12px">
-          <input class="hw-input" id="hw-link-label" placeholder="Название ссылки" style="margin:0">
-          <input class="hw-input" id="hw-link-url" placeholder="URL (YouTube, статья...)" style="margin:0;flex:2">
-          <button onclick="hwAddLink()">+</button>
-        </div>
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Слова для изучения</div>
-        <div class="hw-words-chips" id="hw-words-chips"></div>
-        <div class="hw-words-input">
-          <input class="hw-input" id="hw-word-input" placeholder="Добавить слово" style="margin:0" onkeydown="if(event.key==='Enter'){hwAddWord();event.preventDefault()}">
-          <button class="btn btn-sm" onclick="hwAddWord()">+</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn btn-primary" onclick="hwSubmitCreate()">Создать задание</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('hw-create-form').classList.remove('open')">Отмена</button>
-        </div>
-      </div>
+
       <!-- Assignments list -->
       <div class="hw-list" id="hw-list-container">
         <div class="hw-empty"><div class="hw-empty-icon">&#128218;</div><div>Заданий пока нет</div></div>
@@ -1833,6 +1809,7 @@ function closeWordModal() {
 
 document.getElementById('btn-add-word').onclick = () => openWordModal();
 const _fabBtn = document.getElementById('fab-add-word'); if (_fabBtn) _fabBtn.onclick = () => openWordModal();
+const _fabHwBtn = document.getElementById('fab-hw-create'); if (_fabHwBtn) _fabHwBtn.onclick = () => hwOpenCreateModal();
 document.getElementById('btn-close-word-modal').onclick = closeWordModal;
 document.getElementById('btn-cancel-word').onclick = closeWordModal;
 document.getElementById('modal-word').onclick = e => { if(e.target===e.currentTarget) closeWordModal(); };
