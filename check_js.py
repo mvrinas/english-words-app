@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 """Проверяет баланс JS скобок в index.html перед деплоем"""
-import sys
+import sys, re
 
 with open('frontend/index.html', 'r') as f:
     html = f.read()
 
-start = html.rfind('<script>')
-end = html.rfind('</script>')
-if start == -1 or end == -1:
-    print("ERROR: <script> не найден")
-    sys.exit(1)
+scripts = re.findall(r'<script[^>]*>([\s\S]*?)</script>', html)
+if not scripts:
+    print("ERROR: <script> не найден"); sys.exit(1)
 
-js = html[start+8:end]
-depth = 0
-for ch in js:
-    if ch == '{': depth += 1
-    elif ch == '}': depth -= 1
+errors = []
+for i, js in enumerate(scripts):
+    depth = 0
+    for ch in js:
+        if ch == '{': depth += 1
+        elif ch == '}': depth -= 1
+    if depth != 0:
+        errors.append(f"Блок {i+1} ({len(js.splitlines())} строк): баланс = {depth}")
 
-if depth != 0:
-    print(f"ERROR: Баланс скобок JS = {depth} (должен быть 0)")
-    sys.exit(1)
+if errors:
+    print("ERROR: " + "; ".join(errors)); sys.exit(1)
 
-print(f"OK: JS баланс = 0, строк = {len(js.splitlines())}")
+total = sum(len(s.splitlines()) for s in scripts)
+print(f"OK: {len(scripts)} блоков, {total} строк, баланс = 0")
