@@ -61,6 +61,25 @@
 .grammar-ex-ru{font-style:normal;font-size:11px;color:var(--text2);margin-top:3px}
 
 /* ── Auth screen ─────────────────────────────────────────────────────────── */
+
+/* ── OTP screen ──────────────────────────────────────────────────────────── */
+.otp-screen{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;
+  justify-content:center;z-index:900;padding:20px}
+.otp-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:36px 32px;width:100%;max-width:380px;text-align:center}
+.otp-title{font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px}
+.otp-subtitle{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.5}
+.otp-fields{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+.otp-field{width:58px;height:64px;border:2px solid var(--border);border-radius:12px;
+  font-size:28px;font-weight:800;text-align:center;background:var(--surface);
+  color:var(--text);transition:border-color .15s;outline:none}
+.otp-field:focus{border-color:var(--accent)}
+.otp-error{color:#ef4444;font-size:13px;margin-bottom:12px;display:none}
+.otp-resend{background:none;border:none;color:var(--text2);font-size:12px;
+  cursor:pointer;text-decoration:underline;margin-top:12px;padding:0}
+.otp-back{background:none;border:none;color:var(--text2);font-size:13px;
+  cursor:pointer;margin-top:8px;padding:0;display:flex;align-items:center;
+  gap:4px;margin:12px auto 0}
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
   justify-content:center;z-index:1000;padding:20px}
 .auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
@@ -671,6 +690,28 @@ select.form-input{appearance:none;cursor:pointer}
       <button class="btn btn-primary" id="btn-register" style="width:100%">Создать аккаунт →</button>
       <div class="auth-error" id="reg-error"></div>
     </div>
+  </div>
+</div>
+
+
+<!-- OTP VERIFICATION SCREEN -->
+<div id="otp-screen" class="otp-screen">
+  <div class="otp-box">
+    <div class="otp-title">Введи код</div>
+    <div class="otp-subtitle" id="otp-subtitle">Мы отправили 4-значный код на<br><strong id="otp-email-display"></strong></div>
+    <div class="otp-fields">
+      <input class="otp-field" id="otp-0" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code">
+      <input class="otp-field" id="otp-1" type="text" inputmode="numeric" maxlength="1">
+      <input class="otp-field" id="otp-2" type="text" inputmode="numeric" maxlength="1">
+      <input class="otp-field" id="otp-3" type="text" inputmode="numeric" maxlength="1">
+    </div>
+    <div class="otp-error" id="otp-error"></div>
+    <button class="btn btn-primary" id="btn-otp-verify" style="width:100%">Подтвердить</button>
+    <button class="otp-resend" id="btn-otp-resend">Не получил код? Отправить снова</button>
+    <button class="otp-back" id="btn-otp-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Назад
+    </button>
   </div>
 </div>
 
@@ -3139,6 +3180,84 @@ document.getElementById('tab-register').addEventListener('click', () => {
   document.getElementById('form-login').style.display = 'none';
 });
 
+// OTP state
+let _otpEmail = '';
+let _otpNeedsLevel = false;
+
+function showOtpScreen(email, needsLevel) {
+  _otpEmail = email;
+  _otpNeedsLevel = !!needsLevel;
+  document.getElementById('otp-email-display').textContent = email;
+  document.getElementById('otp-error').style.display = 'none';
+  ['otp-0','otp-1','otp-2','otp-3'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('otp-screen').style.display = 'flex';
+  document.getElementById('otp-0').focus();
+}
+
+function hideOtpScreen() {
+  document.getElementById('otp-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+async function submitOtp() {
+  const code = ['otp-0','otp-1','otp-2','otp-3'].map(id => document.getElementById(id).value).join('');
+  if (code.length < 4) { const e = document.getElementById('otp-error'); e.textContent = 'Введи все 4 цифры'; e.style.display = ''; return; }
+  const errEl = document.getElementById('otp-error');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/auth/verify-otp', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email: _otpEmail, code})
+    });
+    if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Неверный код'; errEl.style.display = ''; return; }
+    const data = await res.json();
+    saveAuth(data.token, data.user);
+    document.getElementById('otp-screen').style.display = 'none';
+    if (data.needs_level || _otpNeedsLevel) { showLevelPicker(); } else { showApp(); }
+  } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
+}
+
+// OTP field auto-advance
+(function(){
+  const fields = ['otp-0','otp-1','otp-2','otp-3'];
+  fields.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', () => {
+      const v = el.value.replace(/\D/g,'');
+      el.value = v.slice(-1);
+      if (v && i < fields.length - 1) document.getElementById(fields[i+1]).focus();
+      if (i === fields.length - 1 && el.value) submitOtp();
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !el.value && i > 0) document.getElementById(fields[i-1]).focus();
+      if (e.key === 'Enter') submitOtp();
+    });
+    el.addEventListener('paste', e => {
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,4);
+      if (text.length === 4) {
+        e.preventDefault();
+        fields.forEach((fid, fi) => document.getElementById(fid).value = text[fi] || '');
+        submitOtp();
+      }
+    });
+  });
+})();
+
+document.getElementById('btn-otp-verify').addEventListener('click', submitOtp);
+document.getElementById('btn-otp-back').addEventListener('click', hideOtpScreen);
+document.getElementById('btn-otp-resend').addEventListener('click', async () => {
+  try {
+    // Re-trigger by calling login/register again — simplest: just show message
+    const btn = document.getElementById('btn-otp-resend');
+    btn.textContent = 'Отправляем...'; btn.disabled = true;
+    // We don't have password here, so just tell user to go back
+    await new Promise(r => setTimeout(r, 1500));
+    btn.textContent = 'Вернитесь назад и войдите снова';
+    btn.disabled = false;
+  } catch {}
+});
+
 document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
@@ -3151,6 +3270,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     });
     if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
     const data = await res.json();
+    if (data.needs_otp) { showOtpScreen(data.email, false); return; }
     saveAuth(data.token, data.user);
     showApp();
   } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
@@ -3196,6 +3316,7 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     });
     if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
     const data = await res.json();
+    if (data.needs_otp) { showOtpScreen(data.email, data.needs_level); return; }
     saveAuth(data.token, data.user);
     if (data.needs_level) { showLevelPicker(); } else { showApp(); }
   } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }

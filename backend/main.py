@@ -144,8 +144,8 @@ def register(body: RegisterIn):
             user = {"id": uid, "email": body.email.lower(), "name": body.name, "role": "user", "level": None, "username": uname}
         conn.commit()
         _create_default_topics(conn, user["id"])
-    token = make_token(user["id"], user["email"], user["role"])
-    return {"token": token, "user": {k: user[k] for k in ("id","email","name","role","level") if k in user}, "needs_level": True}
+    _send_otp(body.email.lower(), "register")
+    return {"needs_otp": True, "email": body.email.lower(), "needs_level": True}
 
 
 @app.post("/auth/login")
@@ -164,9 +164,9 @@ def login(body: LoginIn):
             ).mappings().one_or_none()
     if not row or not check_pw(body.password, row["password_hash"]):
         raise HTTPException(401, "Неверный email или пароль")
-    token = make_token(row["id"], row["email"], row["role"])
-    user_data = {"id": row["id"], "email": row["email"], "name": row["name"], "role": row["role"], "level": row.get("level")}
-    return {"token": token, "user": user_data}
+    # Send OTP
+    _send_otp(body.email.lower(), "login")
+    return {"needs_otp": True, "email": body.email.lower()}
 
 
 @app.get("/auth/me")
@@ -777,6 +777,94 @@ def _send_email(to: str, subject: str, html: str):
 
 def _gen_code(length=6) -> str:
     return "".join(random.choices(string.digits, k=length))
+
+
+def _send_otp(email: str, purpose: str):
+    """Generate 4-digit OTP, store in DB, send via email."""
+    from datetime import datetime, timezone, timedelta
+    code = "".join(random.choices(string.digits, k=4))
+    expires = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+    with get_conn() as conn:
+        # Invalidate previous unused codes for this email+purpose
+        conn.execute(
+            text("UPDATE email_otp SET used=1 WHERE email=:e AND purpose=:p AND used=0"),
+            {"e": email, "p": purpose}
+        )
+        conn.execute(
+            text("INSERT INTO email_otp (email, code, purpose, expires_at) VALUES (:e, :c, :p, :x)"),
+            {"e": email, "c": code, "p": purpose, "x": expires}
+        )
+        conn.commit()
+    html_body = f"""
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+        max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9fb">
+      <div style="background:#fff;border-radius:16px;padding:32px;border:1px solid #e5e7eb">
+        <div style="font-size:22px;font-weight:800;color:#111;margin-bottom:8px">WordsApp</div>
+        <div style="font-size:15px;color:#6b7280;margin-bottom:28px">
+          {'Подтверждение входа' if purpose == 'login' else 'Подтверждение регистрации'}
+        </div>
+        <div style="font-size:13px;color:#374151;margin-bottom:16px">Твой код подтверждения:</div>
+        <div style="font-size:42px;font-weight:900;letter-spacing:12px;color:#4f46e5;
+            text-align:center;background:#f0f0ff;border-radius:12px;padding:18px 0;
+            margin-bottom:20px">{code}</div>
+        <div style="font-size:12px;color:#9ca3af">Код действителен 10 минут. Никому не сообщай его.</div>
+      </div>
+    </div>"""
+    if not SMTP_HOST or not SMTP_USER:
+        print(f"[OTP DEV] {email} → {code}")
+        return
+    _send_email(email, "Код подтверждения — WordsApp", html_body)
+
+
+class OtpVerifyIn(BaseModel):
+    email: str
+    code:  str
+
+@app.post("/auth/verify-otp")
+def verify_otp(body: OtpVerifyIn):
+    from datetime import datetime, timezone
+    email = body.email.lower().strip()
+    with get_conn() as conn:
+        row = conn.execute(text("""
+            SELECT id, code, expires_at, purpose FROM email_otp
+            WHERE email=:e AND used=0
+            ORDER BY id DESC LIMIT 1
+        """), {"e": email}).one_or_none()
+        if not row or row[1] != body.code.strip():
+            raise HTTPException(400, "Неверный код")
+        expires = row[2]
+        if isinstance(expires, str):
+            try:
+                exp_dt = datetime.fromisoformat(expires.replace("Z", "+00:00"))
+            except:
+                exp_dt = datetime.fromisoformat(expires)
+                exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+        else:
+            exp_dt = expires
+        if exp_dt.tzinfo is None:
+            exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > exp_dt:
+            raise HTTPException(400, "Код истёк. Войдите снова")
+        conn.execute(text("UPDATE email_otp SET used=1 WHERE id=:id"), {"id": row[0]})
+        conn.commit()
+        # Fetch user
+        try:
+            user = conn.execute(
+                text("SELECT id, email, name, role, level FROM users WHERE email=:e"),
+                {"e": email}
+            ).mappings().one_or_none()
+        except Exception:
+            conn.rollback()
+            user = conn.execute(
+                text("SELECT id, email, name, role FROM users WHERE email=:e"),
+                {"e": email}
+            ).mappings().one_or_none()
+    if not user:
+        raise HTTPException(404, "Пользователь не найден")
+    user = dict(user)
+    token = make_token(user["id"], user["email"], user["role"])
+    needs_level = not user.get("level")
+    return {"token": token, "user": {k: user[k] for k in ("id","email","name","role","level") if k in user}, "needs_level": needs_level}
 
 
 class ForgotPasswordIn(BaseModel):

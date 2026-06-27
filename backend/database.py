@@ -315,6 +315,29 @@ def init_db():
         """))
         conn.commit()
 
+
+        # ── Email OTP ─────────────────────────────────────────────────────────────
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS email_otp (
+                id         SERIAL PRIMARY KEY,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                purpose    TEXT NOT NULL DEFAULT 'login',
+                expires_at TEXT NOT NULL,
+                used       INTEGER NOT NULL DEFAULT 0
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS email_otp (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                purpose    TEXT NOT NULL DEFAULT 'login',
+                expires_at TEXT NOT NULL,
+                used       INTEGER NOT NULL DEFAULT 0
+            )
+        """))
+        conn.commit()
+
         # ── CEO account ───────────────────────────────────────────────────────
         ceo = conn.execute(
             text("SELECT id FROM users WHERE email=:e"), {"e": CEO_EMAIL}
