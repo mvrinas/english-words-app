@@ -567,6 +567,37 @@ select.form-input{appearance:none;cursor:pointer}
   .dash-action{padding:12px}
 }
 
+/* ── Social / Profile ────────────────────────────────────────────────── */
+.profile-avatar-lg{width:72px;height:72px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  font-weight:800;color:#fff;font-family:'Fraunces',serif;flex-shrink:0}
+.profile-header{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+.profile-name{font-family:'Fraunces',serif;font-size:22px;font-weight:800;letter-spacing:-.4px}
+.profile-username{font-size:13px;color:var(--text2);margin-top:2px}
+.profile-bio{font-size:13px;color:var(--text2);margin-top:4px;line-height:1.4}
+.profile-stats{display:flex;gap:20px;margin-bottom:16px}
+.profile-stat{text-align:center}
+.profile-stat-num{font-family:'Fraunces',serif;font-weight:800;font-size:20px}
+.profile-stat-label{font-size:11px;color:var(--text2)}
+.profile-actions{display:flex;gap:8px;margin-bottom:16px}
+.user-search-item{display:flex;align-items:center;gap:12px;padding:10px;
+  border-radius:12px;cursor:pointer;transition:background .15s}
+.user-search-item:hover{background:var(--surface2)}
+.user-search-avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  font-weight:700;color:#fff;flex-shrink:0}
+.user-search-info{flex:1;min-width:0}
+.user-search-name{font-weight:600;font-size:14px}
+.user-search-username{font-size:12px;color:var(--text2)}
+/* Chat */
+.chat-msg{max-width:75%;padding:8px 12px;border-radius:14px;font-size:14px;line-height:1.4;word-break:break-word}
+.chat-msg.mine{background:var(--text);color:var(--surface);align-self:flex-end;border-bottom-right-radius:4px}
+.chat-msg.theirs{background:var(--surface2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg-time{font-size:10px;opacity:.5;margin-top:3px}
+/* Profile edit form */
+.profile-edit-form{display:flex;flex-direction:column;gap:10px}
+.profile-field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -589,7 +620,14 @@ select.form-input{appearance:none;cursor:pointer}
       <div class="auth-error" id="login-error"></div>
     </div>
     <div id="form-register" class="auth-form" style="display:none">
-      <input class="form-input" type="text" id="reg-name" placeholder="Имя (необязательно)"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input class="form-input" type="text" id="reg-first-name" placeholder="Имя"/>
+        <input class="form-input" type="text" id="reg-last-name" placeholder="Фамилия"/>
+      </div>
+      <div style="position:relative">
+        <input class="form-input" type="text" id="reg-username" placeholder="@никнейм" style="padding-right:90px" autocomplete="off"/>
+        <span id="reg-username-status" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600"></span>
+      </div>
       <input class="form-input" type="email" id="reg-email" placeholder="Email"/>
       <input class="form-input" type="password" id="reg-password" placeholder="Пароль (мин. 6 символов)"/>
       <button class="btn btn-primary" id="btn-register" style="width:100%">Создать аккаунт →</button>
@@ -923,6 +961,44 @@ select.form-input{appearance:none;cursor:pointer}
         <button class="btn btn-primary" style="margin-top:24px" id="btn-quiz-again">Ещё раз</button>
         <button class="btn btn-ghost" style="margin-top:8px" id="btn-quiz-exit">На главную</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay hidden" id="modal-profile">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="profile-modal-title">Профиль</div>
+      <button class="btn btn-ghost btn-sm" id="btn-close-profile">✕</button>
+    </div>
+    <div id="profile-modal-body"></div>
+  </div>
+</div>
+
+<!-- SEARCH MODAL -->
+<div class="modal-overlay hidden" id="modal-search">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">Поиск пользователей</div>
+      <button class="btn btn-ghost btn-sm" id="btn-close-search">✕</button>
+    </div>
+    <input class="form-input" id="search-users-inp" placeholder="Имя или @никнейм..." style="margin-bottom:12px"/>
+    <div id="search-results"></div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="modal-overlay hidden" id="modal-chat">
+  <div class="modal" style="max-width:480px;display:flex;flex-direction:column;height:80vh;max-height:600px">
+    <div class="modal-header" style="flex-shrink:0">
+      <div class="modal-title" id="chat-title">Сообщения</div>
+      <button class="btn btn-ghost btn-sm" id="btn-close-chat">✕</button>
+    </div>
+    <div id="chat-messages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0 12px"></div>
+    <div style="display:flex;gap:8px;flex-shrink:0;margin-top:8px">
+      <input class="form-input" id="chat-input" placeholder="Сообщение..." style="flex:1"/>
+      <button class="btn btn-primary" id="btn-send-msg">→</button>
     </div>
   </div>
 </div>
@@ -1865,6 +1941,242 @@ function renderQuizResult() {
 
 document.getElementById('btn-quit-quiz').addEventListener('click',renderQuizStart);
 
+
+// ── Social: Profile, Search, Messages ─────────────────────────────────────────
+
+let chatPartnerId = null;
+
+// Make user chip clickable → open own profile
+document.getElementById('user-chip')?.addEventListener('click', () => openOwnProfile());
+document.getElementById('user-chip-desktop')?.addEventListener('click', () => openOwnProfile());
+
+function openOwnProfile() {
+  if (!currentUser) return;
+  showProfileModal(currentUser, true);
+}
+
+async function openUserProfile(username) {
+  try {
+    const data = await api('GET', '/users/' + username);
+    showProfileModal(data, false);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function showProfileModal(user, isOwn) {
+  const modal = document.getElementById('modal-profile');
+  const title = document.getElementById('profile-modal-title');
+  const body  = document.getElementById('profile-modal-body');
+  title.textContent = isOwn ? 'Мой профиль' : 'Профиль';
+  modal.classList.remove('hidden');
+
+  const initials = (user.first_name || user.name || user.username || '?')[0].toUpperCase();
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.name || '';
+  const username = user.username ? '@' + user.username : '';
+
+  let friendBtn = '';
+  if (!isOwn) {
+    if (!user.friend_status) {
+      friendBtn = `<button class="btn btn-primary btn-sm" onclick="sendFriendReq(${user.id})">Добавить в друзья</button>`;
+    } else if (user.friend_status === 'pending' && user.i_sent) {
+      friendBtn = `<button class="btn btn-ghost btn-sm" disabled>Запрос отправлен</button>`;
+    } else if (user.friend_status === 'pending') {
+      friendBtn = `<button class="btn btn-primary btn-sm" onclick="sendFriendReq(${user.id})">Принять запрос</button>`;
+    } else {
+      friendBtn = `<button class="btn btn-ghost btn-sm" onclick="removeFriend(${user.id})">Удалить из друзей</button>`;
+    }
+  }
+
+  body.innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar-lg">${initials}</div>
+      <div>
+        <div class="profile-name">${esc(fullName || username)}</div>
+        <div class="profile-username">${esc(username)}</div>
+        ${user.bio ? `<div class="profile-bio">${esc(user.bio)}</div>` : ''}
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-num">${user.word_count ?? '—'}</div>
+        <div class="profile-stat-label">Слов</div>
+      </div>
+    </div>
+    <div class="profile-actions">
+      ${friendBtn}
+      ${!isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openChat(${user.id}, '${esc(fullName || username)}')">Написать</button>` : ''}
+      ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-edit-profile">Редактировать</button>` : ''}
+      ${isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openSearchModal()">Найти людей</button>` : ''}
+    </div>
+    ${isOwn ? renderProfileEditForm(user) : ''}
+  `;
+
+  if (isOwn) {
+    document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
+      const form = document.getElementById('profile-edit-form');
+      if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    });
+    document.getElementById('btn-save-profile')?.addEventListener('click', saveProfile);
+  }
+}
+
+function renderProfileEditForm(user) {
+  return `
+    <div id="profile-edit-form" class="profile-edit-form" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:16px">
+      <div class="profile-field-row">
+        <div><label style="font-size:12px;color:var(--text2)">Имя</label>
+          <input class="form-input" id="edit-first-name" value="${esc(user.first_name||'')}" placeholder="Имя"/></div>
+        <div><label style="font-size:12px;color:var(--text2)">Фамилия</label>
+          <input class="form-input" id="edit-last-name" value="${esc(user.last_name||'')}" placeholder="Фамилия"/></div>
+      </div>
+      <div><label style="font-size:12px;color:var(--text2)">Никнейм</label>
+        <div style="position:relative">
+          <input class="form-input" id="edit-username" value="${esc(user.username||'')}" placeholder="username" style="padding-right:80px"/>
+          <span id="edit-username-status" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--green)"></span>
+        </div>
+      </div>
+      <div><label style="font-size:12px;color:var(--text2)">О себе</label>
+        <input class="form-input" id="edit-bio" value="${esc(user.bio||'')}" placeholder="Пара слов о себе..."/></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="edit-public" ${user.is_public!==0?'checked':''}/>
+        <label for="edit-public" style="font-size:13px">Открытый профиль</label>
+      </div>
+      <button class="btn btn-primary" id="btn-save-profile">Сохранить</button>
+      <div class="auth-error" id="profile-save-error" style="display:none"></div>
+    </div>
+  `;
+}
+
+// Username check in edit form
+let editUnameTimer = null;
+document.getElementById('modal-profile').addEventListener('input', e => {
+  if (e.target.id !== 'edit-username') return;
+  clearTimeout(editUnameTimer);
+  const val = e.target.value.trim();
+  const st = document.getElementById('edit-username-status');
+  if (!val) { if(st) st.textContent = ''; return; }
+  editUnameTimer = setTimeout(async () => {
+    const r = await fetch('/users/check-username?username=' + encodeURIComponent(val));
+    const d = await r.json();
+    if (st) { st.textContent = d.available ? 'Свободен' : (d.reason || 'Занят'); st.style.color = d.available ? 'var(--green)' : 'var(--red)'; }
+  }, 500);
+});
+
+async function saveProfile() {
+  const errEl = document.getElementById('profile-save-error');
+  errEl.style.display = 'none';
+  const body = {
+    first_name: document.getElementById('edit-first-name')?.value.trim(),
+    last_name:  document.getElementById('edit-last-name')?.value.trim(),
+    username:   document.getElementById('edit-username')?.value.trim(),
+    bio:        document.getElementById('edit-bio')?.value.trim(),
+    is_public:  document.getElementById('edit-public')?.checked
+  };
+  try {
+    const updated = await api('PATCH', '/profile', body);
+    currentUser = {...currentUser, ...updated};
+    saveAuth(authToken, currentUser);
+    updateUserChip();
+    toast('Профиль сохранён');
+    showProfileModal(updated, true);
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
+}
+
+async function sendFriendReq(userId) {
+  try {
+    const r = await api('POST', '/friends/' + userId);
+    toast(r.status === 'accepted' ? 'Теперь вы друзья!' : 'Запрос отправлен');
+    document.getElementById('modal-profile').classList.add('hidden');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function removeFriend(userId) {
+  await api('DELETE', '/friends/' + userId);
+  toast('Удалён из друзей');
+  document.getElementById('modal-profile').classList.add('hidden');
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function openSearchModal() {
+  document.getElementById('modal-profile').classList.add('hidden');
+  document.getElementById('modal-search').classList.remove('hidden');
+  document.getElementById('search-users-inp').focus();
+  document.getElementById('search-results').innerHTML = '';
+}
+
+let searchTimer = null;
+document.getElementById('search-users-inp').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(doSearch, 400);
+});
+
+async function doSearch() {
+  const q = document.getElementById('search-users-inp').value.trim();
+  const box = document.getElementById('search-results');
+  if (q.length < 2) { box.innerHTML = '<div style="color:var(--text2);font-size:13px">Введите минимум 2 символа</div>'; return; }
+  try {
+    const users = await api('GET', '/users/search?q=' + encodeURIComponent(q));
+    if (!users.length) { box.innerHTML = '<div style="color:var(--text2);font-size:13px">Никого не найдено</div>'; return; }
+    box.innerHTML = users.map(u => {
+      const initials = (u.first_name || u.name || u.username || '?')[0].toUpperCase();
+      const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || '';
+      return `<div class="user-search-item" onclick="openUserProfile('${esc(u.username||'')}')">
+        <div class="user-search-avatar">${esc(initials)}</div>
+        <div class="user-search-info">
+          <div class="user-search-name">${esc(fullName)}</div>
+          <div class="user-search-username">${u.username ? '@'+esc(u.username) : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { box.innerHTML = '<div style="color:var(--red)">Ошибка поиска</div>'; }
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+async function openChat(userId, name) {
+  chatPartnerId = userId;
+  document.getElementById('modal-profile').classList.add('hidden');
+  document.getElementById('chat-title').textContent = name;
+  document.getElementById('modal-chat').classList.remove('hidden');
+  document.getElementById('chat-input').value = '';
+  await loadMessages();
+}
+
+async function loadMessages() {
+  if (!chatPartnerId) return;
+  try {
+    const msgs = await api('GET', '/messages/' + chatPartnerId);
+    const box = document.getElementById('chat-messages');
+    box.innerHTML = msgs.map(m => {
+      const mine = m.sender_id == currentUser?.id || m.sender_id === currentUser?.sub;
+      const time = m.created_at ? m.created_at.slice(11,16) : '';
+      return `<div class="chat-msg ${mine?'mine':'theirs'}">
+        ${esc(m.content)}
+        <div class="chat-msg-time">${time}</div>
+      </div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {}
+}
+
+document.getElementById('btn-send-msg').addEventListener('click', async () => {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text || !chatPartnerId) return;
+  inp.value = '';
+  try {
+    await api('POST', '/messages', {receiver_id: chatPartnerId, content: text});
+    await loadMessages();
+  } catch(e) { toast(e.message, 'error'); }
+});
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('btn-send-msg').click(); }
+});
+
+// Close modals
+document.getElementById('btn-close-profile').addEventListener('click', () => document.getElementById('modal-profile').classList.add('hidden'));
+document.getElementById('btn-close-search').addEventListener('click',  () => document.getElementById('modal-search').classList.add('hidden'));
+document.getElementById('btn-close-chat').addEventListener('click',    () => { document.getElementById('modal-chat').classList.add('hidden'); chatPartnerId = null; });
+
 // ── Mobile hamburger ──────────────────────────────────────────────────────────
 function closeSidebar() {
   document.querySelector('.sidebar').classList.remove('open');
@@ -2135,25 +2447,48 @@ document.getElementById('btn-login').addEventListener('click', async () => {
   } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
 });
 
+// Username availability check
+let usernameTimer = null;
+document.getElementById('reg-username').addEventListener('input', () => {
+  clearTimeout(usernameTimer);
+  const val = document.getElementById('reg-username').value.trim().replace(/^@/, '');
+  const st = document.getElementById('reg-username-status');
+  if (!val) { st.textContent = ''; return; }
+  st.textContent = '...'; st.style.color = 'var(--text2)';
+  usernameTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('/users/check-username?username=' + encodeURIComponent(val));
+      const d = await r.json();
+      if (d.available) {
+        st.textContent = 'Свободен'; st.style.color = 'var(--green)';
+      } else {
+        st.textContent = d.reason || 'Занят'; st.style.color = 'var(--red)';
+      }
+    } catch { st.textContent = ''; }
+  }, 500);
+});
+
 document.getElementById('btn-register').addEventListener('click', async () => {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const password = document.getElementById('reg-password').value;
-  const errEl = document.getElementById('reg-error');
+  const first_name = document.getElementById('reg-first-name').value.trim();
+  const last_name  = document.getElementById('reg-last-name').value.trim();
+  const username   = document.getElementById('reg-username').value.trim().replace(/^@/, '');
+  const email      = document.getElementById('reg-email').value.trim();
+  const password   = document.getElementById('reg-password').value;
+  const errEl      = document.getElementById('reg-error');
   errEl.style.display = 'none';
+  if (!username) { errEl.textContent = 'Введите никнейм'; errEl.style.display = ''; return; }
+  const st = document.getElementById('reg-username-status');
+  if (st.textContent === 'Занят') { errEl.textContent = 'Никнейм уже занят'; errEl.style.display = ''; return; }
   try {
     const res = await fetch('/auth/register', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({name, email, password})
+      body: JSON.stringify({first_name, last_name, username, email, password,
+                            name: (first_name + ' ' + last_name).trim() || username})
     });
     if (!res.ok) { const e = await res.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
     const data = await res.json();
     saveAuth(data.token, data.user);
-    if (data.needs_level) {
-      showLevelPicker();
-    } else {
-      showApp();
-    }
+    if (data.needs_level) { showLevelPicker(); } else { showApp(); }
   } catch(e) { errEl.textContent = 'Ошибка соединения'; errEl.style.display = ''; }
 });
 
@@ -2167,7 +2502,7 @@ document.getElementById('btn-logout').addEventListener('click', () => {
 ['login-email','login-password'].forEach(id =>
   document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('btn-login').click(); })
 );
-['reg-name','reg-email','reg-password'].forEach(id =>
+['reg-first-name','reg-last-name','reg-username','reg-email','reg-password'].forEach(id =>
   document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('btn-register').click(); })
 );
 

@@ -47,10 +47,24 @@ class RegisterIn(BaseModel):
     email: str
     password: str
     name: Optional[str] = None
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 class LoginIn(BaseModel):
     email: str
     password: str
+
+class ProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    username: Optional[str] = None
+    bio: Optional[str] = None
+    is_public: Optional[bool] = None
+
+class MessageIn(BaseModel):
+    receiver_id: int
+    content: str
 
 class TopicIn(BaseModel):
     name: str
@@ -103,19 +117,31 @@ def register(body: RegisterIn):
         if exists:
             raise HTTPException(400, "Email уже зарегистрирован")
         ph = hash_pw(body.password)
+        # Validate / generate username
+        import re
+        uname = (body.username or body.email.split("@")[0]).lower()
+        uname = re.sub(r"[^a-z0-9_]", "", uname)[:30] or "user"
+        # Ensure unique
+        base = uname; n = 1
+        while conn.execute(text("SELECT id FROM users WHERE username=:u"), {"u": uname}).one_or_none():
+            uname = f"{base}{n}"; n += 1
         if IS_PG:
             row = conn.execute(text("""
-                INSERT INTO users (email, password_hash, name, role)
-                VALUES (:e, :ph, :n, 'user') RETURNING id, email, name, role
-            """), {"e": body.email.lower(), "ph": ph, "n": body.name or body.email.split("@")[0]}).mappings().one()
+                INSERT INTO users (email, password_hash, name, role, username, first_name, last_name)
+                VALUES (:e, :ph, :n, 'user', :u, :fn, :ln) RETURNING id, email, name, role, username
+            """), {"e": body.email.lower(), "ph": ph,
+                  "n": body.name or body.email.split("@")[0],
+                  "u": uname, "fn": body.first_name, "ln": body.last_name}).mappings().one()
             user = dict(row)
         else:
             conn.execute(text("""
-                INSERT INTO users (email, password_hash, name, role)
-                VALUES (:e, :ph, :n, 'user')
-            """), {"e": body.email.lower(), "ph": ph, "n": body.name or body.email.split("@")[0]})
+                INSERT INTO users (email, password_hash, name, role, username, first_name, last_name)
+                VALUES (:e, :ph, :n, 'user', :u, :fn, :ln)
+            """), {"e": body.email.lower(), "ph": ph,
+                  "n": body.name or body.email.split("@")[0],
+                  "u": uname, "fn": body.first_name, "ln": body.last_name})
             uid = conn.execute(text("SELECT last_insert_rowid()")).scalar()
-            user = {"id": uid, "email": body.email.lower(), "name": body.name, "role": "user", "level": None}
+            user = {"id": uid, "email": body.email.lower(), "name": body.name, "role": "user", "level": None, "username": uname}
         conn.commit()
         _create_default_topics(conn, user["id"])
     token = make_token(user["id"], user["email"], user["role"])
@@ -148,7 +174,7 @@ def me(u=Depends(get_user)):
     with get_conn() as conn:
         try:
             row = conn.execute(
-                text("SELECT id, email, name, role, level, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
+                text("SELECT id, email, name, role, level, username, first_name, last_name, bio, is_public, created_at FROM users WHERE id=:id"), {"id": u["sub"]}
             ).mappings().one_or_none()
         except Exception:
             conn.rollback()
@@ -177,6 +203,184 @@ def set_level(body: LevelIn, u=Depends(get_user)):
             conn.rollback()
             raise HTTPException(500, "Не удалось сохранить уровень")
     return {"level": lvl}
+
+
+# ── Social endpoints ──────────────────────────────────────────────────────────
+
+import re as _re
+
+@app.get("/users/check-username")
+def check_username(username: str):
+    uname = username.lower().strip()
+    if not _re.match(r"^[a-z0-9_]{3,30}$", uname):
+        return {"available": False, "reason": "3-30 символов, только a-z 0-9 _"}
+    with get_conn() as conn:
+        exists = conn.execute(text("SELECT id FROM users WHERE username=:u"), {"u": uname}).one_or_none()
+    return {"available": not exists}
+
+
+@app.patch("/profile")
+def update_profile(body: ProfileUpdate, u=Depends(get_user)):
+    uid = u["sub"]
+    updates = {}
+    if body.first_name is not None: updates["first_name"] = body.first_name.strip()
+    if body.last_name  is not None: updates["last_name"]  = body.last_name.strip()
+    if body.bio        is not None: updates["bio"]        = body.bio.strip()[:300]
+    if body.is_public  is not None: updates["is_public"]  = 1 if body.is_public else 0
+    if body.username   is not None:
+        uname = body.username.lower().strip()
+        if not _re.match(r"^[a-z0-9_]{3,30}$", uname):
+            raise HTTPException(400, "Никнейм: 3-30 символов, только a-z 0-9 _")
+        with get_conn() as conn:
+            conflict = conn.execute(
+                text("SELECT id FROM users WHERE username=:u AND id!=:id"), {"u": uname, "id": uid}
+            ).one_or_none()
+        if conflict:
+            raise HTTPException(400, "Никнейм уже занят")
+        updates["username"] = uname
+    if not updates:
+        raise HTTPException(400, "Нет данных для обновления")
+    with get_conn() as conn:
+        set_clause = ", ".join(f"{k}=:{k}" for k in updates)
+        updates["uid"] = uid
+        conn.execute(text(f"UPDATE users SET {set_clause} WHERE id=:uid"), updates)
+        conn.commit()
+        row = conn.execute(
+            text("SELECT id, email, name, role, level, username, first_name, last_name, bio, is_public FROM users WHERE id=:id"),
+            {"id": uid}
+        ).mappings().one()
+    return dict(row)
+
+
+@app.get("/users/search")
+def search_users(q: str = "", u=Depends(get_user)):
+    if len(q) < 2:
+        return []
+    q_like = f"%{q.lower()}%"
+    with get_conn() as conn:
+        rows = conn.execute(text("""
+            SELECT id, name, username, first_name, last_name, bio, is_public
+            FROM users
+            WHERE (LOWER(username) LIKE :q OR LOWER(name) LIKE :q OR LOWER(first_name) LIKE :q OR LOWER(last_name) LIKE :q)
+            AND id != :me
+            LIMIT 20
+        """), {"q": q_like, "me": u["sub"]}).mappings().all()
+    return [dict(r) for r in rows]
+
+
+@app.get("/users/{username}")
+def get_user_profile(username: str, u=Depends(get_user)):
+    with get_conn() as conn:
+        row = conn.execute(
+            text("SELECT id, name, username, first_name, last_name, bio, is_public, created_at FROM users WHERE username=:u"),
+            {"u": username.lower()}
+        ).mappings().one_or_none()
+        if not row:
+            raise HTTPException(404, "Пользователь не найден")
+        profile = dict(row)
+        if not profile["is_public"] and profile["id"] != u["sub"]:
+            raise HTTPException(403, "Профиль закрыт")
+        # Friend status
+        fs = conn.execute(text("""
+            SELECT status, sender_id FROM friendships
+            WHERE (sender_id=:me AND receiver_id=:them) OR (sender_id=:them AND receiver_id=:me)
+        """), {"me": u["sub"], "them": profile["id"]}).mappings().one_or_none()
+        profile["friend_status"] = None
+        if fs:
+            profile["friend_status"] = fs["status"]
+            profile["i_sent"] = fs["sender_id"] == u["sub"]
+        # Word count if public
+        wc = conn.execute(text("SELECT COUNT(*) FROM words WHERE user_id=:id"), {"id": profile["id"]}).scalar()
+        profile["word_count"] = wc
+    return profile
+
+
+@app.post("/friends/{user_id}")
+def send_friend_request(user_id: int, u=Depends(get_user)):
+    if user_id == u["sub"]:
+        raise HTTPException(400, "Нельзя добавить себя")
+    with get_conn() as conn:
+        existing = conn.execute(text("""
+            SELECT id, status FROM friendships
+            WHERE (sender_id=:me AND receiver_id=:them) OR (sender_id=:them AND receiver_id=:me)
+        """), {"me": u["sub"], "them": user_id}).one_or_none()
+        if existing:
+            if existing[1] == "accepted":
+                raise HTTPException(400, "Уже друзья")
+            # Accept if other sent request
+            conn.execute(text("UPDATE friendships SET status='accepted' WHERE id=:id"), {"id": existing[0]})
+            conn.commit()
+            return {"status": "accepted"}
+        conn.execute(text("INSERT INTO friendships (sender_id, receiver_id) VALUES (:me, :them)"),
+                     {"me": u["sub"], "them": user_id})
+        conn.commit()
+    return {"status": "pending"}
+
+
+@app.delete("/friends/{user_id}")
+def remove_friend(user_id: int, u=Depends(get_user)):
+    with get_conn() as conn:
+        conn.execute(text("""
+            DELETE FROM friendships
+            WHERE (sender_id=:me AND receiver_id=:them) OR (sender_id=:them AND receiver_id=:me)
+        """), {"me": u["sub"], "them": user_id})
+        conn.commit()
+    return {"ok": True}
+
+
+@app.get("/friends")
+def get_friends(u=Depends(get_user)):
+    with get_conn() as conn:
+        rows = conn.execute(text("""
+            SELECT u.id, u.name, u.username, u.first_name, u.last_name, f.status, f.sender_id
+            FROM friendships f
+            JOIN users u ON (u.id = CASE WHEN f.sender_id=:me THEN f.receiver_id ELSE f.sender_id END)
+            WHERE f.sender_id=:me OR f.receiver_id=:me
+        """), {"me": u["sub"]}).mappings().all()
+    return [dict(r) for r in rows]
+
+
+@app.post("/messages")
+def send_message(body: MessageIn, u=Depends(get_user)):
+    if not body.content.strip():
+        raise HTTPException(400, "Пустое сообщение")
+    with get_conn() as conn:
+        conn.execute(text("INSERT INTO messages (sender_id, receiver_id, content) VALUES (:s, :r, :c)"),
+                     {"s": u["sub"], "r": body.receiver_id, "c": body.content.strip()[:1000]})
+        conn.commit()
+    return {"ok": True}
+
+
+@app.get("/messages/{user_id}")
+def get_messages(user_id: int, u=Depends(get_user)):
+    with get_conn() as conn:
+        rows = conn.execute(text("""
+            SELECT id, sender_id, receiver_id, content, is_read, created_at
+            FROM messages
+            WHERE (sender_id=:me AND receiver_id=:them) OR (sender_id=:them AND receiver_id=:me)
+            ORDER BY created_at ASC LIMIT 100
+        """), {"me": u["sub"], "them": user_id}).mappings().all()
+        # Mark as read
+        conn.execute(text("UPDATE messages SET is_read=1 WHERE receiver_id=:me AND sender_id=:them AND is_read=0"),
+                     {"me": u["sub"], "them": user_id})
+        conn.commit()
+    return [dict(r) for r in rows]
+
+
+@app.get("/messages")
+def get_all_conversations(u=Depends(get_user)):
+    """Last message per conversation + unread count"""
+    with get_conn() as conn:
+        rows = conn.execute(text("""
+            SELECT u.id, u.name, u.username, u.first_name, u.last_name,
+                   m.content as last_msg, m.created_at, m.sender_id,
+                   (SELECT COUNT(*) FROM messages WHERE receiver_id=:me AND sender_id=u.id AND is_read=0) as unread
+            FROM users u
+            JOIN messages m ON (m.sender_id=u.id OR m.receiver_id=u.id)
+            WHERE (m.sender_id=:me OR m.receiver_id=:me) AND u.id != :me
+            GROUP BY u.id ORDER BY m.created_at DESC
+        """), {"me": u["sub"]}).mappings().all()
+    return [dict(r) for r in rows]
 
 
 # ── Topics ─────────────────────────────────────────────────────────────────────

@@ -173,7 +173,55 @@ def init_db():
         _add_col(conn, "words",  "ease_factor",  "REAL DEFAULT 2.5")
         _add_col(conn, "words",  "srs_reps",     "INTEGER DEFAULT 0")
         _add_col(conn, "users",  "level",        "TEXT DEFAULT NULL")
-        _add_col(conn, "words",  "level",         "TEXT DEFAULT NULL")
+        _add_col(conn, "words",  "level",        "TEXT DEFAULT NULL")
+        # Social
+        _add_col(conn, "users",  "username",     "TEXT")
+        _add_col(conn, "users",  "first_name",   "TEXT")
+        _add_col(conn, "users",  "last_name",    "TEXT")
+        _add_col(conn, "users",  "bio",          "TEXT")
+        _add_col(conn, "users",  "is_public",    "INTEGER DEFAULT 1")
+        conn.commit()
+
+        # Friends
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS friendships (
+                id          SERIAL PRIMARY KEY,
+                sender_id   INTEGER,
+                receiver_id INTEGER,
+                status      TEXT NOT NULL DEFAULT 'pending',
+                created_at  TEXT DEFAULT (CURRENT_TIMESTAMP),
+                UNIQUE(sender_id, receiver_id)
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS friendships (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_id   INTEGER,
+                receiver_id INTEGER,
+                status      TEXT NOT NULL DEFAULT 'pending',
+                created_at  TEXT DEFAULT (datetime('now')),
+                UNIQUE(sender_id, receiver_id)
+            )
+        """))
+        # Messages
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS messages (
+                id          SERIAL PRIMARY KEY,
+                sender_id   INTEGER,
+                receiver_id INTEGER,
+                content     TEXT NOT NULL,
+                is_read     INTEGER NOT NULL DEFAULT 0,
+                created_at  TEXT DEFAULT (CURRENT_TIMESTAMP)
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS messages (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_id   INTEGER,
+                receiver_id INTEGER,
+                content     TEXT NOT NULL,
+                is_read     INTEGER NOT NULL DEFAULT 0,
+                created_at  TEXT DEFAULT (datetime('now'))
+            )
+        """))
         conn.commit()
 
         # ── CEO account ───────────────────────────────────────────────────────
