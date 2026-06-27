@@ -2489,7 +2489,7 @@ async function loadMessages() {
         }
       }
 
-      return `<div>
+      return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'}">
         <div class="chat-msg ${mine?'mine':'theirs'}">
           ${esc(m.content)}
           <div class="chat-msg-time">${time}</div>
