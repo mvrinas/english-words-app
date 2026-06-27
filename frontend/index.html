@@ -2058,14 +2058,14 @@ function showProfileModal(user, isOwn) {
     ${isOwn ? `<div id="profile-requests-panel" style="display:none;margin-top:4px"></div>` : ''}
     ${isOwn ? `<div id="profile-incoming-section"></div>` : ''}
     ${isOwn ? `<div id="profile-friends-section"></div>` : ''}
-    <div id="profile-messages-section"><div style="margin-top:18px"><div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">Сообщения</div><div style="font-size:13px;color:var(--text2);padding:6px 0">Загрузка...</div></div></div>
+
   `;
   if (isOwn) {
     try { bodyHtml += renderProfileEditForm(user); } catch(e) { console.error('renderProfileEditForm error:', e); }
   }
   body.innerHTML = bodyHtml;
 
-  if (isOwn) { loadFriendRequests(); loadFriendsList(); loadProfileMessages(); }
+  if (isOwn) { loadFriendRequests(); loadFriendsList(); }
 
   if (isOwn) {
     document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
@@ -2349,39 +2349,6 @@ function toggleRequestsPanel() {
     header.innerHTML = `<button class="btn btn-ghost btn-sm" style="padding:3px 6px;line-height:0" onclick="toggleRequestsPanel()">${backSvg}</button><span style="font-size:14px;font-weight:600">Отправленные заявки</span>`;
     panel.prepend(header);
   }
-}
-
-async function loadProfileMessages() {
-  const section = document.getElementById('profile-messages-section');
-  if (!section) { console.warn('profile-messages-section not found'); return; }
-  try {
-    const convos = await api('GET', '/messages');
-    let out = `<div style="margin-top:18px">
-      <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Сообщения</div>`;
-    if (!convos || !convos.length) {
-      out += '<div style="font-size:13px;color:var(--text2);padding:6px 0">Нет сообщений</div>';
-    } else {
-      convos.forEach(c => {
-        const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.name || c.username || '?';
-        const preview = c.last_msg ? (c.last_msg.length > 38 ? c.last_msg.slice(0,38) + '...' : c.last_msg) : '';
-        const init = name[0].toUpperCase();
-        const hasUnread = c.unread > 0;
-        out += `<div onclick="openChat(${c.id},'${esc(name)}')" style="display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:10px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
-          <div style="position:relative;flex-shrink:0">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:800;font-size:16px">${esc(init)}</div>
-            ${hasUnread ? `<div style="position:absolute;top:0;right:0;width:12px;height:12px;border-radius:50%;background:#007AFF;border:2px solid var(--surface)"></div>` : ''}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:${hasUnread ? '700' : '500'};font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</div>
-            <div style="font-size:12px;color:${hasUnread ? 'var(--text1)' : 'var(--text2)'};font-weight:${hasUnread ? '500' : '400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">${esc(preview)}</div>
-          </div>
-          ${hasUnread ? `<div style="flex-shrink:0;background:#007AFF;color:#fff;border-radius:50%;min-width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px">${c.unread}</div>` : ''}
-        </div>`;
-      });
-    }
-    out += '</div>';
-    section.innerHTML = out;
-  } catch(e) { console.error('loadProfileMessages error:', e); section.innerHTML = '<div style="color:red;font-size:12px;padding:8px">Ошибка загрузки: ' + e.message + '</div>'; }
 }
 
 async function loadFriendsList() {
@@ -3372,7 +3339,7 @@ document.addEventListener('click', function(e) {
 
 </script>
 <!-- Floating chat widget -->
-<div id="chat-widget" style="position:fixed;bottom:24px;right:24px;z-index:500;display:none;flex-direction:column;align-items:flex-end">
+<div id="chat-widget" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;flex-direction:column;align-items:flex-end">
   <div id="chat-widget-panel" style="display:none;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden;margin-bottom:10px">
     <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
       <span style="font-weight:700;font-size:15px">Сообщения</span>
@@ -3380,7 +3347,7 @@ document.addEventListener('click', function(e) {
     </div>
     <div id="chat-widget-list" style="max-height:340px;overflow-y:auto;padding:6px 0"></div>
   </div>
-  <div onclick="toggleChatWidget()" style="width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.22);transition:transform .15s;position:relative" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+  <div onclick="toggleChatWidget()" style="width:52px;height:52px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(79,70,229,.45);transition:transform .15s;position:relative" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     <span id="chat-widget-badge" style="display:none;position:absolute;top:-3px;right:-3px;background:#ef4444;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface)"></span>
   </div>
