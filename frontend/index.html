@@ -262,6 +262,12 @@ select.form-input{appearance:none;cursor:pointer}
 
 /* ── Homework (Assignments) ─────────────────────────────────────────────── */
 .hw-list{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.hw-month-header{font-size:11px;font-weight:700;color:var(--text2);
+  letter-spacing:.6px;text-transform:uppercase;padding:16px 0 6px;
+  border-bottom:1px solid var(--border);margin-bottom:4px}
+.hw-month-header:first-child{padding-top:4px}
+.hw-due-chip{display:inline-flex;align-items:center;background:var(--surface2);
+  border-radius:20px;font-size:11px;padding:1px 8px;color:var(--text2);margin-left:4px}
 .hw-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
   padding:16px 18px;cursor:pointer;transition:box-shadow .15s,border-color .15s;
   border-left:4px solid var(--accent)}
@@ -1113,6 +1119,42 @@ select.form-input{appearance:none;cursor:pointer}
 
 </div>
 
+<!-- HOMEWORK CREATE MODAL -->
+<div class="modal-overlay hidden" id="modal-hw-create">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <div class="modal-title">Новое задание</div>
+      <button class="modal-close" onclick="document.getElementById('modal-hw-create').classList.add('hidden')">&times;</button>
+    </div>
+    <div style="padding:0 4px">
+      <select class="hw-input" id="hw-student-select" style="margin-bottom:10px"><option value="">Выбрать ученика...</option></select>
+      <input class="hw-input" id="hw-title-input" placeholder="Название задания" maxlength="120" style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Дата сдачи</div>
+      <input class="hw-input" id="hw-due-input" type="date" style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Описание / инструкция</div>
+      <div id="hw-desc-rte" style="margin-bottom:12px"></div>
+      <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Ссылки и видео</div>
+      <div class="hw-links-list" id="hw-links-list"></div>
+      <div class="hw-link-row" style="margin-bottom:12px">
+        <input class="hw-input" id="hw-link-label" placeholder="Название" style="margin:0">
+        <input class="hw-input" id="hw-link-url" placeholder="URL (YouTube, статья...)" style="margin:0;flex:2">
+        <button onclick="hwAddLink()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;color:var(--text)">+</button>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Слова для изучения</div>
+      <div class="hw-words-chips" id="hw-words-chips"></div>
+      <div class="hw-words-input" style="margin-bottom:16px">
+        <input class="hw-input" id="hw-word-input" placeholder="Добавить слово" style="margin:0" onkeydown="if(event.key==='Enter'){hwAddWord();event.preventDefault()}">
+        <button class="btn btn-sm" onclick="hwAddWord()">+</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="hwSubmitCreate()">Создать задание</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-hw-create').classList.add('hidden')">Отмена</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- PASSWORD RESET MODAL -->
 <div class="modal-overlay hidden" id="modal-reset-pw">
   <div class="modal" style="max-width:400px">
@@ -1467,7 +1509,7 @@ function showPage(id) {
   const _fab=document.getElementById('fab-add-word');
   if (_fab) _fab.style.display = (id === 'words') ? 'flex' : 'none';
   const _fabHw=document.getElementById('fab-hw-create');
-  if (_fabHw) _fabHw.style.display = (id === 'homework' && hwIsTeacher()) ? 'flex' : 'none';
+  if (_fabHw) _fabHw.style.display = (id === 'homework') ? 'flex' : 'none';
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b =>
@@ -1475,11 +1517,7 @@ function showPage(id) {
   );
   if (id === 'homework') {
     loadHomework();
-    if (hwIsTeacher()) {
-      hwLoadStudents();
-      setTimeout(() => rteCreate('hw-desc-rte', 'Описание, инструкция...'), 50);
-    }
-    // reset to list view
+    if (hwIsTeacher()) hwLoadStudents();
     const lv = document.getElementById('hw-list-view');
     const dv = document.getElementById('hw-detail-view');
     if (lv) lv.style.display = 'block';
@@ -2781,6 +2819,16 @@ let _hwLinks = [];
 let _hwWords = [];
 let _hwCurrentId = null;
 
+function hwOpenCreateModal() {
+  document.getElementById('modal-hw-create').classList.remove('hidden');
+  hwLoadStudents();
+  _hwLinks = []; _hwWords = [];
+  hwRenderLinks(); hwRenderWords();
+  document.getElementById('hw-title-input').value = '';
+  document.getElementById('hw-due-input').value = '';
+  setTimeout(() => rteCreate('hw-desc-rte', 'Описание задания, инструкция...'), 80);
+}
+
 function hwIsTeacher() {
   try {
     const u = JSON.parse(localStorage.getItem('wapp_user') || '{}');
@@ -2806,33 +2854,62 @@ async function loadHomework() {
     const badge = document.getElementById('hw-nav-badge');
     const bnav  = document.getElementById('bnav-homework');
 
-    // Count new/unreviewed for student
     const newCount = hwIsTeacher() ? 0 : items.filter(a => a.status === 'active').length;
-    if (badge) {
-      badge.textContent = newCount;
-      badge.classList.toggle('hidden', newCount === 0);
-    }
+    if (badge) { badge.textContent = newCount; badge.classList.toggle('hidden', newCount === 0); }
     if (bnav) bnav.classList.toggle('has-badge', newCount > 0);
 
     if (!items.length) {
-      container.innerHTML = '<div class="hw-empty"><div class="hw-empty-icon">&#128218;</div><div>' +
-        (hwIsTeacher() ? 'Заданий ещё нет. Создайте первое!' : 'Заданий пока нет') + '</div></div>';
+      container.innerHTML = '<div class="hw-empty"><div class="hw-empty-icon">&#128218;</div>' +
+        '<div>Заданий пока нет</div><div style="font-size:12px;color:var(--text2);margin-top:6px">' +
+        'Нажми + чтобы добавить первое задание</div></div>';
       return;
     }
 
-    container.innerHTML = items.map(a => {
-      const due = a.due_date ? ' &middot; До ' + a.due_date.slice(0,10) : '';
-      const who = hwIsTeacher()
-        ? (a.student_name || a.student_username || 'Ученик')
-        : (a.teacher_name || a.teacher_username || 'Учитель');
-      return `<div class="hw-card status-${a.status}" data-id="${a.id}" onclick="hwOpenDetail(${a.id})">
-        <div class="hw-card-top">
-          <div class="hw-card-title">${esc(a.title)}</div>
-          ${hwStatusLabel(a.status)}
-        </div>
-        <div class="hw-card-meta">${esc(who)}${due}</div>
-      </div>`;
-    }).join('');
+    // Sort by date: future first, then by created_at desc
+    const sorted = [...items].sort((a, b) => {
+      const da = a.due_date || a.created_at || '';
+      const db = b.due_date || b.created_at || '';
+      return db.localeCompare(da);
+    });
+
+    // Group by month
+    const groups = {};
+    const now = new Date();
+    sorted.forEach(a => {
+      const dateStr = a.due_date || (a.created_at || '').slice(0,10);
+      let label = 'Без даты';
+      if (dateStr) {
+        const d = new Date(dateStr);
+        if (!isNaN(d)) {
+          const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+            'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+          const isFuture = d >= now;
+          label = (isFuture ? '&#128197; ' : '') + monthNames[d.getMonth()] + ' ' + d.getFullYear();
+        }
+      }
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(a);
+    });
+
+    let out = '';
+    for (const [month, group] of Object.entries(groups)) {
+      out += `<div class="hw-month-header">${month}</div>`;
+      out += group.map(a => {
+        const due = a.due_date ? a.due_date.slice(0,10) : '';
+        const who = hwIsTeacher()
+          ? (a.student_name || a.student_username || 'Ученик')
+          : (a.teacher_name || a.teacher_username || 'Учитель');
+        const dueLabel = due ? `<span class="hw-due-chip">${due}</span>` : '';
+        return `<div class="hw-card status-${a.status}" data-id="${a.id}" onclick="hwOpenDetail(${a.id})">
+          <div class="hw-card-top">
+            <div class="hw-card-title">${esc(a.title)}</div>
+            ${hwStatusLabel(a.status)}
+          </div>
+          <div class="hw-card-meta">${esc(who)} ${dueLabel}</div>
+        </div>`;
+      }).join('');
+    }
+    container.innerHTML = out;
   } catch(e) { console.error('loadHomework', e); }
 }
 
@@ -3057,7 +3134,7 @@ async function hwSubmitCreate() {
       links: _hwLinks, words: _hwWords, due_date: due || null
     });
     showToast('Задание создано!');
-    document.getElementById('hw-create-form').classList.remove('open');
+    document.getElementById('modal-hw-create').classList.add('hidden');
     document.getElementById('hw-title-input').value = '';
     rteCreate('hw-desc-rte', 'Описание, инструкция...');
     document.getElementById('hw-due-input').value = '';
@@ -3978,7 +4055,7 @@ document.addEventListener('click', function(e) {
 </button>
 
 <button id="fab-hw-create" aria-label="Создать задание" title="Создать задание"
-  style="display:none;position:fixed;bottom:90px;right:24px;z-index:9997;
+  style="display:none;position:fixed;bottom:90px;right:84px;z-index:9997;
     width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
     background:#4f46e5;color:#fff;
     box-shadow:0 4px 16px rgba(79,70,229,.4);
