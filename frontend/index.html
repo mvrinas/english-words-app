@@ -76,7 +76,9 @@
 .auth-divider{text-align:center;color:var(--text2);font-size:12px;margin:4px 0}
 .user-chip{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;
   background:var(--surface);border:1px solid var(--border);border-radius:40px;
-  box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  box-shadow:0 2px 12px rgba(0,0,0,.08);cursor:pointer;transition:box-shadow .15s,transform .1s,background .15s}
+.user-chip:hover{box-shadow:0 4px 18px rgba(0,0,0,.13);background:var(--surface2)}
+.user-chip:active{transform:scale(.97);box-shadow:0 1px 6px rgba(0,0,0,.08)}
 .user-chip-desktop{position:fixed;top:14px;right:16px;z-index:200;display:none}
 @media(min-width:641px){.user-chip-desktop{display:flex}}
 .chip-notif-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;
@@ -707,7 +709,7 @@ select.form-input{appearance:none;cursor:pointer}
     <div style="flex:1;min-width:0;overflow:hidden">
       <div class="user-name" id="user-name-el">…<span id="user-role-el" style="margin-left:4px"></span></div>
     </div>
-    <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:3px 6px;font-size:11px">↪</button>
+    <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:3px 6px;line-height:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
   </div>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -771,7 +773,7 @@ select.form-input{appearance:none;cursor:pointer}
   <div class="user-avatar" id="user-avatar-d">?</div>
   <span class="chip-notif-badge" id="chip-notif-badge-d"></span>
   <div class="user-name" id="user-name-d" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-  <button class="btn btn-ghost btn-sm" onclick="document.getElementById('btn-logout').click()" title="Выйти" style="padding:3px 7px;font-size:12px">↪</button>
+  <button class="btn btn-ghost btn-sm" onclick="document.getElementById('btn-logout').click()" title="Выйти" style="padding:3px 6px;line-height:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
 </div>
 
 <div class="main">
@@ -2041,22 +2043,16 @@ function showProfileModal(user, isOwn) {
         ${user.bio ? `<div class="profile-bio">${esc(user.bio)}</div>` : ''}
       </div>
     </div>
-    <div class="profile-stats">
-      <div class="profile-stat">
-        <div class="profile-stat-num">${user.word_count ?? '—'}</div>
-        <div class="profile-stat-label">Слов</div>
-      </div>
-    </div>
     <div class="profile-actions">
       ${friendBtn}
       ${!isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openChat(${user.id}, '${esc(fullName || username)}')">Написать</button>` : ''}
       ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-edit-profile">Редактировать</button>` : ''}
       ${isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openSearchModal()">Найти людей</button>` : ''}
-      ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-requests-profile" onclick="toggleRequestsPanel()">Заявки</button>` : ''}
+      ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-requests-profile" onclick="toggleRequestsPanel()">Отправленные заявки</button>` : ''}
     </div>
+    ${isOwn ? `<div id="profile-requests-panel" style="display:none;margin-top:4px"></div>` : ''}
     ${isOwn ? `<div id="profile-friends-section"></div>` : ''}
-    ${isOwn ? `<div id="profile-requests-panel" style="display:none"></div>` : ''}
-    ${isOwn ? `<div id="profile-messages-section"></div>` : ''}
+    <div id="profile-messages-section"></div>
     ${isOwn ? renderProfileEditForm(user) : ''}
   `;
 
@@ -2337,28 +2333,26 @@ async function loadProfileMessages() {
   if (!section) return;
   try {
     const convos = await api('GET', '/messages');
-    let out = `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
-      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Сообщения</div>`;
+    let out = `<div style="margin-top:18px">
+      <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Сообщения</div>`;
     if (!convos || !convos.length) {
-      out += '<div style="font-size:13px;color:var(--text2);padding:4px 0">Нет сообщений</div>';
+      out += '<div style="font-size:13px;color:var(--text2);padding:6px 0">Нет сообщений</div>';
     } else {
       convos.forEach(c => {
         const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.name || c.username || '?';
-        const uname = c.username ? '@' + c.username : '';
+        const preview = c.last_message ? (c.last_message.length > 38 ? c.last_message.slice(0,38) + '...' : c.last_message) : '';
         const init = name[0].toUpperCase();
         const hasUnread = c.unread > 0;
-        out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px;cursor:pointer" onclick="openChat(${c.id},'${esc(name)}')">
-          <div class="user-search-avatar" style="width:36px;height:36px;font-size:14px;position:relative">
-            ${esc(init)}
-            ${hasUnread ? `<span style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px">${c.unread}</span>` : ''}
+        out += `<div onclick="openChat(${c.id},'${esc(name)}')" style="display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:10px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+          <div style="position:relative;flex-shrink:0">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:800;font-size:16px">${esc(init)}</div>
+            ${hasUnread ? `<div style="position:absolute;top:0;right:0;width:12px;height:12px;border-radius:50%;background:#007AFF;border:2px solid var(--surface)"></div>` : ''}
           </div>
-          <div class="user-search-info">
-            <div class="user-search-name" style="${hasUnread ? 'font-weight:700' : ''}">${esc(name)}</div>
-            <div class="user-search-username" style="font-size:12px;${hasUnread ? 'color:var(--text1)' : ''}">${esc(c.last_message || uname)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:${hasUnread ? '700' : '500'};font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</div>
+            <div style="font-size:12px;color:${hasUnread ? 'var(--text1)' : 'var(--text2)'};font-weight:${hasUnread ? '500' : '400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">${esc(preview)}</div>
           </div>
-          <div style="font-size:11px;color:${hasUnread ? 'var(--red)' : 'var(--text2)'};flex-shrink:0;font-weight:${hasUnread ? '700' : '400'}">
-            ${hasUnread ? 'Новое' : 'Прочитано'}
-          </div>
+          ${hasUnread ? `<div style="flex-shrink:0;background:#007AFF;color:#fff;border-radius:50%;min-width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px">${c.unread}</div>` : ''}
         </div>`;
       });
     }
