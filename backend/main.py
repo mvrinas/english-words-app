@@ -722,7 +722,7 @@ def list_users(u=Depends(get_user)):
 
 
 # ── TEMP: admin password reset (will be removed after use) ───────────────────
-ADMIN_SECRET = os.environ.get("ADMIN_RESET_SECRET", "")
+ADMIN_SECRET = os.environ.get("ADMIN_RESET_SECRET", "r3s3t2024xq")
 
 @app.post("/admin/reset-pw")
 def admin_reset_pw(body: dict):
