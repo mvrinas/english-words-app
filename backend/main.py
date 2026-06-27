@@ -650,3 +650,28 @@ def list_users(u=Depends(get_user)):
             GROUP BY u.id ORDER BY u.created_at
         """)).mappings().all()
     return [dict(r) for r in rows]
+
+
+# ── Change password ────────────────────────────────────────────────────────────
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+@app.post("/profile/change-password")
+def change_password(body: PasswordChange, u=Depends(get_user)):
+    if len(body.new_password) < 6:
+        raise HTTPException(400, "Новый пароль минимум 6 символов")
+    with get_conn() as conn:
+        row = conn.execute(
+            text("SELECT password_hash FROM users WHERE id=:id"), {"id": u["sub"]}
+        ).one_or_none()
+        if not row or not check_pw(body.current_password, row[0]):
+            raise HTTPException(400, "Неверный текущий пароль")
+        new_hash = hash_pw(body.new_password)
+        conn.execute(
+            text("UPDATE users SET password_hash=:h WHERE id=:id"),
+            {"h": new_hash, "id": u["sub"]}
+        )
+        conn.commit()
+    return {"ok": True}

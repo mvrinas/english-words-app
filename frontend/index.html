@@ -2016,6 +2016,7 @@ function showProfileModal(user, isOwn) {
       if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
     });
     document.getElementById('btn-save-profile')?.addEventListener('click', saveProfile);
+    document.getElementById('btn-change-pass')?.addEventListener('click', changePassword);
   }
 }
 
@@ -2042,6 +2043,12 @@ function renderProfileEditForm(user) {
       </div>
       <button class="btn btn-primary" id="btn-save-profile">Сохранить</button>
       <div class="auth-error" id="profile-save-error" style="display:none"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:8px 0"/>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px">Сменить пароль</div>
+      <input class="form-input" id="edit-cur-pass" type="password" placeholder="Текущий пароль"/>
+      <input class="form-input" id="edit-new-pass" type="password" placeholder="Новый пароль (мин. 6)"/>
+      <button class="btn btn-ghost" id="btn-change-pass">Сменить пароль</button>
+      <div class="auth-error" id="pass-change-error" style="display:none"></div>
     </div>
   `;
 }
@@ -2078,6 +2085,21 @@ async function saveProfile() {
     updateUserChip();
     toast('Профиль сохранён');
     showProfileModal(updated, true);
+  } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
+}
+
+async function changePassword() {
+  const curPass = document.getElementById('edit-cur-pass')?.value;
+  const newPass = document.getElementById('edit-new-pass')?.value;
+  const errEl   = document.getElementById('pass-change-error');
+  if (!errEl) return;
+  errEl.style.display = 'none';
+  if (!curPass || !newPass) { errEl.textContent = 'Заполните оба поля'; errEl.style.display = ''; return; }
+  try {
+    await api('POST', '/profile/change-password', {current_password: curPass, new_password: newPass});
+    document.getElementById('edit-cur-pass').value = '';
+    document.getElementById('edit-new-pass').value = '';
+    toast('Пароль успешно изменён');
   } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
 }
 
