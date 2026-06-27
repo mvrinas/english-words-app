@@ -3352,3 +3352,9 @@ document.addEventListener('click', function(e) {
     <span id="chat-widget-badge" style="display:none;position:absolute;top:-3px;right:-3px;background:#ef4444;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;font-weight:700;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface)"></span>
   </div>
 </div>
+<script>
+(function(){
+  const cw = document.getElementById('chat-widget');
+  if (cw && typeof authToken !== 'undefined' && authToken) cw.style.display = 'flex';
+})();
+</script>
