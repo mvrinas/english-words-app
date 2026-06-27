@@ -1614,7 +1614,7 @@ function closeWordModal() {
 }
 
 document.getElementById('btn-add-word').onclick = () => openWordModal();
-document.getElementById('fab-add-word').onclick = () => openWordModal();
+const _fabBtn = document.getElementById('fab-add-word'); if (_fabBtn) _fabBtn.onclick = () => openWordModal();
 document.getElementById('btn-close-word-modal').onclick = closeWordModal;
 document.getElementById('btn-cancel-word').onclick = closeWordModal;
 document.getElementById('modal-word').onclick = e => { if(e.target===e.currentTarget) closeWordModal(); };
