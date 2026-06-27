@@ -164,7 +164,12 @@ def login(body: LoginIn):
             ).mappings().one_or_none()
     if not row or not check_pw(body.password, row["password_hash"]):
         raise HTTPException(401, "Неверный email или пароль")
-    # Send OTP
+    # CEO and teacher skip OTP — direct login
+    if row["role"] in ("ceo", "teacher"):
+        token = make_token(row["id"], row["email"], row["role"])
+        needs_level = not row.get("level")
+        return {"token": token, "user": dict(row), "needs_level": needs_level}
+    # Regular users get OTP
     _send_otp(body.email.lower(), "login")
     return {"needs_otp": True, "email": body.email.lower()}
 
@@ -768,7 +773,7 @@ def _send_email(to: str, subject: str, html: str):
     msg["From"]    = f"WordsApp <{SMTP_FROM}>"
     msg["To"]      = to
     msg.attach(MIMEText(html, "html"))
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as s:
         s.ehlo()
         s.starttls()
         s.login(SMTP_USER, SMTP_PASS)
