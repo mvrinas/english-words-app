@@ -240,6 +240,50 @@ select.form-input{appearance:none;cursor:pointer}
   font-size:11px;color:var(--text2);letter-spacing:.3px}
 .srs-done{text-align:center;padding:48px 20px}
 .srs-done-icon{font-size:64px;margin-bottom:16px}
+
+/* ── Games ─────────────────────────────────────────────────────────────── */
+#games-hub{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.game-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:20px;display:flex;align-items:center;gap:16px}
+.game-card-icon{width:52px;height:52px;border-radius:12px;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent)}
+.game-card-info{flex:1;min-width:0}
+.game-card-title{font-family:'Fraunces',serif;font-weight:800;font-size:18px;letter-spacing:-.3px}
+.game-card-desc{font-size:13px;color:var(--text2);margin-top:2px}
+/* Quiz header */
+.quiz-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.quiz-progress-wrap{flex:1;display:flex;align-items:center;gap:8px}
+.quiz-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.quiz-bar{height:100%;background:var(--text);border-radius:3px;transition:width .4s ease}
+.quiz-count{font-size:12px;color:var(--text2);white-space:nowrap}
+.quiz-score-badge{background:var(--text);color:var(--surface);border-radius:20px;
+  padding:4px 12px;font-size:13px;font-weight:700;font-family:'Fraunces',serif}
+/* Quiz card */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:32px 24px;text-align:center}
+.quiz-prompt{font-size:13px;color:var(--text2);margin-bottom:8px;letter-spacing:.3px}
+.quiz-word{font-family:'Fraunces',serif;font-weight:800;font-size:36px;
+  letter-spacing:-.8px;margin-bottom:28px;line-height:1.1}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quiz-opt{border:2px solid var(--border);background:var(--surface);border-radius:14px;
+  padding:14px 10px;font-size:15px;font-weight:600;cursor:pointer;
+  transition:all .15s;color:var(--text);font-family:'Fraunces',serif}
+.quiz-opt:hover{border-color:var(--accent);background:var(--surface2)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(22,163,74,.12);color:var(--green)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(220,38,38,.1);color:var(--red)}
+.quiz-opt:disabled{cursor:default}
+/* Quiz result */
+#quiz-result{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;text-align:center}
+.quiz-result-inner{display:flex;flex-direction:column;align-items:center}
+.quiz-result-title{font-family:'Fraunces',serif;font-weight:900;font-size:32px;
+  letter-spacing:-1px;margin-bottom:8px}
+.quiz-result-score{font-family:'Fraunces',serif;font-size:72px;font-weight:900;
+  letter-spacing:-2px;line-height:1;margin:8px 0}
+.quiz-result-sub{font-size:16px;color:var(--text2)}
+.quiz-result-xp{margin-top:16px;background:var(--text);color:var(--surface);
+  border-radius:20px;padding:6px 20px;font-size:14px;font-weight:700;
+  font-family:'Fraunces',serif}
 .srs-done-title{font-size:24px;font-weight:700;margin-bottom:8px}
 .srs-done-sub{color:var(--text2);font-size:14px;margin-bottom:24px}
 .srs-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
@@ -629,9 +673,9 @@ select.form-input{appearance:none;cursor:pointer}
       <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       Грамматика
     </button>
-    <button class="bnav-item" data-page="stats">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Статистика
+    <button class="bnav-item" data-page="games">
+      <svg viewBox="0 0 24 24"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="12" r="1"/><circle cx="18" cy="10" r="1"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+      Игры
     </button>
   </div>
 </nav>
@@ -645,7 +689,7 @@ select.form-input{appearance:none;cursor:pointer}
   <button class="nav-item" data-page="topics">Карточки</button>
   <button class="nav-item" data-page="grammar">Грамматика</button>
   <button class="nav-item" data-page="srs" id="nav-srs">Повторение <span class="due-badge hidden" id="due-badge">0</span></button>
-  <button class="nav-item" data-page="stats">Статистика</button>
+  <button class="nav-item" data-page="games">Игры</button>
   <div class="nav-divider"></div>
   <div class="nav-section">Темы</div>
   <button class="topic-pill active" id="pill-all">
@@ -823,9 +867,49 @@ select.form-input{appearance:none;cursor:pointer}
     <div id="grammar-content"></div>
   </div>
 
-  <div class="page" id="page-stats">
-    <div class="page-header"><div class="page-title">Статистика</div></div>
-    <div id="stats-content"></div>
+  <div class="page" id="page-games">
+    <div class="page-header"><div class="page-title">Игры</div></div>
+    <div id="games-hub">
+      <div class="game-card" id="game-quiz-card">
+        <div class="game-card-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="game-card-info">
+          <div class="game-card-title">Квиз</div>
+          <div class="game-card-desc">Выбери правильный перевод из 4 вариантов</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-start-quiz">Играть</button>
+      </div>
+    </div>
+
+    <!-- Quiz game screen -->
+    <div id="quiz-screen" style="display:none">
+      <div class="quiz-header">
+        <button class="btn btn-ghost btn-sm" id="btn-quiz-back">Назад</button>
+        <div class="quiz-progress-wrap">
+          <div class="quiz-bar-wrap"><div class="quiz-bar" id="quiz-bar"></div></div>
+          <span class="quiz-count" id="quiz-count">0/10</span>
+        </div>
+        <div class="quiz-score-badge" id="quiz-score-badge">0</div>
+      </div>
+      <div class="quiz-card" id="quiz-card">
+        <div class="quiz-prompt">Как переводится?</div>
+        <div class="quiz-word" id="quiz-word"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+      </div>
+    </div>
+
+    <!-- Quiz result screen -->
+    <div id="quiz-result" style="display:none">
+      <div class="quiz-result-inner">
+        <div class="quiz-result-title" id="qr-title">Результат</div>
+        <div class="quiz-result-score" id="qr-score"></div>
+        <div class="quiz-result-sub" id="qr-sub"></div>
+        <div class="quiz-result-xp" id="qr-xp"></div>
+        <button class="btn btn-primary" style="margin-top:24px" id="btn-quiz-again">Ещё раз</button>
+        <button class="btn btn-ghost" style="margin-top:8px" id="btn-quiz-exit">На главную</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1107,6 +1191,7 @@ function showPage(id) {
   if (id === 'quiz')   renderQuizStart();
   if (id === 'topics') renderTopics();
   if (id === 'stats')  renderStats();
+  if (id === 'games')  renderGames();
   if (id === 'srs')    renderSRS();
   if (id === 'grammar') {
     const activeCat = document.querySelector('.grammar-cat.active');
@@ -1603,6 +1688,93 @@ function renderStats() {
       ${noTopic?`<div style="color:var(--text2);font-size:13px;margin-top:6px">Без темы: ${noTopic} слов</div>`:''}
     </div>`:''}
   `;
+}
+
+// ── Games page ───────────────────────────────────────────────────────────────
+let quizWords = [], quizIdx2 = 0, quizCorrect2 = 0, quizTotal2 = 10;
+
+function renderGames() {
+  document.getElementById('games-hub').style.display = 'flex';
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+
+  document.getElementById('btn-start-quiz').onclick = () => {
+    const pool = db.words.filter(w => w.translation);
+    if (pool.length < 4) { toast('Нужно минимум 4 слова с переводами', 'error'); return; }
+    startNewQuiz(pool);
+  };
+}
+
+function startNewQuiz(pool) {
+  quizWords = pool.sort(() => Math.random() - .5).slice(0, Math.min(10, pool.length));
+  quizIdx2 = 0; quizCorrect2 = 0; quizTotal2 = quizWords.length;
+  document.getElementById('games-hub').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+
+  document.getElementById('btn-quiz-back').onclick = () => renderGames();
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const w = quizWords[quizIdx2];
+  const pct = Math.round((quizIdx2 / quizTotal2) * 100);
+
+  document.getElementById('quiz-bar').style.width = pct + '%';
+  document.getElementById('quiz-count').textContent = (quizIdx2 + 1) + '/' + quizTotal2;
+  document.getElementById('quiz-score-badge').textContent = quizCorrect2;
+  document.getElementById('quiz-word').textContent = w.word;
+
+  // 4 options: 1 correct + 3 random wrong
+  const wrong = db.words
+    .filter(x => x.id !== w.id && x.translation)
+    .sort(() => Math.random() - .5)
+    .slice(0, 3)
+    .map(x => x.translation);
+  const opts = [w.translation, ...wrong].sort(() => Math.random() - .5);
+
+  const container = document.getElementById('quiz-options');
+  container.innerHTML = opts.map(opt =>
+    `<button class="quiz-opt" data-ans="${esc(opt)}" data-correct="${esc(w.translation)}">${esc(opt)}</button>`
+  ).join('');
+
+  container.querySelectorAll('.quiz-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isCorrect = btn.dataset.ans === btn.dataset.correct;
+      // Highlight
+      container.querySelectorAll('.quiz-opt').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.ans === b.dataset.correct) b.classList.add('correct');
+      });
+      if (!isCorrect) btn.classList.add('wrong');
+      else quizCorrect2++;
+
+      setTimeout(() => {
+        quizIdx2++;
+        if (quizIdx2 >= quizTotal2) showQuizResult();
+        else renderQuizQuestion();
+      }, isCorrect ? 600 : 1000);
+    });
+  });
+}
+
+function showQuizResult() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'flex';
+
+  const pct = Math.round((quizCorrect2 / quizTotal2) * 100);
+  const title = pct === 100 ? 'Идеально!' : pct >= 80 ? 'Отлично!' : pct >= 50 ? 'Неплохо!' : 'Учи дальше!';
+  document.getElementById('qr-title').textContent = title;
+  document.getElementById('qr-score').textContent = quizCorrect2 + '/' + quizTotal2;
+  document.getElementById('qr-sub').textContent = 'Правильных ответов: ' + pct + '%';
+  const xp = quizCorrect2 * 3;
+  document.getElementById('qr-xp').textContent = '+' + xp + ' XP';
+
+  document.getElementById('btn-quiz-again').onclick = () => {
+    const pool = db.words.filter(w => w.translation);
+    startNewQuiz(pool);
+  };
+  document.getElementById('btn-quiz-exit').onclick = () => showPage('home');
 }
 
 // ── Quiz ───────────────────────────────────────────────────────────────────────
