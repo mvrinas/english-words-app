@@ -2063,6 +2063,8 @@ function showProfileModal(user, isOwn) {
   if (isOwn) {
     document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
       const form = document.getElementById('profile-edit-form');
+      const reqPanel = document.getElementById('profile-requests-panel');
+      if (reqPanel) reqPanel.style.display = 'none';
       if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
     });
     document.getElementById('btn-save-profile')?.addEventListener('click', saveProfile);
@@ -2263,7 +2265,7 @@ async function loadFriendRequests() {
 
     // Update "Заявки" button label
     const btn = document.getElementById('btn-requests-profile');
-    if (btn) btn.textContent = sent.length ? 'Заявки (' + sent.length + ')' : 'Заявки';
+    if (btn) btn.textContent = sent.length ? 'Отправленные заявки (' + sent.length + ')' : 'Отправленные заявки';
 
     // Incoming requests section (inline in profile)
     const inSection = document.getElementById('profile-requests-panel');
@@ -2326,6 +2328,10 @@ function toggleRequestsPanel() {
   const panel = document.getElementById('profile-requests-panel');
   if (!panel) return;
   const isHidden = panel.style.display === 'none';
+  if (isHidden) {
+    const form = document.getElementById('profile-edit-form');
+    if (form) form.style.display = 'none';
+  }
   panel.style.display = isHidden ? 'block' : 'none';
   // Add/remove back-style header inside panel
   if (isHidden && !panel.querySelector('.req-panel-header')) {
