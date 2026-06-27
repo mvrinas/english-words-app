@@ -2350,7 +2350,7 @@ async function loadProfileMessages() {
     } else {
       convos.forEach(c => {
         const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.name || c.username || '?';
-        const preview = c.last_msg ? (c.last_message.length > 38 ? c.last_message.slice(0,38) + '...' : c.last_message) : '';
+        const preview = c.last_msg ? (c.last_msg.length > 38 ? c.last_msg.slice(0,38) + '...' : c.last_msg) : '';
         const init = name[0].toUpperCase();
         const hasUnread = c.unread > 0;
         out += `<div onclick="openChat(${c.id},'${esc(name)}')" style="display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:10px;cursor:pointer;transition:background .12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
