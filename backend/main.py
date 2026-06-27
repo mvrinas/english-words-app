@@ -799,3 +799,85 @@ def reset_password(body: ResetPasswordIn):
         conn.commit()
 
     return {"ok": True}
+
+
+# ── Password Change with Email Confirmation (logged-in user) ───────────────────
+
+class InitPasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+@app.post("/profile/request-password-change")
+def request_password_change(body: InitPasswordChange, u=Depends(get_user)):
+    if len(body.new_password) < 6:
+        raise HTTPException(400, "Новый пароль минимум 6 символов")
+    uid = u["sub"]
+    with get_conn() as conn:
+        row = conn.execute(
+            text("SELECT email, password_hash FROM users WHERE id=:id"), {"id": uid}
+        ).one_or_none()
+        if not row or not check_pw(body.current_password, row[1]):
+            raise HTTPException(400, "Неверный текущий пароль")
+        email = row[0]
+        # Store new hash + code
+        new_hash = hash_pw(body.new_password)
+        code     = _gen_code()
+        expires  = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+        # Reuse password_reset_codes table, store new_hash in code field prefixed
+        conn.execute(
+            text("UPDATE password_reset_codes SET used=1 WHERE email=:e AND used=0"),
+            {"e": email}
+        )
+        conn.execute(
+            text("INSERT INTO password_reset_codes (email, code, expires_at) VALUES (:e, :c, :x)"),
+            {"e": email, "c": code + "||" + new_hash, "x": expires}
+        )
+        conn.commit()
+
+    html_body = f"""
+    <div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
+      <h2 style="font-size:24px;margin-bottom:8px">Смена пароля</h2>
+      <p style="color:#555;margin-bottom:24px">Подтвердите смену пароля в WordsApp:</p>
+      <div style="font-size:40px;font-weight:800;letter-spacing:8px;text-align:center;
+                  background:#f5f4f0;border-radius:12px;padding:20px;margin-bottom:24px;
+                  color:#1c1b18;font-family:monospace">
+        {code}
+      </div>
+      <p style="color:#888;font-size:13px">Код действителен 15 минут. Если вы не запрашивали смену пароля — немедленно войдите в аккаунт и проверьте безопасность.</p>
+    </div>
+    """
+    try:
+        _send_email(email, "Подтверждение смены пароля — WordsApp", html_body)
+    except Exception as ex:
+        print(f"Email error: {ex}")
+        raise HTTPException(500, "Не удалось отправить письмо. Настройте SMTP в переменных окружения.")
+
+    return {"ok": True, "email": email}
+
+
+@app.post("/profile/confirm-password-change")
+def confirm_password_change(body: ResetPasswordIn, u=Depends(get_user)):
+    email = body.email.lower().strip()
+    code  = body.code.strip()
+    with get_conn() as conn:
+        row = conn.execute(text("""
+            SELECT id, expires_at, code FROM password_reset_codes
+            WHERE email=:e AND used=0 AND code LIKE :c
+            ORDER BY id DESC LIMIT 1
+        """), {"e": email, "c": code + "||%"}).one_or_none()
+
+        if not row:
+            raise HTTPException(400, "Неверный или просроченный код")
+        expires_at = datetime.fromisoformat(row[1].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) > expires_at:
+            raise HTTPException(400, "Код истёк. Запросите новый")
+
+        stored_code, new_hash = row[2].split("||", 1)
+        if stored_code != code:
+            raise HTTPException(400, "Неверный код")
+
+        conn.execute(text("UPDATE password_reset_codes SET used=1 WHERE id=:id"), {"id": row[0]})
+        conn.execute(text("UPDATE users SET password_hash=:h WHERE email=:e"), {"h": new_hash, "e": email})
+        conn.commit()
+
+    return {"ok": True}

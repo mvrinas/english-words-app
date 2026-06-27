@@ -2053,33 +2053,29 @@ function showProfileModal(user, isOwn) {
       if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
     });
     document.getElementById('btn-save-profile')?.addEventListener('click', saveProfile);
-    // Profile password change via email code
+    // Profile password change: verify old pw → send code → confirm
     document.getElementById('btn-request-pw-code')?.addEventListener('click', async () => {
-      const errEl = document.getElementById('pass-change-error');
+      const curPass = document.getElementById('edit-cur-pass')?.value;
+      const newPass = document.getElementById('edit-new-pass')?.value;
+      const errEl   = document.getElementById('pass-change-error');
       errEl.style.display = 'none';
+      if (!curPass || !newPass) { errEl.textContent = 'Заполните оба поля'; errEl.style.display = ''; return; }
       try {
-        await fetch('/auth/forgot-password', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({email: currentUser.email})
-        });
+        const r = await api('POST', '/profile/request-password-change', {current_password: curPass, new_password: newPass});
+        document.getElementById('pw-code-email').textContent = r.email;
         document.getElementById('pw-change-step-a').style.display = 'none';
         document.getElementById('pw-change-step-b').style.display = '';
-      } catch(e) { errEl.textContent = 'Ошибка отправки'; errEl.style.display = ''; }
+      } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
     });
     document.getElementById('btn-confirm-pw-change')?.addEventListener('click', async () => {
-      const code    = document.getElementById('edit-reset-code')?.value.trim();
-      const newPass = document.getElementById('edit-new-pass')?.value;
-      const errEl   = document.getElementById('pass-confirm-error');
+      const code  = document.getElementById('edit-reset-code')?.value.trim();
+      const errEl = document.getElementById('pass-confirm-error');
       errEl.style.display = 'none';
       try {
-        const r = await fetch('/auth/reset-password', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({email: currentUser.email, code, new_password: newPass})
-        });
-        if (!r.ok) { const e = await r.json(); errEl.textContent = e.detail||'Ошибка'; errEl.style.display=''; return; }
+        await api('POST', '/profile/confirm-password-change', {email: currentUser.email, code, new_password: ''});
         toast('Пароль успешно изменён');
         document.getElementById('modal-profile').classList.add('hidden');
-      } catch(e) { errEl.textContent = 'Ошибка'; errEl.style.display=''; }
+      } catch(e) { errEl.textContent = e.message; errEl.style.display=''; }
     });
   }
 }
@@ -2110,14 +2106,15 @@ function renderProfileEditForm(user) {
       <hr style="border:none;border-top:1px solid var(--border);margin:8px 0"/>
       <div style="font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px">Сменить пароль</div>
       <div id="pw-change-step-a">
-        <button class="btn btn-ghost" id="btn-request-pw-code" style="width:100%">Отправить код на email</button>
+        <input class="form-input" type="password" id="edit-cur-pass" placeholder="Текущий пароль"/>
+        <input class="form-input" type="password" id="edit-new-pass" placeholder="Новый пароль (мин. 6)" style="margin-top:8px"/>
+        <button class="btn btn-ghost" id="btn-request-pw-code" style="width:100%;margin-top:8px">Получить код на email</button>
         <div class="auth-error" id="pass-change-error" style="display:none"></div>
       </div>
       <div id="pw-change-step-b" style="display:none">
-        <p style="font-size:12px;color:var(--green);margin-bottom:8px">Код отправлен на ваш email</p>
-        <input class="form-input" id="edit-reset-code" placeholder="6-значный код" maxlength="6" style="letter-spacing:4px;font-size:18px;text-align:center;font-weight:700"/>
-        <input class="form-input" type="password" id="edit-new-pass" placeholder="Новый пароль (мин. 6)" style="margin-top:8px"/>
-        <button class="btn btn-primary" id="btn-confirm-pw-change" style="width:100%;margin-top:8px">Подтвердить смену</button>
+        <p style="font-size:12px;color:var(--green);margin-bottom:8px">Код отправлен на <span id="pw-code-email"></span></p>
+        <input class="form-input" id="edit-reset-code" placeholder="6-значный код" maxlength="6" style="letter-spacing:6px;font-size:22px;text-align:center;font-weight:700"/>
+        <button class="btn btn-primary" id="btn-confirm-pw-change" style="width:100%;margin-top:8px">Подтвердить</button>
         <div class="auth-error" id="pass-confirm-error" style="display:none"></div>
       </div>
     </div>
