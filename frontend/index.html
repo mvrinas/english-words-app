@@ -4063,5 +4063,7 @@ document.addEventListener('click', function(e) {
   // FAB is defined here in DOM, wire up onclick now
   const fab = document.getElementById('fab-add-word');
   if (fab) fab.addEventListener('click', function(){ if(typeof openWordModal==='function') openWordModal(); });
+  const fabHw = document.getElementById('fab-hw-create');
+  if (fabHw) fabHw.addEventListener('click', function(){ if(typeof hwOpenCreateModal==='function') hwOpenCreateModal(); });
 })();
 </script>
