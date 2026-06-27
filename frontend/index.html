@@ -306,9 +306,6 @@ select.form-input{appearance:none;cursor:pointer}
 .goal-bar{height:4px;background:var(--green);border-radius:2px;transition:width .3s}
 
 /* ── Card deck view ──────────────────────────────────────────────────────────── */
-.view-toggle{display:flex;gap:3px;background:var(--surface2);padding:3px;border-radius:8px;flex-shrink:0}
-.view-btn{padding:5px 14px;border-radius:6px;border:none;background:none;color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s}
-.view-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
 .words-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media(max-width:900px){.words-card-grid{grid-template-columns:repeat(2,1fr)}}
@@ -478,7 +475,6 @@ select.form-input{appearance:none;cursor:pointer}
 
 /* View toggle — hide on mobile */
 @media(max-width:640px){
-  .view-toggle{display:none}
   .wg-folder{height:90px;border-radius:14px}
   .wg-word{font-size:14px;letter-spacing:-.3px}
   .wg-translation{font-size:11px}
@@ -818,11 +814,7 @@ select.form-input{appearance:none;cursor:pointer}
         <div class="page-sub" id="words-sub"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div class="view-toggle">
-          <button class="view-btn active" id="vbtn-list">≡</button>
-          <button class="view-btn" id="vbtn-cards">⊟</button>
-        </div>
-        <button class="btn btn-primary" id="btn-add-word" style="display:none" aria-hidden="true"></button>
+<button class="btn btn-primary" id="btn-add-word" style="display:none" aria-hidden="true"></button>
       </div>
     </div>
     <input class="form-input" id="search-input" placeholder="Поиск…" style="margin-bottom:12px"/>
@@ -1216,7 +1208,7 @@ let editingWordId = null;
 let selectedColor = '#6366f1';
 let translateDebounce = null;
 let quizQueue = [], quizIdx = 0, quizCorrect = 0, quizRevealed = false;
-let currentView = 'list';
+let currentView = 'cards';
 let srsQueue = [], srsIdx = 0, srsRevealed = false, srsStreak = 0, srsTodayCount = 0, srsDailyGoal = 10;
 
 const COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
@@ -1565,18 +1557,7 @@ async function deleteWord(id) {
 
 
 // ── View toggle ───────────────────────────────────────────────────────────────
-document.getElementById('vbtn-list').addEventListener('click', () => {
-  currentView = 'list';
-  document.getElementById('vbtn-list').classList.add('active');
-  document.getElementById('vbtn-cards').classList.remove('active');
-  renderWords();
-});
-document.getElementById('vbtn-cards').addEventListener('click', () => {
-  currentView = 'cards';
-  document.getElementById('vbtn-cards').classList.add('active');
-  document.getElementById('vbtn-list').classList.remove('active');
-  renderWords();
-});
+
 
 document.getElementById('search-input').addEventListener('input', () => { renderWords(); animateCards(); });
 document.querySelectorAll('.filter-pill').forEach(pill => {
