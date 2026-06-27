@@ -211,6 +211,79 @@ select.form-input{appearance:none;cursor:pointer}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:190}
 
 
+
+/* ── Homework (Assignments) ─────────────────────────────────────────────── */
+.hw-list{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.hw-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:16px 18px;cursor:pointer;transition:box-shadow .15s,border-color .15s;
+  border-left:4px solid var(--accent)}
+.hw-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);border-color:var(--accent)}
+.hw-card.status-submitted{border-left-color:#f59e0b}
+.hw-card.status-reviewed{border-left-color:#22c55e}
+.hw-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hw-card-title{font-size:15px;font-weight:700;color:var(--text);line-height:1.3}
+.hw-status-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.4px}
+.hw-status-badge.active{background:rgba(99,102,241,.12);color:#6366f1}
+.hw-status-badge.submitted{background:rgba(245,158,11,.12);color:#f59e0b}
+.hw-status-badge.reviewed{background:rgba(34,197,94,.12);color:#16a34a}
+.hw-card-meta{font-size:12px;color:var(--text2);margin-top:5px}
+.hw-detail-section{background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:18px;margin-top:12px}
+.hw-detail-label{font-size:11px;font-weight:600;color:var(--text2);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.hw-link-item{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:var(--surface2);border-radius:8px;margin-bottom:6px;cursor:pointer;
+  text-decoration:none;color:var(--text)}
+.hw-link-item:hover{background:var(--border)}
+.hw-link-label{font-size:13px;font-weight:500;flex:1;word-break:break-word}
+.hw-link-icon{flex-shrink:0;opacity:.5}
+.hw-video-wrap{position:relative;padding-bottom:56.25%;height:0;border-radius:10px;
+  overflow:hidden;margin-bottom:8px}
+.hw-video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+.hw-word-chips{display:flex;flex-wrap:wrap;gap:6px}
+.hw-word-chip{background:var(--surface2);border:1px solid var(--border);
+  border-radius:20px;font-size:13px;padding:4px 12px;color:var(--text);
+  cursor:pointer;transition:all .15s}
+.hw-word-chip:hover{border-color:var(--accent);color:var(--accent)}
+.hw-word-chip.added{border-color:#22c55e;color:#16a34a;background:rgba(34,197,94,.08)}
+.hw-answer-box{width:100%;min-height:100px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px;font-size:14px;color:var(--text);resize:vertical;
+  font-family:inherit}
+.hw-answer-box:focus{outline:none;border-color:var(--accent)}
+.hw-feedback-box{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25);
+  border-radius:10px;padding:14px;font-size:14px;color:var(--text);line-height:1.6}
+.hw-teacher-form{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* Create assignment form (teacher) */
+.hw-create-form{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:20px;margin-bottom:20px;display:none}
+.hw-create-form.open{display:block}
+.hw-input{width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);
+  font-family:inherit;margin-bottom:8px}
+.hw-input:focus{outline:none;border-color:var(--accent)}
+.hw-links-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.hw-link-row{display:flex;gap:6px;align-items:center}
+.hw-link-row input{flex:1}
+.hw-link-row button{flex-shrink:0;background:none;border:1px solid var(--border);
+  border-radius:6px;padding:6px 8px;cursor:pointer;color:var(--text2)}
+.hw-words-input{display:flex;gap:6px;margin-bottom:8px}
+.hw-words-input input{flex:1}
+.hw-words-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.hw-words-chip{background:var(--surface2);border:1px solid var(--border);
+  border-radius:20px;font-size:12px;padding:3px 10px;color:var(--text);
+  display:flex;align-items:center;gap:4px}
+.hw-words-chip button{background:none;border:none;cursor:pointer;color:var(--text2);
+  font-size:14px;line-height:1;padding:0}
+.hw-empty{text-align:center;padding:48px 20px;color:var(--text2)}
+.hw-empty-icon{font-size:40px;margin-bottom:12px;opacity:.5}
+.hw-back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;
+  cursor:pointer;color:var(--text2);font-size:14px;padding:0;margin-bottom:16px}
+.hw-back-btn:hover{color:var(--text)}
+.hw-badge{display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;background:var(--red);color:#fff;border-radius:50%;
+  font-size:10px;font-weight:700;margin-left:4px}
+
 /* ── SRS ─────────────────────────────────────────────────────────────────── */
 .srs-wrap{max-width:480px;margin:0 auto;text-align:center}
 .srs-progress{display:flex;align-items:center;gap:12px;margin-bottom:24px;justify-content:center}
@@ -691,6 +764,11 @@ select.form-input{appearance:none;cursor:pointer}
       <svg viewBox="0 0 24 24"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="12" r="1"/><circle cx="18" cy="10" r="1"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
       Игры
     </button>
+    <button class="bnav-item" data-page="homework" id="bnav-homework">
+      <div class="bnav-dot"></div>
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Задания
+    </button>
   </div>
 </nav>
 
@@ -703,6 +781,7 @@ select.form-input{appearance:none;cursor:pointer}
   <button class="nav-item" data-page="grammar">Грамматика</button>
   <button class="nav-item" data-page="srs" id="nav-srs">Повторение <span class="due-badge hidden" id="due-badge">0</span></button>
   <button class="nav-item" data-page="games">Игры</button>
+  <button class="nav-item" data-page="homework" id="nav-homework">Домашние задания<span class="hw-badge hidden" id="hw-nav-badge">0</span></button>
   <div class="nav-section">Темы</div>
   <button class="topic-pill active" id="pill-all">
     <span class="topic-dot" style="background:var(--text2)"></span>
@@ -912,6 +991,53 @@ select.form-input{appearance:none;cursor:pointer}
       </div>
     </div>
   </div>
+  <div class="page" id="page-homework">
+    <!-- List view -->
+    <div id="hw-list-view">
+      <div class="page-header">
+        <div class="page-title" id="hw-page-title">Домашние задания</div>
+        <button class="btn btn-primary btn-sm" id="btn-hw-create" style="display:none">+ Создать задание</button>
+      </div>
+      <!-- Teacher: create form -->
+      <div class="hw-create-form" id="hw-create-form">
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px">Новое задание</div>
+        <select class="hw-input" id="hw-student-select"><option value="">Выбрать ученика...</option></select>
+        <input class="hw-input" id="hw-title-input" placeholder="Название задания" maxlength="120">
+        <textarea class="hw-input hw-answer-box" id="hw-desc-input" placeholder="Описание, инструкция..." style="min-height:80px;resize:vertical"></textarea>
+        <input class="hw-input" id="hw-due-input" type="date" placeholder="Срок сдачи (необязательно)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Ссылки и видео</div>
+        <div class="hw-links-list" id="hw-links-list"></div>
+        <div class="hw-link-row" style="margin-bottom:12px">
+          <input class="hw-input" id="hw-link-label" placeholder="Название ссылки" style="margin:0">
+          <input class="hw-input" id="hw-link-url" placeholder="URL (YouTube, статья...)" style="margin:0;flex:2">
+          <button onclick="hwAddLink()">+</button>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Слова для изучения</div>
+        <div class="hw-words-chips" id="hw-words-chips"></div>
+        <div class="hw-words-input">
+          <input class="hw-input" id="hw-word-input" placeholder="Добавить слово" style="margin:0" onkeydown="if(event.key==='Enter'){hwAddWord();event.preventDefault()}">
+          <button class="btn btn-sm" onclick="hwAddWord()">+</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" onclick="hwSubmitCreate()">Создать задание</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('hw-create-form').classList.remove('open')">Отмена</button>
+        </div>
+      </div>
+      <!-- Assignments list -->
+      <div class="hw-list" id="hw-list-container">
+        <div class="hw-empty"><div class="hw-empty-icon">&#128218;</div><div>Заданий пока нет</div></div>
+      </div>
+    </div>
+    <!-- Detail view -->
+    <div id="hw-detail-view" style="display:none">
+      <button class="hw-back-btn" onclick="hwShowList()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Назад к заданиям
+      </button>
+      <div id="hw-detail-content"></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- PASSWORD RESET MODAL -->
@@ -1272,6 +1398,17 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(b =>
     b.classList.toggle('active', b.dataset.page === id)
   );
+  if (id === 'homework') {
+    loadHomework();
+    const btnCreate = document.getElementById('btn-hw-create');
+    if (btnCreate) btnCreate.style.display = hwIsTeacher() ? 'inline-flex' : 'none';
+    if (hwIsTeacher()) hwLoadStudents();
+    // reset to list view
+    const lv = document.getElementById('hw-list-view');
+    const dv = document.getElementById('hw-detail-view');
+    if (lv) lv.style.display = 'block';
+    if (dv) dv.style.display = 'none';
+  }
   if (id === 'home')   renderDashboard();
   if (id === 'words')  renderWords();
   if (id === 'quiz')   renderQuizStart();
@@ -2470,6 +2607,293 @@ document.getElementById('btn-hamburger')?.addEventListener('click', () => {
 });
 document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
 
+
+
+// ── Homework (Assignments) ────────────────────────────────────────────────────
+let _hwLinks = [];
+let _hwWords = [];
+let _hwCurrentId = null;
+
+function hwIsTeacher() {
+  try {
+    const u = JSON.parse(localStorage.getItem('wapp_user') || '{}');
+    return u.role === 'teacher' || u.role === 'ceo';
+  } catch { return false; }
+}
+
+function hwYtId(url) {
+  const m = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function hwStatusLabel(s) {
+  if (s === 'submitted') return '<span class="hw-status-badge submitted">Проверяется</span>';
+  if (s === 'reviewed')  return '<span class="hw-status-badge reviewed">Проверено</span>';
+  return '<span class="hw-status-badge active">Новое</span>';
+}
+
+async function loadHomework() {
+  try {
+    const items = await api('GET', '/assignments');
+    const container = document.getElementById('hw-list-container');
+    const badge = document.getElementById('hw-nav-badge');
+    const bnav  = document.getElementById('bnav-homework');
+
+    // Count new/unreviewed for student
+    const newCount = hwIsTeacher() ? 0 : items.filter(a => a.status === 'active').length;
+    if (badge) {
+      badge.textContent = newCount;
+      badge.classList.toggle('hidden', newCount === 0);
+    }
+    if (bnav) bnav.classList.toggle('has-badge', newCount > 0);
+
+    if (!items.length) {
+      container.innerHTML = '<div class="hw-empty"><div class="hw-empty-icon">&#128218;</div><div>' +
+        (hwIsTeacher() ? 'Заданий ещё нет. Создайте первое!' : 'Заданий пока нет') + '</div></div>';
+      return;
+    }
+
+    container.innerHTML = items.map(a => {
+      const due = a.due_date ? ' &middot; До ' + a.due_date.slice(0,10) : '';
+      const who = hwIsTeacher()
+        ? (a.student_name || a.student_username || 'Ученик')
+        : (a.teacher_name || a.teacher_username || 'Учитель');
+      return `<div class="hw-card status-${a.status}" data-id="${a.id}" onclick="hwOpenDetail(${a.id})">
+        <div class="hw-card-top">
+          <div class="hw-card-title">${esc(a.title)}</div>
+          ${hwStatusLabel(a.status)}
+        </div>
+        <div class="hw-card-meta">${esc(who)}${due}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error('loadHomework', e); }
+}
+
+async function hwOpenDetail(id) {
+  _hwCurrentId = id;
+  try {
+    const a = await api('GET', '/assignments/' + id);
+    const isTeacher = hwIsTeacher();
+    const sub = a.submission;
+
+    let html = `<div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px">${esc(a.title)}</div>`;
+    if (a.due_date) html += `<div style="font-size:12px;color:var(--text2);margin-bottom:14px">До ${a.due_date.slice(0,10)}</div>`;
+
+    // Description
+    if (a.description) {
+      html += `<div class="hw-detail-section">
+        <div class="hw-detail-label">Задание</div>
+        <div style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap">${esc(a.description)}</div>
+      </div>`;
+    }
+
+    // Links / videos
+    if (a.links && a.links.length) {
+      html += '<div class="hw-detail-section"><div class="hw-detail-label">Материалы</div>';
+      a.links.forEach(lk => {
+        const url = lk.url || lk;
+        const label = lk.label || url;
+        const ytId = hwYtId(url);
+        if (ytId) {
+          html += `<div style="margin-bottom:10px">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:5px">${esc(label)}</div>
+            <div class="hw-video-wrap"><iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe></div>
+          </div>`;
+        } else {
+          html += `<a class="hw-link-item" href="${url}" target="_blank" rel="noopener">
+            <svg class="hw-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <span class="hw-link-label">${esc(label)}</span>
+          </a>`;
+        }
+      });
+      html += '</div>';
+    }
+
+    // Words
+    if (a.words && a.words.length) {
+      html += `<div class="hw-detail-section">
+        <div class="hw-detail-label">Слова для изучения</div>
+        <div class="hw-word-chips">
+          ${a.words.map(w => `<div class="hw-word-chip" onclick="hwAddWordToVocab(this,'${esc(w)}')" title="Добавить в словарь">${esc(w)}</div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px">Нажми на слово, чтобы добавить в свой словарь</div>
+      </div>`;
+    }
+
+    // Student submission area
+    if (!isTeacher) {
+      if (sub) {
+        html += `<div class="hw-detail-section">
+          <div class="hw-detail-label">Твой ответ</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap">${esc(sub.text || '')}</div>
+        </div>`;
+        if (sub.feedback_text) {
+          html += `<div class="hw-detail-section">
+            <div class="hw-detail-label">Комментарий учителя</div>
+            <div class="hw-feedback-box">${esc(sub.feedback_text)}</div>
+          </div>`;
+        } else {
+          html += `<div style="font-size:13px;color:var(--text2);margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px">
+            Ответ отправлен. Ждём проверки учителя.
+          </div>`;
+        }
+      } else {
+        html += `<div class="hw-detail-section">
+          <div class="hw-detail-label">Твой ответ</div>
+          <textarea class="hw-answer-box" id="hw-answer-textarea" placeholder="Напиши свой ответ здесь..."></textarea>
+          <button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="hwSubmitAnswer(${id})">Отправить ответ</button>
+        </div>`;
+      }
+    } else {
+      // Teacher: see student response + leave feedback
+      if (sub) {
+        html += `<div class="hw-detail-section">
+          <div class="hw-detail-label">Ответ ученика</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap">${esc(sub.text || '(без текста)')}</div>
+        </div>`;
+        if (sub.feedback_text) {
+          html += `<div class="hw-detail-section">
+            <div class="hw-detail-label">Твой комментарий</div>
+            <div class="hw-feedback-box">${esc(sub.feedback_text)}</div>
+          </div>`;
+        } else {
+          html += `<div class="hw-detail-section">
+            <div class="hw-detail-label">Оставить комментарий</div>
+            <div class="hw-teacher-form">
+              <textarea class="hw-answer-box" id="hw-feedback-textarea" placeholder="Комментарий, исправление, оценка..."></textarea>
+              <button class="btn btn-primary" onclick="hwLeaveFeedback(${id})">Отправить комментарий</button>
+            </div>
+          </div>`;
+        }
+      } else {
+        html += `<div style="font-size:13px;color:var(--text2);margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px">
+          Ученик ещё не отправил ответ.
+        </div>`;
+      }
+      // Teacher: delete button
+      html += `<button class="btn btn-ghost" style="margin-top:16px;color:#ef4444;border-color:#fca5a5" onclick="hwDeleteAssignment(${id})">Удалить задание</button>`;
+    }
+
+    document.getElementById('hw-detail-content').innerHTML = html;
+    document.getElementById('hw-list-view').style.display = 'none';
+    document.getElementById('hw-detail-view').style.display = 'block';
+  } catch(e) { console.error('hwOpenDetail', e); showToast('Ошибка загрузки'); }
+}
+
+function hwShowList() {
+  document.getElementById('hw-list-view').style.display = 'block';
+  document.getElementById('hw-detail-view').style.display = 'none';
+  _hwCurrentId = null;
+  loadHomework();
+}
+
+async function hwSubmitAnswer(id) {
+  const text = (document.getElementById('hw-answer-textarea')?.value || '').trim();
+  try {
+    await api('POST', '/assignments/' + id + '/submit', { text });
+    showToast('Ответ отправлен!');
+    hwOpenDetail(id);
+  } catch(e) { showToast('Ошибка: ' + (e.message || e)); }
+}
+
+async function hwLeaveFeedback(id) {
+  const text = (document.getElementById('hw-feedback-textarea')?.value || '').trim();
+  if (!text) { showToast('Напиши комментарий'); return; }
+  try {
+    await api('POST', '/assignments/' + id + '/feedback', { text });
+    showToast('Комментарий отправлен!');
+    hwOpenDetail(id);
+  } catch(e) { showToast('Ошибка: ' + (e.message || e)); }
+}
+
+async function hwDeleteAssignment(id) {
+  if (!confirm('Удалить задание?')) return;
+  try {
+    await api('DELETE', '/assignments/' + id);
+    showToast('Задание удалено');
+    hwShowList();
+  } catch(e) { showToast('Ошибка удаления'); }
+}
+
+async function hwAddWordToVocab(el, word) {
+  try {
+    await api('POST', '/words', { word, translation: '', topic_id: null });
+    el.classList.add('added');
+    el.title = 'Добавлено!';
+    showToast(`"${word}" добавлено в словарь`);
+  } catch(e) { showToast('Уже есть или ошибка'); }
+}
+
+// Create form helpers
+function hwAddLink() {
+  const label = document.getElementById('hw-link-label').value.trim();
+  const url   = document.getElementById('hw-link-url').value.trim();
+  if (!url) { showToast('Введи URL'); return; }
+  _hwLinks.push({ label: label || url, url });
+  document.getElementById('hw-link-label').value = '';
+  document.getElementById('hw-link-url').value = '';
+  hwRenderLinks();
+}
+
+function hwRenderLinks() {
+  const el = document.getElementById('hw-links-list');
+  if (!el) return;
+  el.innerHTML = _hwLinks.map((lk, i) =>
+    `<div class="hw-link-row">
+      <span style="font-size:13px;flex:1;color:var(--text)">${esc(lk.label)}</span>
+      <button onclick="_hwLinks.splice(${i},1);hwRenderLinks()">x</button>
+    </div>`
+  ).join('');
+}
+
+function hwAddWord() {
+  const w = (document.getElementById('hw-word-input')?.value || '').trim();
+  if (!w) return;
+  if (!_hwWords.includes(w)) _hwWords.push(w);
+  document.getElementById('hw-word-input').value = '';
+  hwRenderWords();
+}
+
+function hwRenderWords() {
+  const el = document.getElementById('hw-words-chips');
+  if (!el) return;
+  el.innerHTML = _hwWords.map((w, i) =>
+    `<div class="hw-words-chip">${esc(w)}<button onclick="_hwWords.splice(${i},1);hwRenderWords()">x</button></div>`
+  ).join('');
+}
+
+async function hwLoadStudents() {
+  try {
+    const students = await api('GET', '/teacher/students');
+    const sel = document.getElementById('hw-student-select');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Выбрать ученика...</option>' +
+      students.map(s => `<option value="${s.id}">${esc(s.name || s.username || s.email)}</option>`).join('');
+  } catch(e) { console.error('hwLoadStudents', e); }
+}
+
+async function hwSubmitCreate() {
+  const title = document.getElementById('hw-title-input')?.value.trim();
+  const desc  = document.getElementById('hw-desc-input')?.value.trim() || '';
+  const due   = document.getElementById('hw-due-input')?.value || null;
+  const sid   = parseInt(document.getElementById('hw-student-select')?.value);
+  if (!title) { showToast('Введи название'); return; }
+  if (!sid)   { showToast('Выбери ученика'); return; }
+  try {
+    await api('POST', '/assignments', {
+      student_id: sid, title, description: desc,
+      links: _hwLinks, words: _hwWords, due_date: due || null
+    });
+    showToast('Задание создано!');
+    document.getElementById('hw-create-form').classList.remove('open');
+    document.getElementById('hw-title-input').value = '';
+    document.getElementById('hw-desc-input').value = '';
+    document.getElementById('hw-due-input').value = '';
+    _hwLinks = []; _hwWords = [];
+    hwRenderLinks(); hwRenderWords();
+    loadHomework();
+  } catch(e) { showToast('Ошибка: ' + (e.message || e)); }
+}
 
 // ── SRS ───────────────────────────────────────────────────────────────────────
 async function loadStreak() {

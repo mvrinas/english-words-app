@@ -244,6 +244,77 @@ def init_db():
         """))
         conn.commit()
 
+
+        # ── Assignments (homework) ────────────────────────────────────────────
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS assignments (
+                id          SERIAL PRIMARY KEY,
+                teacher_id  INTEGER NOT NULL,
+                student_id  INTEGER NOT NULL,
+                title       TEXT NOT NULL,
+                description TEXT,
+                links       TEXT DEFAULT '[]',
+                words       TEXT DEFAULT '[]',
+                status      TEXT NOT NULL DEFAULT 'active',
+                due_date    TEXT,
+                created_at  TIMESTAMPTZ DEFAULT NOW()
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS assignments (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                teacher_id  INTEGER NOT NULL,
+                student_id  INTEGER NOT NULL,
+                title       TEXT NOT NULL,
+                description TEXT,
+                links       TEXT DEFAULT '[]',
+                words       TEXT DEFAULT '[]',
+                status      TEXT NOT NULL DEFAULT 'active',
+                due_date    TEXT,
+                created_at  TEXT DEFAULT (datetime('now'))
+            )
+        """))
+        conn.commit()
+
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS assignment_submissions (
+                id            SERIAL PRIMARY KEY,
+                assignment_id INTEGER NOT NULL,
+                student_id    INTEGER NOT NULL,
+                text          TEXT,
+                status        TEXT NOT NULL DEFAULT 'submitted',
+                created_at    TIMESTAMPTZ DEFAULT NOW()
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS assignment_submissions (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                assignment_id INTEGER NOT NULL,
+                student_id    INTEGER NOT NULL,
+                text          TEXT,
+                status        TEXT NOT NULL DEFAULT 'submitted',
+                created_at    TEXT DEFAULT (datetime('now'))
+            )
+        """))
+        conn.commit()
+
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS assignment_feedback (
+                id            SERIAL PRIMARY KEY,
+                submission_id INTEGER NOT NULL,
+                teacher_id    INTEGER NOT NULL,
+                text          TEXT NOT NULL,
+                created_at    TIMESTAMPTZ DEFAULT NOW()
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS assignment_feedback (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                submission_id INTEGER NOT NULL,
+                teacher_id    INTEGER NOT NULL,
+                text          TEXT NOT NULL,
+                created_at    TEXT DEFAULT (datetime('now'))
+            )
+        """))
+        conn.commit()
+
         # ── CEO account ───────────────────────────────────────────────────────
         ceo = conn.execute(
             text("SELECT id FROM users WHERE email=:e"), {"e": CEO_EMAIL}
@@ -267,6 +338,21 @@ def init_db():
             _create_default_topics(conn, ceo_id)
         else:
             ceo_id = ceo[0]
+
+        # ── Teacher account ────────────────────────────────────────────────────
+        teacher_email = os.environ.get("TEACHER_EMAIL", "")
+        teacher_pw    = os.environ.get("TEACHER_PASSWORD", "")
+        if teacher_email and teacher_pw:
+            existing_t = conn.execute(
+                text("SELECT id FROM users WHERE email=:e"), {"e": teacher_email}
+            ).one_or_none()
+            if not existing_t:
+                tph = hash_pw(teacher_pw)
+                conn.execute(
+                    text("INSERT INTO users (email, password_hash, name, role) VALUES (:e, :ph, 'Teacher', 'teacher')"),
+                    {"e": teacher_email, "ph": tph}
+                )
+                conn.commit()
 
         # Update CEO name if it was set to old default
         conn.execute(text("UPDATE users SET name='Marina K' WHERE email=:e AND name='Marina (CEO)'"), {"e": CEO_EMAIL})

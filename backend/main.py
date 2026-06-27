@@ -950,3 +950,170 @@ def confirm_password_change(body: ResetPasswordIn, u=Depends(get_user)):
         conn.commit()
 
     return {"ok": True}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ASSIGNMENTS (HOMEWORK)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+import json as _json
+
+class AssignmentIn(BaseModel):
+    student_id:  int
+    title:       str
+    description: str = ""
+    links:       list = []   # [{"url": "...", "label": "..."}]
+    words:       list = []   # ["word1", "word2"]
+    due_date:    str = None
+
+class SubmissionIn(BaseModel):
+    text: str = ""
+
+class FeedbackIn(BaseModel):
+    text: str
+
+def _require_teacher(u):
+    if u.get("role") not in ("teacher", "ceo"):
+        raise HTTPException(403, "Только для учителя")
+
+def _require_student_or_teacher(u, assignment):
+    me = u["sub"]
+    if u.get("role") in ("teacher", "ceo"):
+        return
+    if assignment["student_id"] != me:
+        raise HTTPException(403, "Нет доступа")
+
+# ── Teacher: create assignment ────────────────────────────────────────────────
+@app.post("/assignments")
+def create_assignment(body: AssignmentIn, u=Depends(get_user)):
+    _require_teacher(u)
+    with get_conn() as conn:
+        if IS_PG:
+            row = conn.execute(text("""
+                INSERT INTO assignments (teacher_id, student_id, title, description, links, words, due_date)
+                VALUES (:t, :s, :ti, :d, :l, :w, :du) RETURNING id
+            """), {"t": u["sub"], "s": body.student_id, "ti": body.title,
+                   "d": body.description, "l": _json.dumps(body.links, ensure_ascii=False),
+                   "w": _json.dumps(body.words, ensure_ascii=False), "du": body.due_date}).one()
+            aid = row[0]
+        else:
+            conn.execute(text("""
+                INSERT INTO assignments (teacher_id, student_id, title, description, links, words, due_date)
+                VALUES (:t, :s, :ti, :d, :l, :w, :du)
+            """), {"t": u["sub"], "s": body.student_id, "ti": body.title,
+                   "d": body.description, "l": _json.dumps(body.links, ensure_ascii=False),
+                   "w": _json.dumps(body.words, ensure_ascii=False), "du": body.due_date})
+            aid = conn.execute(text("SELECT last_insert_rowid()")).scalar()
+        conn.commit()
+    return {"id": aid, "ok": True}
+
+# ── List assignments (teacher sees all they created; student sees their own) ──
+@app.get("/assignments")
+def list_assignments(u=Depends(get_user)):
+    me = u["sub"]
+    role = u.get("role", "user")
+    with get_conn() as conn:
+        if role in ("teacher", "ceo"):
+            rows = conn.execute(text("""
+                SELECT a.*, u.name AS student_name, u.username AS student_username
+                FROM assignments a JOIN users u ON u.id=a.student_id
+                WHERE a.teacher_id=:me ORDER BY a.created_at DESC
+            """), {"me": me}).mappings().all()
+        else:
+            rows = conn.execute(text("""
+                SELECT a.*, u.name AS teacher_name, u.username AS teacher_username
+                FROM assignments a JOIN users u ON u.id=a.teacher_id
+                WHERE a.student_id=:me ORDER BY a.created_at DESC
+            """), {"me": me}).mappings().all()
+        result = []
+        for r in rows:
+            d = dict(r)
+            d["links"] = _json.loads(d.get("links") or "[]")
+            d["words"] = _json.loads(d.get("words") or "[]")
+            result.append(d)
+    return result
+
+# ── Get single assignment with submission ────────────────────────────────────
+@app.get("/assignments/{aid}")
+def get_assignment(aid: int, u=Depends(get_user)):
+    me = u["sub"]
+    with get_conn() as conn:
+        row = conn.execute(text("SELECT * FROM assignments WHERE id=:id"), {"id": aid}).mappings().one_or_none()
+        if not row:
+            raise HTTPException(404, "Не найдено")
+        a = dict(row)
+        if u.get("role") not in ("teacher", "ceo") and a["student_id"] != me:
+            raise HTTPException(403, "Нет доступа")
+        a["links"] = _json.loads(a.get("links") or "[]")
+        a["words"] = _json.loads(a.get("words") or "[]")
+        # Get submission
+        sub = conn.execute(text("""
+            SELECT s.*, f.text AS feedback_text, f.created_at AS feedback_at
+            FROM assignment_submissions s
+            LEFT JOIN assignment_feedback f ON f.submission_id=s.id
+            WHERE s.assignment_id=:aid AND s.student_id=:sid
+            ORDER BY s.created_at DESC LIMIT 1
+        """), {"aid": aid, "sid": a["student_id"]}).mappings().one_or_none()
+        a["submission"] = dict(sub) if sub else None
+    return a
+
+# ── Student: submit answer ────────────────────────────────────────────────────
+@app.post("/assignments/{aid}/submit")
+def submit_assignment(aid: int, body: SubmissionIn, u=Depends(get_user)):
+    me = u["sub"]
+    with get_conn() as conn:
+        a = conn.execute(text("SELECT * FROM assignments WHERE id=:id"), {"id": aid}).mappings().one_or_none()
+        if not a or a["student_id"] != me:
+            raise HTTPException(403, "Нет доступа")
+        if IS_PG:
+            conn.execute(text("""
+                INSERT INTO assignment_submissions (assignment_id, student_id, text)
+                VALUES (:a, :s, :t)
+            """), {"a": aid, "s": me, "t": body.text})
+        else:
+            conn.execute(text("""
+                INSERT INTO assignment_submissions (assignment_id, student_id, text)
+                VALUES (:a, :s, :t)
+            """), {"a": aid, "s": me, "t": body.text})
+        conn.execute(text("UPDATE assignments SET status='submitted' WHERE id=:id"), {"id": aid})
+        conn.commit()
+    return {"ok": True}
+
+# ── Teacher: leave feedback ───────────────────────────────────────────────────
+@app.post("/assignments/{aid}/feedback")
+def leave_feedback(aid: int, body: FeedbackIn, u=Depends(get_user)):
+    _require_teacher(u)
+    with get_conn() as conn:
+        sub = conn.execute(text("""
+            SELECT id FROM assignment_submissions WHERE assignment_id=:aid ORDER BY created_at DESC LIMIT 1
+        """), {"aid": aid}).one_or_none()
+        if not sub:
+            raise HTTPException(404, "Ответ не найден")
+        conn.execute(text("""
+            INSERT INTO assignment_feedback (submission_id, teacher_id, text)
+            VALUES (:s, :t, :tx)
+        """), {"s": sub[0], "t": u["sub"], "tx": body.text})
+        conn.execute(text("UPDATE assignments SET status='reviewed' WHERE id=:id"), {"id": aid})
+        conn.commit()
+    return {"ok": True}
+
+# ── Teacher: delete assignment ────────────────────────────────────────────────
+@app.delete("/assignments/{aid}", status_code=204)
+def delete_assignment(aid: int, u=Depends(get_user)):
+    _require_teacher(u)
+    with get_conn() as conn:
+        conn.execute(text("DELETE FROM assignment_feedback WHERE submission_id IN (SELECT id FROM assignment_submissions WHERE assignment_id=:id)"), {"id": aid})
+        conn.execute(text("DELETE FROM assignment_submissions WHERE assignment_id=:id"), {"id": aid})
+        conn.execute(text("DELETE FROM assignments WHERE id=:id AND teacher_id=:t"), {"id": aid, "t": u["sub"]})
+        conn.commit()
+
+# ── List students (for teacher to pick when creating assignment) ──────────────
+@app.get("/teacher/students")
+def list_students(u=Depends(get_user)):
+    _require_teacher(u)
+    with get_conn() as conn:
+        rows = conn.execute(text("""
+            SELECT id, name, username, email FROM users
+            WHERE role NOT IN ('teacher','ceo') ORDER BY name
+        """)).mappings().all()
+    return [dict(r) for r in rows]
