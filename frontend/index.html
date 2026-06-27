@@ -2052,13 +2052,15 @@ function showProfileModal(user, isOwn) {
       ${!isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openChat(${user.id}, '${esc(fullName || username)}')">Написать</button>` : ''}
       ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-edit-profile">Редактировать</button>` : ''}
       ${isOwn ? `<button class="btn btn-ghost btn-sm" onclick="openSearchModal()">Найти людей</button>` : ''}
+      ${isOwn ? `<button class="btn btn-ghost btn-sm" id="btn-requests-profile" onclick="toggleRequestsPanel()">Заявки</button>` : ''}
     </div>
     ${isOwn ? `<div id="profile-friends-section"></div>` : ''}
-    ${isOwn ? `<div id="profile-requests-section"></div>` : ''}
+    ${isOwn ? `<div id="profile-requests-panel" style="display:none"></div>` : ''}
+    ${isOwn ? `<div id="profile-messages-section"></div>` : ''}
     ${isOwn ? renderProfileEditForm(user) : ''}
   `;
 
-  if (isOwn) { loadFriendRequests(); loadFriendsList(); }
+  if (isOwn) { loadFriendRequests(); loadFriendsList(); loadProfileMessages(); }
 
   if (isOwn) {
     document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
@@ -2257,47 +2259,26 @@ async function removeFriend(userId) {
 // ── Friend Requests & Notifications ─────────────────────────────────────────
 
 async function loadFriendRequests() {
-  const section = document.getElementById('profile-requests-section');
-  if (!section) return;
   try {
     const data = await api('GET', '/friends/requests');
     const { sent, received } = data;
-    let out = '';
 
-    if (received.length) {
-      out += `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">
-          Входящие заявки (${received.length})
-        </div>`;
-      received.forEach(u => {
-        const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
-        const uname = u.username ? '@' + u.username : '';
-        const init = name[0].toUpperCase();
-        out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px">
-          <div class="user-search-avatar" style="width:34px;height:34px;font-size:13px">${esc(init)}</div>
-          <div class="user-search-info">
-            <div class="user-search-name">${esc(name)}</div>
-            <div class="user-search-username">${esc(uname)}</div>
-          </div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-primary btn-sm" onclick="acceptFriend(${u.id}, this)">Принять</button>
-            <button class="btn btn-ghost btn-sm" onclick="declineFriend(${u.id}, this)">Отклонить</button>
-          </div>
-        </div>`;
-      });
-      out += '</div>';
-    }
+    // Update "Заявки" button label
+    const btn = document.getElementById('btn-requests-profile');
+    if (btn) btn.textContent = sent.length ? 'Заявки (' + sent.length + ')' : 'Заявки';
 
+    // Incoming requests section (inline in profile)
+    const inSection = document.getElementById('profile-requests-panel');
+
+    // Build sent panel
+    let sentOut = '';
     if (sent.length) {
-      out += `<div style="margin-top:14px;${received.length ? '' : 'border-top:1px solid var(--border);padding-top:14px'}">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">
-          Отправленные заявки (${sent.length})
-        </div>`;
+      sentOut += `<div style="padding-top:12px">`;
       sent.forEach(u => {
         const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
         const uname = u.username ? '@' + u.username : '';
         const init = name[0].toUpperCase();
-        out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px">
+        sentOut += `<div class="user-search-item" style="padding:8px;margin-bottom:4px">
           <div class="user-search-avatar" style="width:34px;height:34px;font-size:13px">${esc(init)}</div>
           <div class="user-search-info">
             <div class="user-search-name">${esc(name)}</div>
@@ -2306,9 +2287,82 @@ async function loadFriendRequests() {
           <span style="font-size:11px;color:var(--text2);flex-shrink:0">Ожидает</span>
         </div>`;
       });
-      out += '</div>';
+      sentOut += '</div>';
+    } else {
+      sentOut = '<div style="font-size:13px;color:var(--text2);padding:12px 0">Нет отправленных заявок</div>';
     }
+    if (inSection) inSection.innerHTML = sentOut;
 
+    // Incoming requests shown inside messages section header if any
+    window._pendingReceived = received;
+    const msgSec = document.getElementById('profile-messages-section');
+    if (msgSec && received.length) {
+      const existing = msgSec.querySelector('.incoming-block');
+      if (!existing) {
+        const block = document.createElement('div');
+        block.className = 'incoming-block';
+        block.style.cssText = 'border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:4px';
+        let inHtml = `<div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Входящие заявки (${received.length})</div>`;
+        received.forEach(u => {
+          const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name || u.username || '?';
+          const uname = u.username ? '@' + u.username : '';
+          const init = name[0].toUpperCase();
+          inHtml += `<div class="user-search-item" style="padding:6px 0;margin-bottom:4px">
+            <div class="user-search-avatar" style="width:32px;height:32px;font-size:12px">${esc(init)}</div>
+            <div class="user-search-info">
+              <div class="user-search-name">${esc(name)}</div>
+              <div class="user-search-username">${esc(uname)}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button class="btn btn-primary btn-sm" onclick="acceptFriend(${u.id}, this)">Принять</button>
+              <button class="btn btn-ghost btn-sm" onclick="declineFriend(${u.id}, this)">Отклонить</button>
+            </div>
+          </div>`;
+        });
+        block.innerHTML = inHtml;
+        msgSec.prepend(block);
+      }
+    }
+  } catch(e) {}
+}
+
+function toggleRequestsPanel() {
+  const panel = document.getElementById('profile-requests-panel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadProfileMessages() {
+  const section = document.getElementById('profile-messages-section');
+  if (!section) return;
+  try {
+    const convos = await api('GET', '/messages');
+    let out = `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Сообщения</div>`;
+    if (!convos || !convos.length) {
+      out += '<div style="font-size:13px;color:var(--text2);padding:4px 0">Нет сообщений</div>';
+    } else {
+      convos.forEach(c => {
+        const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.name || c.username || '?';
+        const uname = c.username ? '@' + c.username : '';
+        const init = name[0].toUpperCase();
+        const hasUnread = c.unread > 0;
+        out += `<div class="user-search-item" style="padding:8px;margin-bottom:4px;cursor:pointer" onclick="openChat(${c.id},'${esc(name)}')">
+          <div class="user-search-avatar" style="width:36px;height:36px;font-size:14px;position:relative">
+            ${esc(init)}
+            ${hasUnread ? `<span style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px">${c.unread}</span>` : ''}
+          </div>
+          <div class="user-search-info">
+            <div class="user-search-name" style="${hasUnread ? 'font-weight:700' : ''}">${esc(name)}</div>
+            <div class="user-search-username" style="font-size:12px;${hasUnread ? 'color:var(--text1)' : ''}">${esc(c.last_message || uname)}</div>
+          </div>
+          <div style="font-size:11px;color:${hasUnread ? 'var(--red)' : 'var(--text2)'};flex-shrink:0;font-weight:${hasUnread ? '700' : '400'}">
+            ${hasUnread ? 'Новое' : 'Прочитано'}
+          </div>
+        </div>`;
+      });
+    }
+    out += '</div>';
     section.innerHTML = out;
   } catch(e) {}
 }
