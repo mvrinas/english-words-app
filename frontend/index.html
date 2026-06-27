@@ -91,7 +91,6 @@
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .user-name{font-size:13px;font-weight:600;color:var(--text)}
 .user-role{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
-.ceo-badge{color:var(--text2);font-size:10px;font-weight:500;letter-spacing:.8px;opacity:.6;text-transform:uppercase}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1175,7 +1174,7 @@ function updateUserChip() {
   const role = currentUser.role;
   const roleEl = document.getElementById('user-role-el');
   if (role === 'ceo') {
-    roleEl.innerHTML = '<span class="ceo-badge">Founder & CEO</span>';
+    roleEl.textContent = '';
   } else {
     roleEl.textContent = '';
   }
@@ -1183,7 +1182,7 @@ function updateUserChip() {
   const dAvatar = document.getElementById('user-avatar-d');
   const dName = document.getElementById('user-name-d');
   if (dAvatar) dAvatar.textContent = name[0].toUpperCase();
-  if (dName) dName.innerHTML = esc(name) + (role === 'ceo' ? ' <span class="ceo-badge">Founder & CEO</span>' : '');
+  if (dName) dName.innerHTML = esc(name) + '';
 }
 
 // ── API helper ─────────────────────────────────────────────────────────────────
@@ -1994,7 +1993,6 @@ function showProfileModal(user, isOwn) {
       <div>
         <div class="profile-name">${esc(fullName || username)}</div>
         <div class="profile-username">${esc(username)}</div>
-        ${user.role === 'ceo' ? '<div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);opacity:.7;margin-top:3px">Founder & CEO</div>' : ''}
         ${user.bio ? `<div class="profile-bio">${esc(user.bio)}</div>` : ''}
       </div>
     </div>
