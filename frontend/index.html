@@ -231,6 +231,35 @@ select.form-input{appearance:none;cursor:pointer}
 
 
 
+/* ── Rich Text Editor ────────────────────────────────────────────────────── */
+.rte-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  background:var(--surface);margin-bottom:8px}
+.rte-toolbar{display:flex;align-items:center;gap:2px;padding:6px 8px;
+  border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap}
+.rte-btn{width:28px;height:28px;border:none;background:none;cursor:pointer;
+  border-radius:6px;color:var(--text);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:background .12s;
+  flex-shrink:0}
+.rte-btn:hover{background:var(--border)}
+.rte-btn.active{background:var(--accent);color:#fff}
+.rte-sep{width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0}
+.rte-color-btn{width:28px;height:28px;border-radius:6px;border:2px solid var(--border);
+  cursor:pointer;padding:0;overflow:hidden;flex-shrink:0}
+.rte-color-btn input[type=color]{width:36px;height:36px;border:none;padding:0;
+  cursor:pointer;transform:translate(-4px,-4px)}
+.rte-body{min-height:90px;padding:12px;font-size:14px;color:var(--text);
+  outline:none;line-height:1.7;word-break:break-word}
+.rte-body:empty::before{content:attr(data-placeholder);color:var(--text2);pointer-events:none}
+.rte-sym-panel{display:none;position:absolute;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:8px;
+  box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:100;flex-wrap:wrap;gap:4px;width:220px}
+.rte-sym-panel.show{display:flex}
+.rte-sym{width:28px;height:28px;border:none;background:none;cursor:pointer;
+  font-size:16px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.rte-sym:hover{background:var(--surface2)}
+.rte-size-select{font-size:12px;border:1px solid var(--border);border-radius:6px;
+  padding:2px 4px;background:var(--surface);color:var(--text);cursor:pointer;height:28px}
+
 /* ── Homework (Assignments) ─────────────────────────────────────────────── */
 .hw-list{display:flex;flex-direction:column;gap:12px;margin-top:4px}
 .hw-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
@@ -1047,7 +1076,7 @@ select.form-input{appearance:none;cursor:pointer}
         <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px">Новое задание</div>
         <select class="hw-input" id="hw-student-select"><option value="">Выбрать ученика...</option></select>
         <input class="hw-input" id="hw-title-input" placeholder="Название задания" maxlength="120">
-        <textarea class="hw-input hw-answer-box" id="hw-desc-input" placeholder="Описание, инструкция..." style="min-height:80px;resize:vertical"></textarea>
+        <div id="hw-desc-rte"></div>
         <input class="hw-input" id="hw-due-input" type="date" placeholder="Срок сдачи (необязательно)">
         <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Ссылки и видео</div>
         <div class="hw-links-list" id="hw-links-list"></div>
@@ -1446,7 +1475,10 @@ function showPage(id) {
   );
   if (id === 'homework') {
     loadHomework();
-    if (hwIsTeacher()) hwLoadStudents();
+    if (hwIsTeacher()) {
+      hwLoadStudents();
+      setTimeout(() => rteCreate('hw-desc-rte', 'Описание, инструкция...'), 50);
+    }
     // reset to list view
     const lv = document.getElementById('hw-list-view');
     const dv = document.getElementById('hw-detail-view');
@@ -2653,6 +2685,97 @@ document.getElementById('sidebar-overlay').addEventListener('click', closeSideba
 
 
 
+
+// ── Rich Text Editor ──────────────────────────────────────────────────────────
+const RTE_SYMBOLS = ['→','←','↑','↓','•','·','—','–','©','®','™','°','±','×','÷','≈','≠','≤','≥','∞','√','∑','π','α','β','γ','δ','…','«','»','„','"','"'];
+
+function rteCreate(containerId, placeholder) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const symPanelId = containerId + '_sym';
+
+  container.innerHTML = `
+    <div class="rte-wrap">
+      <div class="rte-toolbar">
+        <button class="rte-btn" title="Жирный" onclick="rteExec('${containerId}','bold')"><b>B</b></button>
+        <button class="rte-btn" title="Курсив" onclick="rteExec('${containerId}','italic')"><i>I</i></button>
+        <button class="rte-btn" title="Подчёркнутый" onclick="rteExec('${containerId}','underline')"><u>U</u></button>
+        <div class="rte-sep"></div>
+        <select class="rte-size-select" title="Размер" onchange="rteExec('${containerId}','fontSize',this.value)">
+          <option value="2">Мелкий</option>
+          <option value="3" selected>Обычный</option>
+          <option value="4">Большой</option>
+          <option value="5">Крупный</option>
+        </select>
+        <div class="rte-sep"></div>
+        <div class="rte-color-btn" title="Цвет текста">
+          <input type="color" value="#111111" onchange="rteExec('${containerId}','foreColor',this.value)" title="Цвет текста">
+        </div>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" title="Маркированный список" onclick="rteExec('${containerId}','insertUnorderedList')">&#8226;&#8226;</button>
+        <button class="rte-btn" title="Нумерованный список" onclick="rteExec('${containerId}','insertOrderedList')">1.</button>
+        <div class="rte-sep"></div>
+        <div style="position:relative">
+          <button class="rte-btn" title="Символы" onclick="rteToggleSym('${symPanelId}')" style="font-size:15px">&#937;</button>
+          <div class="rte-sym-panel" id="${symPanelId}">
+            ${RTE_SYMBOLS.map(s => `<button class="rte-sym" onclick="rteInsertSym('${containerId}','${s}')">${s}</button>`).join('')}
+          </div>
+        </div>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" title="Очистить форматирование" onclick="rteExec('${containerId}','removeFormat')" style="font-size:10px;width:auto;padding:0 6px">Аа</button>
+      </div>
+      <div class="rte-body" id="${containerId}_body" contenteditable="true"
+        data-placeholder="${placeholder || 'Введите текст...'}">
+      </div>
+    </div>`;
+
+  // Close sym panel on outside click
+  document.addEventListener('click', function handler(e) {
+    const panel = document.getElementById(symPanelId);
+    if (panel && !panel.contains(e.target) && !e.target.closest('.rte-btn')) {
+      panel.classList.remove('show');
+    }
+  });
+}
+
+function rteExec(containerId, cmd, value) {
+  const body = document.getElementById(containerId + '_body');
+  if (!body) return;
+  body.focus();
+  document.execCommand(cmd, false, value || null);
+}
+
+function rteToggleSym(panelId) {
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.toggle('show');
+}
+
+function rteInsertSym(containerId, sym) {
+  const body = document.getElementById(containerId + '_body');
+  if (!body) return;
+  body.focus();
+  document.execCommand('insertText', false, sym);
+  const panel = document.getElementById(containerId + '_sym');
+  if (panel) panel.classList.remove('show');
+}
+
+function rteGetHTML(containerId) {
+  const body = document.getElementById(containerId + '_body');
+  return body ? body.innerHTML.trim() : '';
+}
+
+function rteGetText(containerId) {
+  const body = document.getElementById(containerId + '_body');
+  return body ? body.innerText.trim() : '';
+}
+
+function rteSetHTML(containerId, html) {
+  const body = document.getElementById(containerId + '_body');
+  if (body) body.innerHTML = html;
+}
+
 // ── Homework (Assignments) ────────────────────────────────────────────────────
 let _hwLinks = [];
 let _hwWords = [];
@@ -2727,7 +2850,7 @@ async function hwOpenDetail(id) {
     if (a.description) {
       html += `<div class="hw-detail-section">
         <div class="hw-detail-label">Задание</div>
-        <div style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap">${esc(a.description)}</div>
+        <div style="font-size:14px;color:var(--text);line-height:1.7">${a.description}</div>
       </div>`;
     }
 
@@ -2774,7 +2897,7 @@ async function hwOpenDetail(id) {
         if (sub.feedback_text) {
           html += `<div class="hw-detail-section">
             <div class="hw-detail-label">Комментарий учителя</div>
-            <div class="hw-feedback-box">${esc(sub.feedback_text)}</div>
+            <div class="hw-feedback-box">${sub.feedback_text}</div>
           </div>`;
         } else {
           html += `<div style="font-size:13px;color:var(--text2);margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px">
@@ -2784,7 +2907,7 @@ async function hwOpenDetail(id) {
       } else {
         html += `<div class="hw-detail-section">
           <div class="hw-detail-label">Твой ответ</div>
-          <textarea class="hw-answer-box" id="hw-answer-textarea" placeholder="Напиши свой ответ здесь..."></textarea>
+          <div id="hw-answer-rte"></div>
           <button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="hwSubmitAnswer(${id})">Отправить ответ</button>
         </div>`;
       }
@@ -2793,18 +2916,18 @@ async function hwOpenDetail(id) {
       if (sub) {
         html += `<div class="hw-detail-section">
           <div class="hw-detail-label">Ответ ученика</div>
-          <div style="font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap">${esc(sub.text || '(без текста)')}</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.7">${sub.text || '(без текста)'}</div>
         </div>`;
         if (sub.feedback_text) {
           html += `<div class="hw-detail-section">
             <div class="hw-detail-label">Твой комментарий</div>
-            <div class="hw-feedback-box">${esc(sub.feedback_text)}</div>
+            <div class="hw-feedback-box">${sub.feedback_text}</div>
           </div>`;
         } else {
           html += `<div class="hw-detail-section">
             <div class="hw-detail-label">Оставить комментарий</div>
             <div class="hw-teacher-form">
-              <textarea class="hw-answer-box" id="hw-feedback-textarea" placeholder="Комментарий, исправление, оценка..."></textarea>
+              <div id="hw-feedback-rte"></div>
               <button class="btn btn-primary" onclick="hwLeaveFeedback(${id})">Отправить комментарий</button>
             </div>
           </div>`;
@@ -2821,6 +2944,11 @@ async function hwOpenDetail(id) {
     document.getElementById('hw-detail-content').innerHTML = html;
     document.getElementById('hw-list-view').style.display = 'none';
     document.getElementById('hw-detail-view').style.display = 'block';
+    // Init RTEs if present
+    setTimeout(() => {
+      if (document.getElementById('hw-answer-rte')) rteCreate('hw-answer-rte', 'Напиши свой ответ здесь...');
+      if (document.getElementById('hw-feedback-rte')) rteCreate('hw-feedback-rte', 'Комментарий, исправление, оценка...');
+    }, 50);
   } catch(e) { console.error('hwOpenDetail', e); showToast('Ошибка загрузки'); }
 }
 
@@ -2832,7 +2960,7 @@ function hwShowList() {
 }
 
 async function hwSubmitAnswer(id) {
-  const text = (document.getElementById('hw-answer-textarea')?.value || '').trim();
+  const text = rteGetHTML('hw-answer-rte') || rteGetText('hw-answer-rte') || '';
   try {
     await api('POST', '/assignments/' + id + '/submit', { text });
     showToast('Ответ отправлен!');
@@ -2841,7 +2969,7 @@ async function hwSubmitAnswer(id) {
 }
 
 async function hwLeaveFeedback(id) {
-  const text = (document.getElementById('hw-feedback-textarea')?.value || '').trim();
+  const text = rteGetHTML('hw-feedback-rte') || '';
   if (!text) { showToast('Напиши комментарий'); return; }
   try {
     await api('POST', '/assignments/' + id + '/feedback', { text });
@@ -2918,7 +3046,7 @@ async function hwLoadStudents() {
 
 async function hwSubmitCreate() {
   const title = document.getElementById('hw-title-input')?.value.trim();
-  const desc  = document.getElementById('hw-desc-input')?.value.trim() || '';
+  const desc  = rteGetHTML('hw-desc-rte') || '';
   const due   = document.getElementById('hw-due-input')?.value || null;
   const sid   = parseInt(document.getElementById('hw-student-select')?.value);
   if (!title) { showToast('Введи название'); return; }
@@ -2931,7 +3059,7 @@ async function hwSubmitCreate() {
     showToast('Задание создано!');
     document.getElementById('hw-create-form').classList.remove('open');
     document.getElementById('hw-title-input').value = '';
-    document.getElementById('hw-desc-input').value = '';
+    rteCreate('hw-desc-rte', 'Описание, инструкция...');
     document.getElementById('hw-due-input').value = '';
     _hwLinks = []; _hwWords = [];
     hwRenderLinks(); hwRenderWords();
