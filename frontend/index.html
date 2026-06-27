@@ -3334,5 +3334,8 @@ document.addEventListener('click', function(e) {
 (function(){
   const cw = document.getElementById('chat-widget');
   if (cw && typeof authToken !== 'undefined' && authToken) cw.style.display = 'flex';
+  // FAB is defined here in DOM, wire up onclick now
+  const fab = document.getElementById('fab-add-word');
+  if (fab) fab.addEventListener('click', function(){ if(typeof openWordModal==='function') openWordModal(); });
 })();
 </script>
