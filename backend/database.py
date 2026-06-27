@@ -224,6 +224,26 @@ def init_db():
         """))
         conn.commit()
 
+        # Password reset codes
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS password_reset_codes (
+                id         SERIAL PRIMARY KEY,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                used       INTEGER NOT NULL DEFAULT 0
+            )
+        """) if IS_PG else text("""
+            CREATE TABLE IF NOT EXISTS password_reset_codes (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                used       INTEGER NOT NULL DEFAULT 0
+            )
+        """))
+        conn.commit()
+
         # ── CEO account ───────────────────────────────────────────────────────
         ceo = conn.execute(
             text("SELECT id FROM users WHERE email=:e"), {"e": CEO_EMAIL}

@@ -618,6 +618,7 @@ select.form-input{appearance:none;cursor:pointer}
       <input class="form-input" type="password" id="login-password" placeholder="Пароль"/>
       <button class="btn btn-primary" id="btn-login" style="width:100%">Войти →</button>
       <div class="auth-error" id="login-error"></div>
+      <button type="button" id="btn-forgot-pw" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;margin-top:4px;text-decoration:underline;padding:0">Забыли пароль?</button>
     </div>
     <div id="form-register" class="auth-form" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -961,6 +962,42 @@ select.form-input{appearance:none;cursor:pointer}
         <button class="btn btn-primary" style="margin-top:24px" id="btn-quiz-again">Ещё раз</button>
         <button class="btn btn-ghost" style="margin-top:8px" id="btn-quiz-exit">На главную</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD RESET MODAL -->
+<div class="modal-overlay hidden" id="modal-reset-pw">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title" id="reset-pw-title">Сброс пароля</div>
+      <button class="btn btn-ghost btn-sm" id="btn-close-reset-pw">✕</button>
+    </div>
+
+    <!-- Step 1: enter email -->
+    <div id="reset-step-1">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Введите email — пришлём код подтверждения</p>
+      <input class="form-input" type="email" id="reset-email" placeholder="Email"/>
+      <button class="btn btn-primary" id="btn-send-reset-code" style="width:100%;margin-top:10px">Отправить код</button>
+      <div class="auth-error" id="reset-err-1" style="display:none"></div>
+    </div>
+
+    <!-- Step 2: enter code + new password -->
+    <div id="reset-step-2" style="display:none">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Код отправлен на <strong id="reset-email-shown"></strong>. Введите его ниже.</p>
+      <input class="form-input" id="reset-code" placeholder="6-значный код" maxlength="6" style="letter-spacing:6px;font-size:22px;text-align:center;font-weight:700"/>
+      <input class="form-input" type="password" id="reset-new-pass" placeholder="Новый пароль (мин. 6)" style="margin-top:10px"/>
+      <button class="btn btn-primary" id="btn-confirm-reset" style="width:100%;margin-top:10px">Сменить пароль</button>
+      <button type="button" id="btn-resend-code" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;margin-top:6px;text-decoration:underline;width:100%">Отправить код повторно</button>
+      <div class="auth-error" id="reset-err-2" style="display:none"></div>
+    </div>
+
+    <!-- Step 3: success -->
+    <div id="reset-step-3" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">✓</div>
+      <div style="font-family:'Fraunces',serif;font-weight:800;font-size:20px">Пароль изменён!</div>
+      <p style="color:var(--text2);font-size:13px;margin-top:8px">Войдите с новым паролем</p>
+      <button class="btn btn-primary" id="btn-reset-to-login" style="margin-top:16px">Войти</button>
     </div>
   </div>
 </div>
@@ -2016,7 +2053,34 @@ function showProfileModal(user, isOwn) {
       if (form) form.style.display = form.style.display === 'none' ? 'flex' : 'none';
     });
     document.getElementById('btn-save-profile')?.addEventListener('click', saveProfile);
-    document.getElementById('btn-change-pass')?.addEventListener('click', changePassword);
+    // Profile password change via email code
+    document.getElementById('btn-request-pw-code')?.addEventListener('click', async () => {
+      const errEl = document.getElementById('pass-change-error');
+      errEl.style.display = 'none';
+      try {
+        await fetch('/auth/forgot-password', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({email: currentUser.email})
+        });
+        document.getElementById('pw-change-step-a').style.display = 'none';
+        document.getElementById('pw-change-step-b').style.display = '';
+      } catch(e) { errEl.textContent = 'Ошибка отправки'; errEl.style.display = ''; }
+    });
+    document.getElementById('btn-confirm-pw-change')?.addEventListener('click', async () => {
+      const code    = document.getElementById('edit-reset-code')?.value.trim();
+      const newPass = document.getElementById('edit-new-pass')?.value;
+      const errEl   = document.getElementById('pass-confirm-error');
+      errEl.style.display = 'none';
+      try {
+        const r = await fetch('/auth/reset-password', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({email: currentUser.email, code, new_password: newPass})
+        });
+        if (!r.ok) { const e = await r.json(); errEl.textContent = e.detail||'Ошибка'; errEl.style.display=''; return; }
+        toast('Пароль успешно изменён');
+        document.getElementById('modal-profile').classList.add('hidden');
+      } catch(e) { errEl.textContent = 'Ошибка'; errEl.style.display=''; }
+    });
   }
 }
 
@@ -2045,10 +2109,17 @@ function renderProfileEditForm(user) {
       <div class="auth-error" id="profile-save-error" style="display:none"></div>
       <hr style="border:none;border-top:1px solid var(--border);margin:8px 0"/>
       <div style="font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px">Сменить пароль</div>
-      <input class="form-input" id="edit-cur-pass" type="password" placeholder="Текущий пароль"/>
-      <input class="form-input" id="edit-new-pass" type="password" placeholder="Новый пароль (мин. 6)"/>
-      <button class="btn btn-ghost" id="btn-change-pass">Сменить пароль</button>
-      <div class="auth-error" id="pass-change-error" style="display:none"></div>
+      <div id="pw-change-step-a">
+        <button class="btn btn-ghost" id="btn-request-pw-code" style="width:100%">Отправить код на email</button>
+        <div class="auth-error" id="pass-change-error" style="display:none"></div>
+      </div>
+      <div id="pw-change-step-b" style="display:none">
+        <p style="font-size:12px;color:var(--green);margin-bottom:8px">Код отправлен на ваш email</p>
+        <input class="form-input" id="edit-reset-code" placeholder="6-значный код" maxlength="6" style="letter-spacing:4px;font-size:18px;text-align:center;font-weight:700"/>
+        <input class="form-input" type="password" id="edit-new-pass" placeholder="Новый пароль (мин. 6)" style="margin-top:8px"/>
+        <button class="btn btn-primary" id="btn-confirm-pw-change" style="width:100%;margin-top:8px">Подтвердить смену</button>
+        <div class="auth-error" id="pass-confirm-error" style="display:none"></div>
+      </div>
     </div>
   `;
 }
@@ -2088,20 +2159,76 @@ async function saveProfile() {
   } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
 }
 
-async function changePassword() {
-  const curPass = document.getElementById('edit-cur-pass')?.value;
-  const newPass = document.getElementById('edit-new-pass')?.value;
-  const errEl   = document.getElementById('pass-change-error');
-  if (!errEl) return;
-  errEl.style.display = 'none';
-  if (!curPass || !newPass) { errEl.textContent = 'Заполните оба поля'; errEl.style.display = ''; return; }
-  try {
-    await api('POST', '/profile/change-password', {current_password: curPass, new_password: newPass});
-    document.getElementById('edit-cur-pass').value = '';
-    document.getElementById('edit-new-pass').value = '';
-    toast('Пароль успешно изменён');
-  } catch(e) { errEl.textContent = e.message; errEl.style.display = ''; }
+// Password reset modal logic
+function openResetModal(emailPrefill) {
+  document.getElementById('reset-step-1').style.display = '';
+  document.getElementById('reset-step-2').style.display = 'none';
+  document.getElementById('reset-step-3').style.display = 'none';
+  document.getElementById('reset-err-1').style.display = 'none';
+  if (emailPrefill) document.getElementById('reset-email').value = emailPrefill;
+  document.getElementById('modal-reset-pw').classList.remove('hidden');
 }
+
+async function sendResetCode(email) {
+  const errEl = document.getElementById('reset-err-1');
+  errEl.style.display = 'none';
+  if (!email) { errEl.textContent = 'Введите email'; errEl.style.display = ''; return false; }
+  try {
+    await fetch('/auth/forgot-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    });
+    document.getElementById('reset-email-shown').textContent = email;
+    document.getElementById('reset-step-1').style.display = 'none';
+    document.getElementById('reset-step-2').style.display = '';
+    document.getElementById('reset-code').value = '';
+    document.getElementById('reset-new-pass').value = '';
+    return true;
+  } catch(e) { errEl.textContent = 'Ошибка отправки'; errEl.style.display = ''; return false; }
+}
+
+document.getElementById('btn-forgot-pw')?.addEventListener('click', () => {
+  const email = document.getElementById('login-email').value.trim();
+  openResetModal(email);
+});
+
+document.getElementById('btn-send-reset-code')?.addEventListener('click', async () => {
+  const email = document.getElementById('reset-email').value.trim();
+  await sendResetCode(email);
+});
+
+document.getElementById('btn-resend-code')?.addEventListener('click', async () => {
+  const email = document.getElementById('reset-email').value.trim();
+  await sendResetCode(email);
+});
+
+document.getElementById('btn-confirm-reset')?.addEventListener('click', async () => {
+  const email   = document.getElementById('reset-email').value.trim();
+  const code    = document.getElementById('reset-code').value.trim();
+  const newPass = document.getElementById('reset-new-pass').value;
+  const errEl   = document.getElementById('reset-err-2');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch('/auth/reset-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, code, new_password: newPass})
+    });
+    if (!r.ok) { const e = await r.json(); errEl.textContent = e.detail || 'Ошибка'; errEl.style.display = ''; return; }
+    document.getElementById('reset-step-2').style.display = 'none';
+    document.getElementById('reset-step-3').style.display = '';
+  } catch(e) { errEl.textContent = 'Ошибка'; errEl.style.display = ''; }
+});
+
+document.getElementById('btn-reset-to-login')?.addEventListener('click', () => {
+  document.getElementById('modal-reset-pw').classList.add('hidden');
+});
+
+document.getElementById('btn-close-reset-pw')?.addEventListener('click', () => {
+  document.getElementById('modal-reset-pw').classList.add('hidden');
+});
+
+// Profile: send code to own email for password change
+async function changePassword() {}  // replaced below
 
 async function sendFriendReq(userId) {
   try {

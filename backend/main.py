@@ -675,3 +675,127 @@ def change_password(body: PasswordChange, u=Depends(get_user)):
         )
         conn.commit()
     return {"ok": True}
+
+
+# ── Password Reset via Email ───────────────────────────────────────────────────
+
+import smtplib, random, string
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASS = os.environ.get("SMTP_PASS", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER)
+
+
+def _send_email(to: str, subject: str, html: str):
+    if not SMTP_HOST or not SMTP_USER:
+        print(f"[EMAIL DEV] To: {to}\nSubject: {subject}\n{html}")
+        return
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = f"WordsApp <{SMTP_FROM}>"
+    msg["To"]      = to
+    msg.attach(MIMEText(html, "html"))
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
+        s.ehlo()
+        s.starttls()
+        s.login(SMTP_USER, SMTP_PASS)
+        s.sendmail(SMTP_FROM, to, msg.as_string())
+
+
+def _gen_code(length=6) -> str:
+    return "".join(random.choices(string.digits, k=length))
+
+
+class ForgotPasswordIn(BaseModel):
+    email: str
+
+class ResetPasswordIn(BaseModel):
+    email: str
+    code: str
+    new_password: str
+
+
+@app.post("/auth/forgot-password")
+def forgot_password(body: ForgotPasswordIn):
+    email = body.email.lower().strip()
+    with get_conn() as conn:
+        user = conn.execute(
+            text("SELECT id FROM users WHERE email=:e"), {"e": email}
+        ).one_or_none()
+        # Always return OK to not leak existence
+        if not user:
+            return {"ok": True}
+
+        # Invalidate old codes for this email
+        conn.execute(
+            text("UPDATE password_reset_codes SET used=1 WHERE email=:e AND used=0"),
+            {"e": email}
+        )
+
+        code = _gen_code()
+        expires = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+        conn.execute(
+            text("INSERT INTO password_reset_codes (email, code, expires_at) VALUES (:e, :c, :x)"),
+            {"e": email, "c": code, "x": expires}
+        )
+        conn.commit()
+
+    html_body = f"""
+    <div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
+      <h2 style="font-size:24px;margin-bottom:8px">Сброс пароля</h2>
+      <p style="color:#555;margin-bottom:24px">Ваш код подтверждения для WordsApp:</p>
+      <div style="font-size:40px;font-weight:800;letter-spacing:8px;text-align:center;
+                  background:#f5f4f0;border-radius:12px;padding:20px;margin-bottom:24px;
+                  color:#1c1b18;font-family:monospace">
+        {code}
+      </div>
+      <p style="color:#888;font-size:13px">Код действителен 15 минут. Если вы не запрашивали сброс — проигнорируйте это письмо.</p>
+    </div>
+    """
+    try:
+        _send_email(email, "Код подтверждения WordsApp", html_body)
+    except Exception as ex:
+        print(f"Email error: {ex}")
+        raise HTTPException(500, "Не удалось отправить письмо. Проверьте настройки SMTP.")
+
+    return {"ok": True}
+
+
+@app.post("/auth/reset-password")
+def reset_password(body: ResetPasswordIn):
+    if len(body.new_password) < 6:
+        raise HTTPException(400, "Пароль минимум 6 символов")
+
+    email = body.email.lower().strip()
+    code  = body.code.strip()
+
+    with get_conn() as conn:
+        row = conn.execute(text("""
+            SELECT id, expires_at FROM password_reset_codes
+            WHERE email=:e AND code=:c AND used=0
+            ORDER BY id DESC LIMIT 1
+        """), {"e": email, "c": code}).one_or_none()
+
+        if not row:
+            raise HTTPException(400, "Неверный или просроченный код")
+
+        expires_at = datetime.fromisoformat(row[1].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) > expires_at:
+            raise HTTPException(400, "Код истёк. Запросите новый")
+
+        # Mark used
+        conn.execute(
+            text("UPDATE password_reset_codes SET used=1 WHERE id=:id"), {"id": row[0]}
+        )
+        new_hash = hash_pw(body.new_password)
+        conn.execute(
+            text("UPDATE users SET password_hash=:h WHERE email=:e"),
+            {"h": new_hash, "e": email}
+        )
+        conn.commit()
+
+    return {"ok": True}
