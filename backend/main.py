@@ -406,17 +406,32 @@ def get_messages(user_id: int, u=Depends(get_user)):
 @app.get("/messages")
 def get_all_conversations(u=Depends(get_user)):
     """Last message per conversation + unread count"""
+    me = u["sub"]
     with get_conn() as conn:
-        rows = conn.execute(text("""
-            SELECT u.id, u.name, u.username, u.first_name, u.last_name,
-                   m.content as last_msg, m.created_at, m.sender_id,
-                   (SELECT COUNT(*) FROM messages WHERE receiver_id=:me AND sender_id=u.id AND is_read=0) as unread
-            FROM users u
-            JOIN messages m ON (m.sender_id=u.id OR m.receiver_id=u.id)
-            WHERE (m.sender_id=:me OR m.receiver_id=:me) AND u.id != :me
-            GROUP BY u.id ORDER BY m.created_at DESC
-        """), {"me": u["sub"]}).mappings().all()
-    return [dict(r) for r in rows]
+        # Get all partner IDs this user has conversed with
+        partner_rows = conn.execute(text("""
+            SELECT DISTINCT CASE WHEN sender_id=:me THEN receiver_id ELSE sender_id END AS pid
+            FROM messages WHERE sender_id=:me OR receiver_id=:me
+        """), {"me": me}).mappings().all()
+        result = []
+        for pr in partner_rows:
+            pid = pr["pid"]
+            # Get last message and unread count for this conversation
+            row = conn.execute(text("""
+                SELECT u.id, u.name, u.username, u.first_name, u.last_name,
+                       m.content AS last_msg, m.created_at,
+                       (SELECT COUNT(*) FROM messages
+                        WHERE receiver_id=:me AND sender_id=:pid AND is_read=0) AS unread
+                FROM users u, messages m
+                WHERE u.id=:pid
+                  AND ((m.sender_id=:me AND m.receiver_id=:pid)
+                       OR (m.sender_id=:pid AND m.receiver_id=:me))
+                ORDER BY m.created_at DESC LIMIT 1
+            """), {"me": me, "pid": pid}).mappings().one_or_none()
+            if row:
+                result.append(dict(row))
+        result.sort(key=lambda x: x.get("created_at",""), reverse=True)
+    return result
 
 
 # ── Topics ─────────────────────────────────────────────────────────────────────
