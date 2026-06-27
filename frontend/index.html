@@ -684,8 +684,10 @@ select.form-input{appearance:none;cursor:pointer}
 
 
 /* ── FAB add word ─────────────────────────────────────────────────────────── */
-#fab-add-word{display:none}
-#fab-hw-create{display:none;align-items:center;justify-content:center}
+#fab-add-word{display:flex;align-items:center;justify-content:center;visibility:hidden;pointer-events:none}
+#fab-add-word.fab-visible{visibility:visible;pointer-events:auto}
+#fab-hw-create{display:flex;align-items:center;justify-content:center;visibility:hidden;pointer-events:none}
+#fab-hw-create.fab-visible{visibility:visible;pointer-events:auto}
 #fab-hw-create:hover{transform:scale(1.08);box-shadow:0 6px 22px rgba(79,70,229,.5)!important}
 #fab-hw-create:active{transform:scale(.94)}
 @media(max-width:640px){#fab-hw-create{bottom:138px!important}}
@@ -1312,7 +1314,7 @@ function saveAuth(token, user) {
 function clearAuth() {
   authToken = null; currentUser = null;
   const _cw=document.getElementById('chat-widget'); if(_cw) _cw.style.display='none';
-  const _fab2=document.getElementById('fab-add-word'); if(_fab2) _fab2.style.display='none';
+  const _fab2=document.getElementById('fab-add-word'); if(_fab2) _fab2.classList.remove('fab-visible');
   localStorage.removeItem('wapp_token');
   localStorage.removeItem('wapp_user');
 }
@@ -1507,9 +1509,9 @@ async function fetchExample(word) {
 // ── Navigation ─────────────────────────────────────────────────────────────────
 function showPage(id) {
   const _fab=document.getElementById('fab-add-word');
-  if (_fab) _fab.style.display = (id === 'words') ? 'flex' : 'none';
+  if (_fab) _fab.classList.toggle('fab-visible', id === 'words');
   const _fabHw=document.getElementById('fab-hw-create');
-  if (_fabHw) { _fabHw.style.display = (id === 'homework') ? 'flex' : 'none'; if(id==='homework') { _fabHw.style.alignItems='center'; _fabHw.style.justifyContent='center'; } }
+  if (_fabHw) _fabHw.classList.toggle('fab-visible', id === 'homework');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(b =>
@@ -4045,12 +4047,11 @@ document.addEventListener('click', function(e) {
 </script>
 <!-- Floating chat widget -->
 <button id="fab-add-word" aria-label="Добавить слово" title="Добавить слово"
-  style="display:none;position:fixed;bottom:90px;right:24px;z-index:9998;
+  style="position:fixed;bottom:90px;right:24px;z-index:9998;
     width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
-    background:#4f46e5;color:#fff;font-size:26px;line-height:1;
+    background:#4f46e5;color:#fff;
     box-shadow:0 4px 16px rgba(79,70,229,.4);
-    transition:transform .15s,box-shadow .15s;
-    align-items:center;justify-content:center">
+    transition:transform .15s,box-shadow .15s;">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </button>
 
@@ -4059,7 +4060,7 @@ document.addEventListener('click', function(e) {
     width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
     background:#4f46e5;color:#fff;
     box-shadow:0 4px 16px rgba(79,70,229,.4);
-    transition:transform .15s,box-shadow .15s;">
+    transition:transform .15s,box-shadow .15s,visibility 0s;">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </button>
 
