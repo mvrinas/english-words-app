@@ -2346,9 +2346,10 @@ function toggleRequestsPanel() {
 
 async function loadProfileMessages() {
   const section = document.getElementById('profile-messages-section');
-  if (!section) return;
+  if (!section) { console.warn('profile-messages-section not found'); return; }
   try {
     const convos = await api('GET', '/messages');
+    console.log('loadProfileMessages convos:', convos);
     let out = `<div style="margin-top:18px">
       <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Сообщения</div>`;
     if (!convos || !convos.length) {
@@ -2374,7 +2375,7 @@ async function loadProfileMessages() {
     }
     out += '</div>';
     section.innerHTML = out;
-  } catch(e) {}
+  } catch(e) { console.error('loadProfileMessages error:', e); section.innerHTML = '<div style="color:red;font-size:12px;padding:8px">Ошибка загрузки: ' + e.message + '</div>'; }
 }
 
 async function loadFriendsList() {
