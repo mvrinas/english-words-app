@@ -74,8 +74,11 @@
 .auth-error{color:var(--red);font-size:13px;text-align:center;padding:8px;
   background:rgba(239,68,68,.1);border-radius:8px;display:none}
 .auth-divider{text-align:center;color:var(--text2);font-size:12px;margin:4px 0}
-.user-chip{display:flex;align-items:center;gap:8px;padding:10px 12px;
-  background:var(--surface2);border-radius:10px;margin-bottom:8px}
+.user-chip{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;
+  background:var(--surface);border:1px solid var(--border);border-radius:40px;
+  box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.user-chip-desktop{position:fixed;top:14px;right:16px;z-index:200;display:none}
+@media(min-width:641px){.user-chip-desktop{display:flex}}
 .user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .user-name{font-size:13px;font-weight:600;color:var(--text)}
@@ -339,6 +342,10 @@ select.form-input{appearance:none;cursor:pointer}
 @media(max-width:640px){
   .srs-word{font-size:32px}
   .srs-card{padding:28px 20px;min-height:240px}
+  #user-chip{position:static;box-shadow:none;border:none;background:var(--surface2);
+    padding:4px 6px 4px 4px;border-radius:30px}
+  .user-name{font-size:12px}
+  .user-avatar{width:26px;height:26px;font-size:12px}
 }
 
 
@@ -647,9 +654,16 @@ select.form-input{appearance:none;cursor:pointer}
 
 <!-- APP -->
 <div id="app-wrap" style="display:none;width:100%;max-width:100vw;min-height:100vh;overflow-x:hidden">
+
 <div class="mobile-header">
   <span class="mobile-logo">WordsApp</span>
-  <span id="mobile-user-level" style="font-size:11px;color:var(--text2);font-weight:500"></span>
+  <div class="user-chip" id="user-chip">
+    <div class="user-avatar" id="user-avatar">?</div>
+    <div style="flex:1;min-width:0;overflow:hidden">
+      <div class="user-name" id="user-name-el">…<span id="user-role-el" style="margin-left:4px"></span></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:3px 6px;font-size:11px">↪</button>
+  </div>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
@@ -699,19 +713,19 @@ select.form-input{appearance:none;cursor:pointer}
   </button>
   <div id="topic-pills"></div>
   <div class="sidebar-bottom">
-    <div class="user-chip" id="user-chip">
-      <div class="user-avatar" id="user-avatar">?</div>
-      <div style="flex:1;min-width:0;overflow:hidden">
-        <div class="user-name" id="user-name-el">…<span id="user-role-el" style="margin-left:6px"></span></div>
-        <div id="user-level-el" style="font-size:10px;color:var(--text2);margin-top:1px;letter-spacing:.3px"></div>
-      </div>
-      <button class="btn btn-ghost btn-sm" id="btn-logout" title="Выйти" style="padding:4px 8px;font-size:12px">↪</button>
-    </div>
+    <div id="user-level-el" style="font-size:11px;color:var(--text2);margin-bottom:8px;letter-spacing:.3px"></div>
     <div class="sidebar-streak" id="sidebar-streak" id="sidebar-streak" style="display:none"> <span id="streak-val">0</span> дн. подряд</div>
     <div class="goal-bar-wrap"><div class="goal-bar" id="goal-bar" style="width:0%"></div></div>
     <div class="sidebar-goal" id="sidebar-goal"></div>
     <button class="btn btn-ghost" style="width:100%;font-size:13px" id="btn-new-topic">+ Новая тема</button>
   </div>
+</div>
+
+<!-- Desktop floating user chip -->
+<div class="user-chip user-chip-desktop" id="user-chip-desktop">
+  <div class="user-avatar" id="user-avatar-d">?</div>
+  <div class="user-name" id="user-name-d" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+  <button class="btn btn-ghost btn-sm" onclick="document.getElementById('btn-logout').click()" title="Выйти" style="padding:3px 7px;font-size:12px">↪</button>
 </div>
 
 <div class="main">
@@ -1081,9 +1095,11 @@ function updateUserChip() {
   } else {
     roleEl.textContent = '';
   }
-  // Mobile header level indicator
-  const mobileLevel = document.getElementById('mobile-user-level');
-  if (mobileLevel) mobileLevel.textContent = currentUser.level || '';
+  // Sync desktop chip
+  const dAvatar = document.getElementById('user-avatar-d');
+  const dName = document.getElementById('user-name-d');
+  if (dAvatar) dAvatar.textContent = name[0].toUpperCase();
+  if (dName) dName.textContent = name + (role === 'ceo' ? ' CEO' : '');
 }
 
 // ── API helper ─────────────────────────────────────────────────────────────────
