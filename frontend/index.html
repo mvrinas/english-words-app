@@ -694,6 +694,41 @@ select.form-input{appearance:none;cursor:pointer}
 #fab-add-word:hover{transform:scale(1.08);box-shadow:0 6px 22px rgba(79,70,229,.5)!important}
 #fab-add-word:active{transform:scale(.94)}
 @media(max-width:640px){#fab-add-word{bottom:138px!important}}
+
+/* ── Flashcard overlay ──────────────────────────────────────────────────────── */
+#fc-overlay{position:fixed;inset:0;z-index:3000;background:var(--bg);display:flex;flex-direction:column;align-items:center}
+#fc-overlay.hidden{display:none}
+.fc-header{width:100%;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.fc-close-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:22px;line-height:1;flex-shrink:0}
+.fc-progress-bar{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.fc-progress-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .4s}
+.fc-counter{font-size:13px;color:var(--text2);font-weight:600;flex-shrink:0}
+.fc-card-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:16px 24px;position:relative}
+.fc-card{width:100%;max-width:380px;min-height:220px;background:var(--surface);border-radius:22px;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 28px;text-align:center;cursor:pointer;position:relative;user-select:none;will-change:transform}
+.fc-card-word{font-size:34px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.2}
+.fc-card-tap{font-size:13px;color:var(--text2);margin-top:18px;opacity:.7}
+.fc-card-back{margin-top:14px;width:100%}
+.fc-card-tr{font-size:22px;font-weight:700;color:var(--primary);margin-bottom:10px}
+.fc-card-ex{font-size:13px;color:var(--text2);font-style:italic;line-height:1.5}
+.fc-hint{position:absolute;top:28px;padding:6px 16px;border-radius:10px;font-size:15px;font-weight:700;border:2px solid;opacity:0;pointer-events:none;transition:opacity .1s}
+.fc-hint-no{left:20px;color:#dc2626;border-color:#dc2626;transform:rotate(-12deg)}
+.fc-hint-yes{right:20px;color:#16a34a;border-color:#16a34a;transform:rotate(12deg)}
+.fc-actions{padding:12px 24px 32px;display:flex;gap:12px;width:100%;max-width:380px}
+.fc-btn-no{flex:1;padding:16px;border-radius:16px;font-size:15px;font-weight:700;background:#fee2e2;color:#dc2626;border:none;cursor:pointer;transition:transform .15s}
+.fc-btn-yes{flex:1;padding:16px;border-radius:16px;font-size:15px;font-weight:700;background:#dcfce7;color:#16a34a;border:none;cursor:pointer;transition:transform .15s}
+.fc-btn-no:active{transform:scale(.95)}
+.fc-btn-yes:active{transform:scale(.95)}
+.fc-pronounce-btn{position:absolute;top:14px;right:16px;background:none;border:none;cursor:pointer;color:var(--text2);padding:6px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s}
+.fc-pronounce-btn:hover{color:var(--primary);background:var(--surface2)}
+.fc-done-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px}
+/* Speaker btn on list cards */
+.word-speak-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:5px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;flex-shrink:0}
+.word-speak-btn:hover{color:var(--primary);background:var(--surface2)}
+.word-speak-btn.speaking{color:var(--primary);animation:speakPulse .6s infinite alternate}
+@keyframes speakPulse{from{opacity:1}to{opacity:.4}}
+/* Flashcard mode btn in header */
+.fc-mode-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:6px;transition:background .15s}
+.fc-mode-btn:hover{background:var(--surface)}
 </style>
 </head>
 <body>
@@ -963,6 +998,10 @@ select.form-input{appearance:none;cursor:pointer}
         <div class="page-sub" id="words-sub"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="fc-mode-btn" onclick="startFlashcards()" id="btn-fc-mode">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Флэшкарты
+        </button>
 <button class="btn btn-primary" id="btn-add-word" style="display:none" aria-hidden="true"></button>
       </div>
     </div>
@@ -1095,6 +1134,35 @@ select.form-input{appearance:none;cursor:pointer}
     </div>
   </div>
 
+</div>
+
+
+<!-- FLASHCARD OVERLAY -->
+<div id="fc-overlay" class="hidden">
+  <div class="fc-header">
+    <button class="fc-close-btn" onclick="fcClose()">&times;</button>
+    <div class="fc-progress-bar"><div class="fc-progress-fill" id="fc-progress-fill" style="width:0%"></div></div>
+    <div class="fc-counter" id="fc-counter">0 / 0</div>
+  </div>
+  <div class="fc-card-wrap">
+    <div class="fc-card" id="fc-card" onclick="fcFlip()">
+      <button class="fc-pronounce-btn" id="fc-speak-btn" onclick="event.stopPropagation();pronounceWord(fcWords[fcIndex]&&fcWords[fcIndex].word)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      </button>
+      <div class="fc-card-word" id="fc-word"></div>
+      <div class="fc-card-tap" id="fc-tap-hint">Нажми чтобы увидеть перевод</div>
+      <div class="fc-card-back hidden" id="fc-back">
+        <div class="fc-card-tr" id="fc-tr"></div>
+        <div class="fc-card-ex" id="fc-ex"></div>
+      </div>
+      <div class="fc-hint fc-hint-no" id="fc-hint-no">Не знаю</div>
+      <div class="fc-hint fc-hint-yes" id="fc-hint-yes">Знаю</div>
+    </div>
+  </div>
+  <div class="fc-actions">
+    <button class="fc-btn-no" onclick="fcSwipe('left')">Не знаю</button>
+    <button class="fc-btn-yes" onclick="fcSwipe('right')">Знаю</button>
+  </div>
 </div>
 
 <!-- HOMEWORK CREATE MODAL -->
@@ -1656,6 +1724,9 @@ function renderWords() {
         ${w.example?`<div class="word-ex">"${esc(w.example)}"</div>`:''}
       </div>
       ${tc?`<span class="word-badge" style="background:${tc}22;color:${tc};border:1px solid ${tc}44">${esc(tn)}</span>`:''}
+      <button class="word-speak-btn" data-action="speak" data-id="${w.id}" data-word="${esc(w.word)}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      </button>
       <div class="word-actions">
         <button class="btn btn-ghost btn-sm btn-icon" data-action="edit" data-id="${w.id}"></button>
         <button class="btn btn-danger btn-sm btn-icon" data-action="del" data-id="${w.id}"></button>
@@ -1666,6 +1737,7 @@ function renderWords() {
   list.querySelectorAll('[data-action]').forEach(b => {
     const id = parseInt(b.dataset.id);
     if (b.dataset.action === 'toggle') b.onclick = () => toggleLearned(id);
+    if (b.dataset.action === 'speak')  b.onclick = () => pronounceWord(b.dataset.word);
     if (b.dataset.action === 'edit')   b.onclick = () => openWordModal(id);
     if (b.dataset.action === 'del')    b.onclick = () => deleteWord(id);
   });
@@ -3121,6 +3193,141 @@ async function hwSubmitCreate() {
     hwRenderLinks(); hwRenderWords();
     loadHomework();
   } catch(e) { showToast('Ошибка: ' + (e.message || e)); }
+}
+
+
+// ── PRONUNCIATION ─────────────────────────────────────────────────────────────
+function pronounceWord(word) {
+  if (!word || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const speak = (rate, onend) => {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate = rate;
+    if (onend) u.onend = onend;
+    window.speechSynthesis.speak(u);
+  };
+  speak(1.0, () => setTimeout(() => speak(0.6), 350));
+}
+
+// ── FLASHCARDS ────────────────────────────────────────────────────────────────
+let fcWords = [], fcIndex = 0, fcFlipped = false;
+let fcDragStartX = 0, fcDragging = false, fcOffsetX = 0;
+
+function startFlashcards() {
+  fcWords = getFiltered();
+  if (!fcWords.length) { showToast('Нет слов для показа'); return; }
+  fcIndex = 0; fcFlipped = false;
+  document.getElementById('fc-overlay').classList.remove('hidden');
+  fcRender();
+  const card = document.getElementById('fc-card');
+  card.addEventListener('touchstart', fcTouchStart, {passive:true});
+  card.addEventListener('touchmove',  fcTouchMove,  {passive:true});
+  card.addEventListener('touchend',   fcTouchEnd);
+  card.addEventListener('mousedown',  fcMouseStart);
+  document.addEventListener('mousemove', fcMouseMove);
+  document.addEventListener('mouseup',   fcMouseEnd);
+}
+
+function fcClose() {
+  document.getElementById('fc-overlay').classList.add('hidden');
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  const card = document.getElementById('fc-card');
+  card.removeEventListener('touchstart', fcTouchStart);
+  card.removeEventListener('touchmove',  fcTouchMove);
+  card.removeEventListener('touchend',   fcTouchEnd);
+  card.removeEventListener('mousedown',  fcMouseStart);
+  document.removeEventListener('mousemove', fcMouseMove);
+  document.removeEventListener('mouseup',   fcMouseEnd);
+}
+
+function fcRender() {
+  const total = fcWords.length;
+  if (fcIndex >= total) { fcShowDone(); return; }
+  const w = fcWords[fcIndex];
+  document.getElementById('fc-word').textContent = w.word;
+  document.getElementById('fc-tr').textContent = w.translation || '';
+  document.getElementById('fc-ex').textContent = w.example ? '"' + w.example + '"' : '';
+  document.getElementById('fc-counter').textContent = (fcIndex+1) + ' / ' + total;
+  document.getElementById('fc-progress-fill').style.width = (fcIndex / total * 100) + '%';
+  const card = document.getElementById('fc-card');
+  card.style.transition = ''; card.style.transform = ''; card.style.opacity = '1';
+  document.getElementById('fc-back').classList.add('hidden');
+  document.getElementById('fc-tap-hint').classList.remove('hidden');
+  document.getElementById('fc-hint-no').style.opacity = '0';
+  document.getElementById('fc-hint-yes').style.opacity = '0';
+  fcFlipped = false;
+}
+
+function fcFlip() {
+  if (fcDragging || Math.abs(fcOffsetX) > 5) return;
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-back').classList.toggle('hidden', !fcFlipped);
+  document.getElementById('fc-tap-hint').classList.toggle('hidden', fcFlipped);
+  if (fcFlipped && fcWords[fcIndex]) pronounceWord(fcWords[fcIndex].word);
+}
+
+function fcSwipe(dir) {
+  const card = document.getElementById('fc-card');
+  const tx = dir === 'right' ? 600 : -600;
+  const rot = dir === 'right' ? 20 : -20;
+  card.style.transition = 'transform .35s ease, opacity .35s';
+  card.style.transform = 'translateX(' + tx + 'px) rotate(' + rot + 'deg)';
+  card.style.opacity = '0';
+  if (dir === 'right' && fcWords[fcIndex]) toggleLearned(fcWords[fcIndex].id);
+  setTimeout(function() { fcIndex++; fcRender(); }, 360);
+}
+
+function fcShowDone() {
+  document.getElementById('fc-word').textContent = 'Готово!';
+  document.getElementById('fc-tap-hint').textContent = 'Все карточки пройдены';
+  document.getElementById('fc-tap-hint').classList.remove('hidden');
+  document.getElementById('fc-back').classList.add('hidden');
+  document.getElementById('fc-progress-fill').style.width = '100%';
+  document.getElementById('fc-counter').textContent = fcWords.length + ' / ' + fcWords.length;
+}
+
+function fcTouchStart(e) { fcDragStartX = e.touches[0].clientX; fcDragging = false; fcOffsetX = 0; }
+function fcTouchMove(e) {
+  fcOffsetX = e.touches[0].clientX - fcDragStartX;
+  if (Math.abs(fcOffsetX) > 8) fcDragging = true;
+  const card = document.getElementById('fc-card');
+  card.style.transition = 'none';
+  card.style.transform = 'translateX(' + fcOffsetX + 'px) rotate(' + (fcOffsetX * 0.07) + 'deg)';
+  document.getElementById('fc-hint-no').style.opacity  = fcOffsetX < -20 ? Math.min(1, (-fcOffsetX-20)/60) : '0';
+  document.getElementById('fc-hint-yes').style.opacity = fcOffsetX > 20  ? Math.min(1, (fcOffsetX-20)/60)  : '0';
+}
+function fcTouchEnd() {
+  document.getElementById('fc-hint-no').style.opacity  = '0';
+  document.getElementById('fc-hint-yes').style.opacity = '0';
+  if (fcOffsetX > 80)       fcSwipe('right');
+  else if (fcOffsetX < -80) fcSwipe('left');
+  else {
+    const card = document.getElementById('fc-card');
+    card.style.transition = 'transform .25s'; card.style.transform = '';
+  }
+  setTimeout(function() { fcDragging = false; }, 50);
+}
+function fcMouseStart(e) { fcDragStartX = e.clientX; fcOffsetX = 0; fcDragging = false; document.getElementById('fc-card').style.transition='none'; }
+function fcMouseMove(e) {
+  if (document.getElementById('fc-overlay').classList.contains('hidden') || e.buttons !== 1) return;
+  fcOffsetX = e.clientX - fcDragStartX;
+  if (Math.abs(fcOffsetX) > 5) fcDragging = true;
+  const card = document.getElementById('fc-card');
+  card.style.transform = 'translateX(' + fcOffsetX + 'px) rotate(' + (fcOffsetX*0.07) + 'deg)';
+  document.getElementById('fc-hint-no').style.opacity  = fcOffsetX < -20 ? Math.min(1,(-fcOffsetX-20)/60) : '0';
+  document.getElementById('fc-hint-yes').style.opacity = fcOffsetX > 20  ? Math.min(1,(fcOffsetX-20)/60)  : '0';
+}
+function fcMouseEnd() {
+  if (document.getElementById('fc-overlay').classList.contains('hidden')) return;
+  document.getElementById('fc-hint-no').style.opacity  = '0';
+  document.getElementById('fc-hint-yes').style.opacity = '0';
+  if (fcOffsetX > 80)       fcSwipe('right');
+  else if (fcOffsetX < -80) fcSwipe('left');
+  else {
+    const card = document.getElementById('fc-card');
+    card.style.transition = 'transform .25s'; card.style.transform = '';
+  }
+  setTimeout(function() { fcDragging = false; }, 50);
 }
 
 // ── SRS ───────────────────────────────────────────────────────────────────────
