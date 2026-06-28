@@ -437,6 +437,7 @@ select.form-input{appearance:none;cursor:pointer}
 @media(max-width:900px){.words-card-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.words-card-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
 .wcc{
+  position:relative;
   background:var(--surface);
   border:1px solid var(--border);
   border-top:3px solid var(--wcc-color,var(--border));
@@ -1782,10 +1783,8 @@ function renderCardsView(words, list) {
     const [cc] = bg.match(/#[0-9a-fA-F]{6}/g) || ['#888'];
     return `<div class="wcc" data-id="${w.id}" style="--wcc-color:${cc}">
       ${isLearned ? '<div class="wcc-learned" title="Изучено"></div>' : ''}
-      <div style="display:flex;align-items:center;gap:8px;justify-content:center">
-        <div class="wcc-word">${esc(w.word)}</div>
-        <button class="word-speak-btn" onclick="event.stopPropagation();pronounceWord('${esc(w.word)}')" title="Произношение" style="color:rgba(255,255,255,.8)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
-      </div>
+      <button class="word-speak-btn" onclick="event.stopPropagation();pronounceWord(this.dataset.word)" data-word="${esc(w.word)}" title="Произношение" style="position:absolute;top:8px;right:8px;opacity:.55"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
+      <div class="wcc-word">${esc(w.word)}</div>
       ${w.translation ? `<div class="wcc-translation">${esc(w.translation)}</div>` : ''}
       <div class="wcc-actions">
         <button class="wcc-btn" data-action="toggle" data-id="${w.id}">${isLearned ? 'Снять' : 'Изучил'}</button>
